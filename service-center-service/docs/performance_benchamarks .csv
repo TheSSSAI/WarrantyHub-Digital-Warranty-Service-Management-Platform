@@ -1,0 +1,4 @@
+"metric","threshold","condition","monitoring_tool","remediation"
+"Service Request API Latency","250ms (P95)","10,000 Concurrent Users","Azure Monitor / k6","Optimize DB Indexes; Implement Redis Caching"
+"Technician Location Update Latency","2 seconds (End-to-End)","Technician moving at 60km/h","Custom Telemetry / Prometheus","Scale WebSocket Service; Tune Redis Pub/Sub"
+"Offline Sync Processing Time","5 seconds","Syncing 50 queued actions on 4G","Client-side Analytics / Splunk","Batch processing optimization; Payload compression"

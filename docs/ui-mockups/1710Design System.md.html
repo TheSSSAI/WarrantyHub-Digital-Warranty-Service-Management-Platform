@@ -1,0 +1,328 @@
+
+{
+  "visual_foundation": {
+    "typography": {
+      "font_families": {
+        "primary": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+        "secondary": "'Inter', sans-serif",
+        "monospace": "'JetBrains Mono', 'SF Mono', 'Roboto Mono', monospace"
+      },
+      "font_scale": {
+        "h1": {
+          "size": "32px",
+          "weight": "700",
+          "line_height": "1.25",
+          "letter_spacing": "-0.025em",
+          "mobile_size": "28px"
+        },
+        "h2": {
+          "size": "24px",
+          "weight": "600",
+          "line_height": "1.3",
+          "letter_spacing": "-0.015em",
+          "mobile_size": "22px"
+        },
+        "h3": {
+          "size": "20px",
+          "weight": "600",
+          "line_height": "1.4",
+          "letter_spacing": "0",
+          "mobile_size": "18px"
+        },
+        "h4": {
+          "size": "18px",
+          "weight": "600",
+          "line_height": "1.4",
+          "letter_spacing": "0",
+          "mobile_size": "16px"
+        },
+        "body_large": {
+          "size": "18px",
+          "weight": "400",
+          "line_height": "1.6",
+          "letter_spacing": "0"
+        },
+        "body_default": {
+          "size": "16px",
+          "weight": "400",
+          "line_height": "1.5",
+          "letter_spacing": "0"
+        },
+        "body_small": {
+          "size": "14px",
+          "weight": "400",
+          "line_height": "1.5",
+          "letter_spacing": "0"
+        },
+        "caption": {
+          "size": "12px",
+          "weight": "500",
+          "line_height": "1.4",
+          "letter_spacing": "0.02em",
+          "text_transform": "uppercase"
+        },
+        "code": {
+          "size": "13px",
+          "weight": "400",
+          "line_height": "1.5"
+        }
+      },
+      "responsive_scaling": "Fluid typography using CSS clamp() for headings; fixed steps for body text to ensure readability on mobile devices. Base font size 16px to prevent iOS zoom on inputs."
+    },
+    "color_palette": {
+      "primary": {
+        "50": "#eef2ff",
+        "100": "#e0e7ff",
+        "200": "#c7d2fe",
+        "300": "#a5b4fc",
+        "400": "#818cf8",
+        "500": "#6366f1",
+        "600": "#4f46e5",
+        "700": "#4338ca",
+        "800": "#3730a3",
+        "900": "#312e81"
+      },
+      "secondary": {
+        "50": "#f8fafc",
+        "100": "#f1f5f9",
+        "200": "#e2e8f0",
+        "300": "#cbd5e1",
+        "400": "#94a3b8",
+        "500": "#64748b",
+        "600": "#475569",
+        "700": "#334155",
+        "800": "#1e293b",
+        "900": "#0f172a"
+      },
+      "neutrals": {
+        "white": "#ffffff",
+        "gray_50": "#f9fafb",
+        "gray_100": "#f3f4f6",
+        "gray_200": "#e5e7eb",
+        "gray_300": "#d1d5db",
+        "gray_400": "#9ca3af",
+        "gray_500": "#6b7280",
+        "gray_600": "#4b5563",
+        "gray_700": "#374151",
+        "gray_800": "#1f2937",
+        "gray_900": "#111827",
+        "black": "#000000"
+      },
+      "semantic": {
+        "success": "#10b981",
+        "success_bg": "#ecfdf5",
+        "success_text": "#065f46",
+        "warning": "#f59e0b",
+        "warning_bg": "#fffbeb",
+        "warning_text": "#92400e",
+        "error": "#ef4444",
+        "error_bg": "#fef2f2",
+        "error_text": "#b91c1c",
+        "info": "#3b82f6",
+        "info_bg": "#eff6ff",
+        "info_text": "#1e40af"
+      }
+    },
+    "spacing_system": {
+      "scale": [
+        "0px",
+        "4px",
+        "8px",
+        "12px",
+        "16px",
+        "24px",
+        "32px",
+        "48px",
+        "64px",
+        "96px"
+      ],
+      "grid_system": "12-column grid with 24px gutters (desktop), 8-column with 16px gutters (tablet), 4-column with 16px gutters (mobile). Max-width 1280px.",
+      "container_widths": {
+        "mobile": "100%",
+        "tablet": "768px",
+        "desktop": "1280px"
+      },
+      "responsive_spacing": "Compact density on mobile (4px/8px base), Comfortable density on desktop (8px/16px base). Margins collapse on mobile."
+    }
+  },
+  "component_specifications": {
+    "buttons": {
+      "primary": {
+        "default_state": {
+          "background": "#4f46e5",
+          "text": "#ffffff",
+          "padding": "12px 24px",
+          "border_radius": "8px",
+          "font_weight": "600"
+        },
+        "hover_state": {
+          "background": "#4338ca",
+          "text": "#ffffff",
+          "elevation": "0 4px 6px -1px rgba(79, 70, 229, 0.2)"
+        },
+        "active_state": {
+          "background": "#3730a3",
+          "transform": "scale(0.98)"
+        },
+        "disabled_state": {
+          "background": "#e2e8f0",
+          "text": "#94a3b8",
+          "cursor": "not-allowed"
+        },
+        "focus_state": {
+          "outline": "2px solid #4f46e5",
+          "outline_offset": "2px"
+        }
+      },
+      "secondary": {
+        "default_state": {
+          "background": "transparent",
+          "text": "#4f46e5",
+          "border": "1px solid #4f46e5",
+          "padding": "11px 23px",
+          "border_radius": "8px"
+        },
+        "hover_state": {
+          "background": "#eef2ff",
+          "text": "#4338ca"
+        },
+        "active_state": {
+          "background": "#e0e7ff"
+        },
+        "disabled_state": {
+          "border": "1px solid #e2e8f0",
+          "text": "#94a3b8"
+        }
+      },
+      "accessibility": "Minimum touch target 44x44px (mobile). ARIA labels required for icon-only buttons. Visible focus ring for keyboard navigation."
+    },
+    "form_inputs": {
+      "text_input": {
+        "default_state": {
+          "border": "1px solid #cbd5e1",
+          "padding": "12px 16px",
+          "background": "#ffffff",
+          "border_radius": "6px",
+          "text": "#0f172a"
+        },
+        "focus_state": {
+          "border": "1px solid #4f46e5",
+          "box_shadow": "0 0 0 3px rgba(79, 70, 229, 0.1)"
+        },
+        "error_state": {
+          "border": "1px solid #ef4444",
+          "icon": "alert-circle"
+        },
+        "disabled_state": {
+          "background": "#f1f5f9",
+          "text": "#94a3b8",
+          "cursor": "not-allowed"
+        },
+        "accessibility": "Labels must be visible and associated via 'for' attribute. Error messages linked via aria-describedby. Placeholder text must meet contrast requirements."
+      }
+    },
+    "navigation": {
+      "header": {
+        "desktop_layout": "Logo (Left), Primary Links (Center), User Profile/Notifications (Right). Height: 64px. Sticky.",
+        "mobile_layout": "Hamburger Menu (Left), Logo (Center), Notifications (Right). Height: 56px.",
+        "active_states": "Bottom border 2px solid #4f46e5 for desktop links. Bold text/Background highlight for mobile drawer items.",
+        "accessibility": "Skip-to-content link. Focus trap in mobile drawer. Aria-expanded attributes for menus."
+      }
+    },
+    "data_display": {
+      "cards": {
+        "default_card": {
+          "padding": "24px",
+          "border_radius": "12px",
+          "background": "#ffffff",
+          "border": "1px solid #e2e8f0",
+          "shadow": "0 1px 3px 0 rgba(0, 0, 0, 0.1)"
+        },
+        "hover_state": {
+          "elevation": "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+          "transform": "translateY(-2px)",
+          "border_color": "#cbd5e1"
+        },
+        "content_structure": "Header (Title + Status Badge), Body (Key/Value pairs), Footer (Actions). Mobile stacks actions vertically."
+      }
+    },
+    "feedback": {
+      "alerts": {
+        "success": {
+          "background": "#ecfdf5",
+          "icon": "check-circle",
+          "text": "#065f46",
+          "border_left": "4px solid #10b981"
+        },
+        "error": {
+          "background": "#fef2f2",
+          "icon": "x-circle",
+          "text": "#b91c1c",
+          "border_left": "4px solid #ef4444"
+        },
+        "accessibility": "Role='alert' for dynamic errors. Toast messages auto-dismiss after 5s unless critical. Focus moves to alert if it blocks interaction."
+      }
+    }
+  },
+  "interaction_patterns": {
+    "micro_interactions": [
+      {
+        "pattern_name": "Button Press Feedback",
+        "trigger": "User clicks/taps button",
+        "animation": "Scale down to 0.98 for 100ms, ease-in-out",
+        "accessibility": "No motion for prefers-reduced-motion media query"
+      },
+      {
+        "pattern_name": "Input Focus",
+        "trigger": "User tabs or taps into input",
+        "animation": "Border color transition 200ms ease, Ring expansion",
+        "accessibility": "High contrast focus ring must remain visible"
+      }
+    ],
+    "loading_states": [
+      {
+        "pattern_name": "Content Loading",
+        "visual": "Skeleton screens (pulsing gray blocks) matching content layout",
+        "duration": "1.5s infinite pulse loop",
+        "accessibility": "aria-busy='true', aria-label='Loading content'"
+      },
+      {
+        "pattern_name": "Action Loading",
+        "visual": "Spinner inside button, text hidden, button disabled",
+        "duration": "Continuous rotation",
+        "accessibility": "Button disabled attribute, aria-label='Processing'"
+      }
+    ]
+  },
+  "implementation_guidelines": {
+    "css_architecture": {
+      "custom_properties": {
+        "--color-primary-500": "#6366f1",
+        "--color-primary-600": "#4f46e5",
+        "--spacing-md": "16px",
+        "--font-size-body": "16px",
+        "--radius-md": "8px",
+        "--shadow-sm": "0 1px 2px 0 rgba(0, 0, 0, 0.05)"
+      },
+      "naming_conventions": "BEM (Block Element Modifier) for web components. Styled Components/Emotion props for React Native.",
+      "component_organization": "Atomic Design: Atoms (Buttons, Inputs), Molecules (Form Fields, Cards), Organisms (Headers, Lists), Templates (Layouts).",
+      "utility_classes": "Tailwind-compatible utility classes for margins, padding, and flexbox layouts."
+    },
+    "responsive_strategy": {
+      "breakpoints": {
+        "mobile": "0px",
+        "tablet": "768px",
+        "desktop": "1024px",
+        "wide": "1280px"
+      },
+      "approach": "Mobile-first responsive design methodology. Default styles apply to mobile; min-width media queries add complexity for larger screens.",
+      "component_adaptations": "Navigation collapses to hamburger/tab bar on mobile. Data tables convert to card lists on mobile. Modals become full-screen sheets on mobile."
+    },
+    "accessibility_implementation": {
+      "focus_management": "Visible focus ring (2px solid #4f46e5) on all interactive elements. Focus trap within modals. Restore focus to trigger upon modal close.",
+      "color_contrast": "All color combinations meet WCAG 2.1 AA (4.5:1 for normal text, 3:1 for large text).",
+      "screen_reader_support": "All icons must have aria-label. Status changes (e.g., 'Saving...') must use aria-live regions. Semantic HTML (main, nav, article) required.",
+      "keyboard_navigation": "Logical tab order (top-left to bottom-right). Enter/Space to activate buttons. Esc to close overlays. Arrow keys for composite widgets (tabs, radios)."
+    }
+  }
+}

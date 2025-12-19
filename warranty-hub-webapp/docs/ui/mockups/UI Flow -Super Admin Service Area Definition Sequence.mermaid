@@ -1,0 +1,62 @@
+sequenceDiagram
+    autonumber
+    actor Admin as Super Admin (Web Client)
+    participant Gateway as API Gateway
+    participant Service as Service Center Service
+    participant DB as PostGIS Database
+
+    Note over Admin: 1. Admin draws polygon on map.<br/>Client logic converts shape<br/>to valid GeoJSON object.
+
+    Admin->>Gateway: POST /api/v1/service-centers/{id}/area<br/>Body: { geoJson, postalCodes }
+    activate Gateway
+    
+    Gateway->>Gateway: Validate JWT Signature & Expiry
+    
+    alt Invalid or Expired Token
+        Gateway-->>Admin: 401 Unauthorized
+    else Valid Token
+        Gateway->>Service: Forward Request
+        activate Service
+        
+        Service->>Service: Authorize Role (Must be Super Admin)
+        
+        alt Insufficient Permissions
+            Service-->>Gateway: 403 Forbidden
+            Gateway-->>Admin: 403 Forbidden
+        else Authorized
+            Service->>Service: Validate DTO & Parse GeoJSON
+            
+            alt Invalid Geometry (e.g., Self-intersecting)
+                Service-->>Gateway: 400 Bad Request (ValidationException)
+                Gateway-->>Admin: 400 Bad Request
+                Note right of Admin: UI displays specific<br/>geometry error message.
+            else Valid Geometry
+                Service->>Service: Transform to WKT/Geometry Object
+                
+                Service->>DB: UPDATE ServiceAreas<br/>SET area_polygon = @geom,<br/>postal_codes = @codes<br/>WHERE center_id = @id
+                activate DB
+                
+                alt Database Error
+                    DB-->>Service: DbUpdateException
+                    deactivate DB
+                    Service-->>Gateway: 500 Internal Server Error
+                    Gateway-->>Admin: 500 Internal Server Error
+                else Success
+                    DB-->>Service: Rows Affected: 1
+                    activate DB
+                    deactivate DB
+                    
+                    par Async Operations
+                        Service->>Service: Log Audit Event (AREA_UPDATED)
+                    and Send Response
+                        Service-->>Gateway: 200 OK (Updated Entity)
+                        deactivate Service
+                        Gateway-->>Admin: 200 OK
+                        deactivate Gateway
+                    end
+                    
+                    Admin->>Admin: Update Map UI (Render Saved Layer)
+                end
+            end
+        end
+    end

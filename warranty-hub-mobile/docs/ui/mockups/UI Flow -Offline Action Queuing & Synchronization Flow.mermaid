@@ -1,0 +1,68 @@
+sequenceDiagram
+    actor User
+    participant UI as Mobile App UI
+    participant SyncMgr as Sync Manager
+    participant LocalDB as Local Storage (SQLite)
+    participant NetMon as Network Monitor
+    participant API as Backend API
+
+    Note over User, API: PHASE 1: User Action in Offline Mode
+
+    User->>UI: Performs Action (e.g., Submit Service Request)
+    activate UI
+    UI->>SyncMgr: dispatchAction(payload)
+    activate SyncMgr
+    
+    SyncMgr->>NetMon: checkConnectivity()
+    activate NetMon
+    NetMon-->>SyncMgr: Status: OFFLINE
+    deactivate NetMon
+
+    SyncMgr->>LocalDB: insertQueueItem(payload, status='PENDING')
+    activate LocalDB
+    LocalDB-->>SyncMgr: item_id: 123
+    deactivate LocalDB
+
+    SyncMgr-->>UI: Return Optimistic Success (status='PENDING_SYNC')
+    deactivate SyncMgr
+
+    UI-->>User: Show Success Toast & "Pending Sync" Icon
+    deactivate UI
+
+    Note right of User: The user continues using the app.<br/>Data is safe in Local Storage.
+
+    Note over User, API: PHASE 2: Connectivity Restoration & Sync
+
+    NetMon->>SyncMgr: event: NETWORK_CONNECTED
+    activate SyncMgr
+    
+    SyncMgr->>LocalDB: getPendingItems(orderBy=CreatedASC)
+    activate LocalDB
+    LocalDB-->>SyncMgr: List[Item 123, Item 124...]
+    deactivate LocalDB
+
+    loop For Each Pending Item
+        SyncMgr->>API: POST /api/v1/service-requests (Payload)
+        activate API
+        
+        alt Sync Successful
+            API-->>SyncMgr: 201 Created (ServerID: 999)
+            SyncMgr->>LocalDB: deleteQueueItem(123)
+            activate LocalDB
+            LocalDB-->>SyncMgr: Success
+            deactivate LocalDB
+            SyncMgr->>UI: broadcastEvent(ItemSynced, id=123)
+            UI-->>User: Update Status to "Synced" / Remove Icon
+        else Sync Failed (Transient Error 5xx)
+            API-->>SyncMgr: 503 Service Unavailable
+            SyncMgr->>LocalDB: updateRetryCount(123, count++)
+        else Sync Failed (Validation Error 4xx)
+             API-->>SyncMgr: 400 Bad Request
+             SyncMgr->>LocalDB: updateStatus(123, 'SYNC_FAILED', errorMsg)
+             SyncMgr->>UI: broadcastEvent(SyncError, id=123)
+             UI-->>User: Notification: "Action Failed. Tap to Retry."
+        end
+        deactivate API
+    end
+
+    deactivate SyncMgr

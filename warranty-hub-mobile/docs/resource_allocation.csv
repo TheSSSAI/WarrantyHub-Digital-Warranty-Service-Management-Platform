@@ -1,0 +1,8 @@
+"team_member","role","skills","sprint_1_hours","sprint_1_tasks","sprint_2_hours","sprint_2_tasks","sprint_3_hours","sprint_3_tasks","total_allocated_hours"
+"devops.lead@company.com","DevOps Engineer","Terraform, Azure, Security","4","TASK-INFRA-001-01","4.3","TASK-INFRA-001-04","","","8.3"
+"devops.eng@company.com","DevOps Engineer","Terraform, Kubernetes, K6","13.2","TASK-INFRA-001-02, TASK-INFRA-001-03","","","4","TASK-BE-004-04","17.2"
+"backend.senior@company.com","Senior Backend Developer","NestJS, Architecture, WebSockets","5.2","TASK-BE-001-01","6.3","TASK-BE-004-01","6.3","TASK-BE-004-03","17.8"
+"backend.dev@company.com","Backend Developer","NestJS, TypeScript, Testing","3.2","TASK-BE-001-02","5.2","TASK-BE-004-02","5.2","TASK-BE-001-03","13.6"
+"frontend.dev@company.com","Frontend Developer","React, Next.js, Mapbox","5.2","TASK-WEB-002-01","14.3","TASK-WEB-002-02, TASK-WEB-002-03","16","TASK-WEB-002-04","35.5"
+"mobile.lead@company.com","Mobile Lead","React Native, Offline Architecture","6.3","TASK-MOB-001-01","8","TASK-MOB-001-02","10","TASK-MOB-001-03","24.3"
+"mobile.dev@company.com","Mobile Developer","React Native, UI, Camera","","","","","11.5","TASK-MOB-002-01, TASK-MOB-002-02","11.5"

@@ -1,0 +1,75 @@
+sequenceDiagram
+    autonumber
+    actor Tech as Technician
+    participant App as Mobile App
+    participant Local as Local Storage (Queue)
+    participant API as API Gateway
+    participant Svc as Service Request Svc
+    participant Loc as Location Svc
+    participant Notif as Notification Svc
+
+    Note over Tech, Local: Phase 1: Job Retrieval (US-051)
+    Tech->>App: Open 'My Jobs'
+    App->>API: GET /technician/jobs?date=today
+    API->>Svc: Query Assigned Jobs
+    Svc-->>App: Job List JSON
+    App->>Local: Cache Job Data (for Offline Use)
+    App-->>Tech: Display Job List
+
+    Note over Tech, Loc: Phase 2: Travel Mode (US-053, US-054)
+    Tech->>App: Tap 'Start Travel' (Update Status)
+    App->>API: PATCH /jobs/{id}/status {status: "ON_THE_WAY"}
+    API->>Svc: Update Status
+    Svc-->>Notif: Trigger Customer Notification
+    App->>Loc: Activate Travel Mode (WebSocket)
+    par Location Streaming
+        App->>Loc: Stream GPS Coordinates
+        Loc->>Loc: Broadcast to Customer App
+    and
+        Tech->>Tech: Travelling to Site...
+    end
+
+    Note over Tech, Local: Phase 3: Arrival & Offline Work (US-075)
+    Tech->>App: Tap 'Arrived' (Update Status)
+    App->>Loc: Deactivate Travel Mode
+    App->>API: PATCH /jobs/{id}/status {status: "IN_PROGRESS"}
+    API->>Svc: Update Status
+    
+    rect rgb(255, 240, 240)
+        Note right of Tech: Network Connection Lost ❌
+        Tech->>App: Enter Completion Notes & Parts Used
+        App->>Local: Write to SyncQueue {action: "SAVE_NOTES", payload: ...}
+        App-->>Tech: UI Feedback: "Saved Locally (Pending Sync)"
+        
+        Tech->>App: Capture Customer Signature
+        App->>Local: Write to SyncQueue {action: "SAVE_SIGNATURE", payload: ...}
+        
+        Tech->>App: Tap 'Mark as Resolved' (US-057)
+        App->>Local: Write to SyncQueue {action: "UPDATE_STATUS", status: "RESOLVED"}
+        App-->>Tech: UI Feedback: "Job Resolved (Offline Mode)"
+    end
+
+    Note over Tech, Notif: Phase 4: Reconnection & Synchronization
+    rect rgb(240, 255, 240)
+        Note right of Tech: Network Connection Restored ✅
+        App->>App: Detect Connectivity
+        loop Process Sync Queue (FIFO)
+            App->>Local: Read Next Action
+            
+            alt Save Notes
+                App->>API: POST /jobs/{id}/notes
+                API-->>App: 200 OK
+            else Save Signature
+                App->>API: POST /jobs/{id}/signature
+                API-->>App: 200 OK
+            else Resolve Job
+                App->>API: PATCH /jobs/{id}/status {status: "RESOLVED"}
+                API->>Svc: Finalize Job State
+                Svc-->>Notif: Trigger "Service Completed" Notification
+                API-->>App: 200 OK
+            end
+            
+            App->>Local: Remove Action from Queue
+        end
+        App-->>Tech: UI Update: "All Changes Synced"
+    end

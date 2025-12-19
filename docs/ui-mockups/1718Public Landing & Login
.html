@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Warranty Platform - Secure Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+  
+  <style>
+    /* 
+      DESIGN SYSTEM TOKENS 
+      Based on provided JSON configuration 
+    */
+    :root {
+      /* Colors - Primary */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-200: #c7d2fe;
+      --color-primary-500: #6366f1;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      --color-primary-800: #3730a3;
+
+      /* Colors - Secondary & Neutrals */
+      --color-secondary-50: #f8fafc;
+      --color-secondary-900: #0f172a;
+      --color-white: #ffffff;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-600: #4b5563;
+      --color-gray-700: #374151;
+      --color-gray-800: #1f2937;
+      --color-gray-900: #111827;
+
+      /* Colors - Semantic */
+      --color-error-text: #b91c1c;
+      --color-error-bg: #fef2f2;
+      --color-error-border: #ef4444;
+      --color-success-bg: #ecfdf5;
+      --color-success-text: #065f46;
+
+      /* Typography */
+      --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-size-h1: clamp(28px, 5vw, 32px);
+      --font-size-h2: clamp(22px, 3vw, 24px);
+      --font-size-body: 16px;
+      --font-size-small: 14px;
+      
+      /* Spacing & Layout */
+      --container-width: 1280px;
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --spacing-2xl: 48px;
+      --border-radius-md: 8px;
+      --border-radius-lg: 12px;
+      
+      /* Shadows */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      
+      /* Overlay */
+      --overlay-backdrop: rgba(17, 24, 39, 0.75);
+    }
+
+    /* CSS RESET */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family-primary);
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-900);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    button {
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    /* 
+      LAYOUT UTILITIES 
+    */
+    .container {
+      width: 100%;
+      max-width: var(--container-width);
+      margin: 0 auto;
+      padding: 0 var(--spacing-md);
+    }
+
+    .grid {
+      display: grid;
+      gap: var(--spacing-lg);
+    }
+
+    /* 
+      COMPONENT: HEADER / NAVIGATION 
+    */
+    .navbar {
+      background-color: var(--color-white);
+      border-bottom: 1px solid var(--color-gray-200);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      height: 64px;
+      display: flex;
+      align-items: center;
+    }
+
+    .navbar__inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--color-primary-600);
+      text-decoration: none;
+    }
+
+    .logo svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .nav-links {
+      display: none;
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: var(--spacing-md);
+    }
+
+    /* 
+      COMPONENT: BUTTONS 
+    */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 20px;
+      border-radius: var(--border-radius-md);
+      font-weight: 600;
+      font-size: var(--font-size-small);
+      transition: all 0.2s ease;
+      text-decoration: none;
+      border: 1px solid transparent;
+    }
+
+    .btn--primary {
+      background-color: var(--color-primary-600);
+      color: var(--color-white);
+    }
+
+    .btn--primary:hover {
+      background-color: var(--color-primary-700);
+      box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+    }
+
+    .btn--primary:focus-visible {
+      outline: 2px solid var(--color-primary-600);
+      outline-offset: 2px;
+    }
+
+    .btn--secondary {
+      background-color: transparent;
+      color: var(--color-gray-700);
+      border-color: var(--color-gray-300);
+    }
+
+    .btn--secondary:hover {
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-900);
+    }
+
+    .btn--ghost {
+      background-color: transparent;
+      color: var(--color-primary-600);
+    }
+    
+    .btn--ghost:hover {
+      background-color: var(--color-primary-50);
+    }
+
+    .btn--full {
+      width: 100%;
+      padding: 12px;
+      font-size: var(--font-size-body);
+    }
+
+    .btn:disabled, .btn[aria-disabled="true"] {
+      background-color: var(--color-gray-200);
+      color: var(--color-gray-400);
+      cursor: not-allowed;
+      border-color: transparent;
+      box-shadow: none;
+    }
+
+    /* 
+      COMPONENT: HERO SECTION 
+    */
+    .hero {
+      padding: var(--spacing-2xl) 0;
+      overflow: hidden;
+    }
+
+    .hero__grid {
+      grid-template-columns: 1fr;
+      align-items: center;
+      gap: var(--spacing-2xl);
+    }
+
+    .hero__content {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-lg);
+      text-align: center;
+    }
+
+    .hero__title {
+      font-size: var(--font-size-h1);
+      color: var(--color-gray-900);
+      line-height: 1.2;
+    }
+
+    .hero__description {
+      font-size: var(--font-size-body);
+      color: var(--color-gray-600);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .hero__image-wrapper {
+      background-color: var(--color-primary-50);
+      border-radius: var(--border-radius-lg);
+      padding: var(--spacing-xl);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: var(--shadow-md);
+    }
+
+    .hero__image {
+      width: 100%;
+      height: auto;
+      max-width: 500px;
+      object-fit: cover;
+    }
+
+    /* 
+      COMPONENT: FEATURES GRID 
+    */
+    .features {
+      padding: var(--spacing-2xl) 0;
+      background-color: var(--color-white);
+    }
+
+    .features__grid {
+      grid-template-columns: 1fr;
+    }
+
+    .feature-card {
+      padding: var(--spacing-lg);
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--border-radius-md);
+      background-color: var(--color-white);
+      transition: transform 0.2s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--color-primary-200);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      background-color: var(--color-primary-50);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-primary-600);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .feature-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .feature-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--color-gray-900);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .feature-text {
+      color: var(--color-gray-600);
+      font-size: var(--font-size-small);
+    }
+
+    /* 
+      COMPONENT: MODAL & AUTH FORMS 
+    */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--overlay-backdrop);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: var(--spacing-md);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.is-active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .auth-card {
+      background: var(--color-white);
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--shadow-xl);
+      width: 100%;
+      max-width: 440px;
+      padding: 32px; /* Fixed padding for consistent look */
+      position: relative;
+      transform: translateY(20px);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-overlay.is-active .auth-card {
+      transform: translateY(0);
+    }
+
+    .auth-header {
+      text-align: center;
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .auth-logo {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto var(--spacing-md);
+      color: var(--color-primary-600);
+    }
+
+    .auth-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--color-gray-900);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .auth-subtitle {
+      color: var(--color-gray-500);
+      font-size: var(--font-size-small);
+    }
+
+    .form-group {
+      margin-bottom: var(--spacing-lg);
+      position: relative;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-gray-700);
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--color-gray-300);
+      border-radius: 6px;
+      font-size: 16px; /* 16px prevents zoom on iOS */
+      color: var(--color-gray-900);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--color-primary-600);
+      box-shadow: 0 0 0 3px var(--color-primary-100);
+    }
+
+    .form-input[aria-invalid="true"] {
+      border-color: var(--color-error-border);
+    }
+
+    .form-input[aria-invalid="true"]:focus {
+      box-shadow: 0 0 0 3px #fee2e2;
+    }
+
+    .input-error {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 6px;
+      color: var(--color-error-text);
+      font-size: 13px;
+    }
+
+    .forgot-password {
+      display: block;
+      text-align: right;
+      color: var(--color-primary-600);
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      margin-top: 6px;
+    }
+
+    .forgot-password:hover {
+      text-decoration: underline;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: transparent;
+      border: none;
+      color: var(--color-gray-400);
+      padding: 8px;
+      border-radius: 4px;
+    }
+
+    .modal-close:hover {
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-600);
+    }
+
+    /* MFA Specific Styles */
+    .otp-group {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .otp-input {
+      width: 48px;
+      height: 56px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: 600;
+      border: 1px solid var(--color-gray-300);
+      border-radius: 8px;
+    }
+
+    .otp-input:focus {
+      border-color: var(--color-primary-600);
+      outline: none;
+      box-shadow: 0 0 0 3px var(--color-primary-100);
+    }
+
+    .otp-info {
+      text-align: center;
+      margin-bottom: var(--spacing-lg);
+      padding: var(--spacing-md);
+      background-color: var(--color-primary-50);
+      border-radius: var(--border-radius-md);
+      color: var(--color-primary-800);
+      font-size: var(--font-size-small);
+    }
+
+    /* FOOTER */
+    .footer {
+      background-color: var(--color-white);
+      border-top: 1px solid var(--color-gray-200);
+      padding: var(--spacing-xl) 0;
+      margin-top: auto;
+    }
+
+    .footer__content {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-lg);
+      align-items: center;
+      color: var(--color-gray-500);
+      font-size: var(--font-size-small);
+    }
+
+    /* 
+      UTILITY: Hidden/Visible Classes for State Management 
+    */
+    .hidden {
+      display: none !important;
+    }
+
+    .loading-spinner {
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top: 2px solid white;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* 
+      RESPONSIVE MEDIA QUERIES 
+    */
+    @media (min-width: 768px) {
+      .nav-links {
+        display: flex;
+        gap: var(--spacing-lg);
+      }
+      
+      .nav-links a {
+        text-decoration: none;
+        color: var(--color-gray-600);
+        font-weight: 500;
+        font-size: var(--font-size-small);
+      }
+
+      .nav-links a:hover {
+        color: var(--color-primary-600);
+      }
+
+      .hero__grid {
+        grid-template-columns: 1fr 1fr;
+        text-align: left;
+      }
+
+      .hero__content {
+        align-items: flex-start;
+      }
+
+      .features__grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-xl);
+      }
+
+      .footer__content {
+        flex-direction: row;
+        justify-content: space-between;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .features__grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVIGATION -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container navbar__inner">
+      <a href="#" class="logo" aria-label="WarrantyHub Home">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 2L1 21h22L12 2zm0 3.516L20.297 19H3.703L12 5.516zM11 16h2v2h-2v-2zm0-6h2v4h-2v-4z"/>
+        </svg>
+        <span>WarrantyHub</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#solutions">Solutions</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#support">Support</a>
+      </div>
+
+      <div class="nav-actions">
+        <button id="loginBtn" class="btn btn--secondary" aria-haspopup="dialog">Log In</button>
+        <a href="#signup" class="btn btn--primary">Sign Up</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <!-- HERO SECTION -->
+    <section class="hero" aria-labelledby="hero-heading">
+      <div class="container grid hero__grid">
+        <div class="hero__content">
+          <div class="badge" style="display:inline-block; background:var(--color-primary-50); color:var(--color-primary-700); padding:4px 12px; border-radius:16px; font-size:12px; font-weight:600;">
+            New Platform V2.0
+          </div>
+          <h1 id="hero-heading" class="hero__title">
+            Manage Product Lifecycles with Confidence
+          </h1>
+          <p class="hero__description">
+            A unified platform for consumers, technicians, and brands to track warranties, manage service requests, and streamline support operations.
+          </p>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: inherit;">
+            <a href="#signup" class="btn btn--primary btn--lg">Get Started Free</a>
+            <a href="#demo" class="btn btn--secondary btn--lg">Request Demo</a>
+          </div>
+        </div>
+        <div class="hero__image-wrapper">
+          <!-- Placeholder SVG Illustration -->
+          <svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Dashboard illustration">
+            <rect x="20" y="20" width="360" height="260" rx="12" fill="white" stroke="#E5E7EB" stroke-width="2"/>
+            <rect x="40" y="40" width="80" height="8" rx="4" fill="#E0E7FF"/>
+            <rect x="40" y="70" width="320" height="40" rx="6" fill="#F9FAFB"/>
+            <rect x="40" y="130" width="150" height="100" rx="6" fill="#F3F4F6"/>
+            <rect x="210" y="130" width="150" height="100" rx="6" fill="#F3F4F6"/>
+            <circle cx="360" cy="44" r="16" fill="#EEF2FF"/>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES SECTION -->
+    <section id="features" class="features" aria-labelledby="features-heading">
+      <div class="container">
+        <h2 id="features-heading" style="text-align: center; margin-bottom: 48px; font-size: 28px;">Why choose WarrantyHub?</h2>
+        <div class="grid features__grid">
+          <!-- Feature 1 -->
+          <article class="feature-card">
+            <div class="feature-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 class="feature-title">Verified Warranties</h3>
+            <p class="feature-text">Automatically track warranty status and expiration dates for all your registered products in one secure vault.</p>
+          </article>
+          
+          <!-- Feature 2 -->
+          <article class="feature-card">
+            <div class="feature-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0c0 .6.4 1 1 1h3c.6 0 1-.4 1-1" />
+              </svg>
+            </div>
+            <h3 class="feature-title">Smart Service Requests</h3>
+            <p class="feature-text">Instantly connect with authorized service centers and track technician arrival with real-time map updates.</p>
+          </article>
+
+          <!-- Feature 3 -->
+          <article class="feature-card">
+            <div class="feature-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <h3 class="feature-title">Role-Based Portals</h3>
+            <p class="feature-text">Dedicated interfaces for Consumers, Technicians, Service Center Admins, and Brand Managers.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer__content">
+      <div class="footer__left">
+        <span style="font-weight: 600; color: var(--color-gray-900);">WarrantyHub</span>
+        <span>&copy; 2024 Platform Inc. All rights reserved.</span>
+      </div>
+      <div class="footer__right">
+        <a href="#" style="color: inherit; text-decoration: none; margin-left: 24px;">Privacy Policy</a>
+        <a href="#" style="color: inherit; text-decoration: none; margin-left: 24px;">Terms of Service</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- AUTHENTICATION MODAL -->
+  <div id="authModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="auth-card">
+      <button id="modalClose" class="modal-close" aria-label="Close modal">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <!-- VIEW 1: LOGIN CREDENTIALS -->
+      <div id="loginView">
+        <div class="auth-header">
+          <svg class="auth-logo" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+             <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          <h2 id="modal-title" class="auth-title">Welcome back</h2>
+          <p class="auth-subtitle">Please enter your details to sign in.</p>
+        </div>
+
+        <form id="loginForm" novalidate>
+          <div class="form-group">
+            <label for="email" class="form-label">Email address</label>
+            <input type="email" id="email" class="form-input" placeholder="name@company.com" autocomplete="email" required>
+            <div id="emailError" class="input-error hidden">
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <span>Please enter a valid email address</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" id="password" class="form-input" placeholder="••••••••" autocomplete="current-password" required>
+            <a href="#" class="forgot-password">Forgot password?</a>
+          </div>
+
+          <button type="submit" id="submitLogin" class="btn btn--primary btn--full">
+            <span class="btn-text">Sign in</span>
+          </button>
+        </form>
+        
+        <div style="margin-top: 24px; text-align: center; font-size: 14px; color: var(--color-gray-600);">
+          Don't have an account? <a href="#" style="color: var(--color-primary-600); font-weight: 500; text-decoration: none;">Sign up</a>
+        </div>
+      </div>
+
+      <!-- VIEW 2: MFA VERIFICATION -->
+      <div id="mfaView" class="hidden">
+        <div class="auth-header">
+          <div style="width: 48px; height: 48px; margin: 0 auto 16px; background: var(--color-primary-50); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--color-primary-600);">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+               <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h2 class="auth-title">Verify it's you</h2>
+          <p class="auth-subtitle">We sent a verification code to your mobile ending in ••89</p>
+        </div>
+
+        <form id="mfaForm">
+          <div class="otp-group">
+            <input type="text" class="otp-input" maxlength="1" aria-label="Digit 1" pattern="[0-9]*" inputmode="numeric">
+            <input type="text" class="otp-input" maxlength="1" aria-label="Digit 2" pattern="[0-9]*" inputmode="numeric">
+            <input type="text" class="otp-input" maxlength="1" aria-label="Digit 3" pattern="[0-9]*" inputmode="numeric">
+            <input type="text" class="otp-input" maxlength="1" aria-label="Digit 4" pattern="[0-9]*" inputmode="numeric">
+          </div>
+
+          <div class="otp-info">
+            Code expires in 04:59
+          </div>
+
+          <button type="submit" class="btn btn--primary btn--full">Verify Account</button>
+          
+          <button type="button" id="backToLogin" class="btn btn--ghost btn--full" style="margin-top: 12px;">Back to Login</button>
+        </form>
+
+        <div style="margin-top: 24px; text-align: center; font-size: 14px; color: var(--color-gray-600);">
+          Didn't receive the code? <a href="#" style="color: var(--color-primary-600); font-weight: 500; text-decoration: none;">Resend</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Simple Interaction Logic for Demonstration
+    document.addEventListener('DOMContentLoaded', () => {
+      const loginBtn = document.getElementById('loginBtn');
+      const authModal = document.getElementById('authModal');
+      const modalClose = document.getElementById('modalClose');
+      const loginForm = document.getElementById('loginForm');
+      const mfaForm = document.getElementById('mfaForm');
+      const loginView = document.getElementById('loginView');
+      const mfaView = document.getElementById('mfaView');
+      const backToLoginBtn = document.getElementById('backToLogin');
+      const otpInputs = document.querySelectorAll('.otp-input');
+      const submitLoginBtn = document.getElementById('submitLogin');
+
+      // 1. Modal Open/Close Logic
+      function openModal() {
+        authModal.classList.add('is-active');
+        document.body.style.overflow = 'hidden'; // Prevent scrolling
+        document.getElementById('email').focus();
+      }
+
+      function closeModal() {
+        authModal.classList.remove('is-active');
+        document.body.style.overflow = '';
+        // Reset state
+        setTimeout(() => {
+          loginView.classList.remove('hidden');
+          mfaView.classList.add('hidden');
+          loginForm.reset();
+          mfaForm.reset();
+          resetLoginButton();
+        }, 200);
+      }
+
+      loginBtn.addEventListener('click', openModal);
+      modalClose.addEventListener('click', closeModal);
+      
+      // Close on backdrop click
+      authModal.addEventListener('click', (e) => {
+        if (e.target === authModal) closeModal();
+      });
+
+      // Close on ESC key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && authModal.classList.contains('is-active')) {
+          closeModal();
+        }
+      });
+
+      // 2. Login Logic Simulation
+      loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const emailError = document.getElementById('emailError');
+        const emailInput = document.getElementById('email');
+
+        // Simple validation
+        if (!email.includes('@')) {
+          emailInput.setAttribute('aria-invalid', 'true');
+          emailError.classList.remove('hidden');
+          return;
+        } else {
+          emailInput.setAttribute('aria-invalid', 'false');
+          emailError.classList.add('hidden');
+        }
+
+        // Simulate Loading State
+        submitLoginBtn.disabled = true;
+        submitLoginBtn.innerHTML = '<div class="loading-spinner"></div> Signing in...';
+
+        // Simulate API delay -> Transition to MFA
+        setTimeout(() => {
+          loginView.classList.add('hidden');
+          mfaView.classList.remove('hidden');
+          otpInputs[0].focus();
+        }, 1500);
+      });
+
+      function resetLoginButton() {
+        submitLoginBtn.disabled = false;
+        submitLoginBtn.innerHTML = '<span class="btn-text">Sign in</span>';
+      }
+
+      // 3. MFA Logic
+      backToLoginBtn.addEventListener('click', () => {
+        mfaView.classList.add('hidden');
+        loginView.classList.remove('hidden');
+        resetLoginButton();
+      });
+
+      // Auto-focus next OTP input
+      otpInputs.forEach((input, index) => {
+        input.addEventListener('keyup', (e) => {
+          if (e.key >= 0 && e.key <= 9) {
+            if (index < otpInputs.length - 1) {
+              otpInputs[index + 1].focus();
+            }
+          } else if (e.key === 'Backspace') {
+            if (index > 0) {
+              otpInputs[index - 1].focus();
+            }
+          }
+        });
+      });
+
+      mfaForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        alert('Authentication Successful! Redirecting to dashboard...');
+        closeModal();
+      });
+    });
+  </script>
+</body>
+</html>

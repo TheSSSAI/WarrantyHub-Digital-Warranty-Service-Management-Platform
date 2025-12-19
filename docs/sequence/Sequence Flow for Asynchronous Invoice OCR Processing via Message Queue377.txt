@@ -1,0 +1,1360 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-EP-001
+
+## 1.2 Name
+
+Asynchronous Invoice OCR Processing via Message Queue
+
+## 1.3 Description
+
+After an invoice is uploaded, a message is sent to a queue, triggering a background worker to analyze the document using an OCR service. The extracted text is then stored and the user is prompted for confirmation.
+
+## 1.4 Type
+
+🔹 EventProcessing
+
+## 1.5 Purpose
+
+To automate the data entry process for product registration by extracting key information from invoices, improving user experience and data accuracy. Fulfills REQ-DATA-001.
+
+## 1.6 Complexity
+
+High
+
+## 1.7 Priority
+
+🟡 Medium
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- product-service-003
+- invoice-ocr-worker-010
+
+## 1.10 Key Interactions
+
+- ProductService receives an uploaded invoice and saves it to Azure Blob Storage.
+- ProductService publishes an 'InvoiceUploadedForProcessing' command message to an Azure Service Bus queue.
+- The InvoiceOcrWorker, a separate microservice, consumes the message from the queue.
+- The worker retrieves the invoice file from storage using the URL in the message.
+- The worker sends the file to the external OCR service (Azure AI Document Intelligence).
+- The worker receives the structured data (JSON) back from the OCR service.
+- The worker calls an internal API on the ProductService to update the invoice record with the raw extracted data and sets its status to 'PendingConfirmation'.
+
+## 1.11 Triggers
+
+- Successful upload of an invoice during product registration.
+
+## 1.12 Outcomes
+
+- The invoice record in the database is updated with OCR-extracted text.
+- The user is prompted via a notification to confirm the extracted details.
+- The OCR process fails and the invoice status is marked as 'OcrFailed'.
+
+## 1.13 Business Rules
+
+- OCR results must be confirmed by the user before being saved as primary product data.
+- Processing is asynchronous and should not block the user.
+- If the worker fails repeatedly, the message is sent to a Dead-Letter Queue for manual inspection.
+
+## 1.14 Error Scenarios
+
+- OCR service is unavailable or returns an error (handled by circuit breaker in SEQ-EH-001).
+- The document is unreadable or in an unsupported format.
+- The background worker fails to process the message and it is sent to a Dead-Letter Queue.
+
+## 1.15 Integration Points
+
+- Azure Service Bus
+- Azure Blob Storage
+- Azure AI Document Intelligence
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-IMPLEMENTATION-EP-001
+
+## 2.2 Name
+
+Implementation: Asynchronous Invoice OCR Processing Command Flow
+
+## 2.3 Description
+
+Provides a detailed technical specification for the asynchronous processing of uploaded invoices. The sequence is initiated by an HTTP request, which triggers the publication of a command message to Azure Service Bus. A dedicated background worker consumes this message, orchestrates the interaction with Azure Blob Storage and the Azure AI Document Intelligence OCR service, and finally updates the source service via an internal API call. This sequence fulfills REQ-DATA-001 and is designed with idempotency, resilience, and observability in mind.
+
+## 2.4 Participants
+
+### 2.4.1 Client
+
+#### 2.4.1.1 Repository Id
+
+user-client-mobile-or-web
+
+#### 2.4.1.2 Display Name
+
+User Client
+
+#### 2.4.1.3 Type
+
+🔹 Client
+
+#### 2.4.1.4 Technology
+
+React (Web) / Flutter (Mobile)
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #90CAF9 |
+| Stereotype | Actor |
+
+### 2.4.2.0 Gateway
+
+#### 2.4.2.1 Repository Id
+
+api-gateway-001
+
+#### 2.4.2.2 Display Name
+
+API Gateway
+
+#### 2.4.2.3 Type
+
+🔹 Gateway
+
+#### 2.4.2.4 Technology
+
+YARP on .NET 8
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #A5D6A7 |
+| Stereotype | Gateway |
+
+### 2.4.3.0 Service
+
+#### 2.4.3.1 Repository Id
+
+product-service-003
+
+#### 2.4.3.2 Display Name
+
+Product Service
+
+#### 2.4.3.3 Type
+
+🔹 Service
+
+#### 2.4.3.4 Technology
+
+.NET 8, ASP.NET Core 8
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #81C784 |
+| Stereotype | Microservice |
+
+### 2.4.4.0 ExternalDependency
+
+#### 2.4.4.1 Repository Id
+
+ext-azure-blob-storage
+
+#### 2.4.4.2 Display Name
+
+Azure Blob Storage
+
+#### 2.4.4.3 Type
+
+🔹 ExternalDependency
+
+#### 2.4.4.4 Technology
+
+Azure PaaS
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #4FC3F7 |
+| Stereotype | Storage |
+
+### 2.4.5.0 ExternalDependency
+
+#### 2.4.5.1 Repository Id
+
+ext-azure-service-bus
+
+#### 2.4.5.2 Display Name
+
+Azure Service Bus
+
+#### 2.4.5.3 Type
+
+🔹 ExternalDependency
+
+#### 2.4.5.4 Technology
+
+Azure PaaS
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | queue |
+| Color | #9575CD |
+| Stereotype | MessageBroker |
+
+### 2.4.6.0 Worker
+
+#### 2.4.6.1 Repository Id
+
+invoice-ocr-worker-010
+
+#### 2.4.6.2 Display Name
+
+Invoice OCR Worker
+
+#### 2.4.6.3 Type
+
+🔹 Worker
+
+#### 2.4.6.4 Technology
+
+.NET 8 Worker Service
+
+#### 2.4.6.5 Order
+
+6
+
+#### 2.4.6.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #FFB74D |
+| Stereotype | BackgroundWorker |
+
+### 2.4.7.0 ExternalDependency
+
+#### 2.4.7.1 Repository Id
+
+ext-azure-ai-doc-intel
+
+#### 2.4.7.2 Display Name
+
+Azure AI Document Intelligence
+
+#### 2.4.7.3 Type
+
+🔹 ExternalDependency
+
+#### 2.4.7.4 Technology
+
+Azure PaaS (AI Service)
+
+#### 2.4.7.5 Order
+
+7
+
+#### 2.4.7.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #7986CB |
+| Stereotype | ExternalService |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Request
+
+#### 2.5.1.1 Source Id
+
+user-client-mobile-or-web
+
+#### 2.5.1.2 Target Id
+
+api-gateway-001
+
+#### 2.5.1.3 Message
+
+1. Upload Invoice File
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Request
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+8. HTTP 202 Accepted
+
+#### 2.5.1.8 Has Return
+
+✅ Yes
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+##### 2.5.1.10.1 Protocol
+
+HTTP/1.1
+
+##### 2.5.1.10.2 Method
+
+POST /api/v1/products/{productId}/invoices
+
+##### 2.5.1.10.3 Parameters
+
+ multipart/form-data containing the invoice file (PDF, JPG, PNG). Headers must include 'Authorization: Bearer <JWT>' and 'X-Correlation-ID'.
+
+##### 2.5.1.10.4 Authentication
+
+JWT Bearer Token
+
+##### 2.5.1.10.5 Error Handling
+
+Client handles 4xx/5xx error responses.
+
+##### 2.5.1.10.6 Performance
+
+###### 2.5.1.10.6.1 Latency
+
+< 1000ms (P95) for upload initiation
+
+### 2.5.2.0.0.0 ForwardedRequest
+
+#### 2.5.2.1.0.0 Source Id
+
+api-gateway-001
+
+#### 2.5.2.2.0.0 Target Id
+
+product-service-003
+
+#### 2.5.2.3.0.0 Message
+
+2. Forward Invoice Upload Request
+
+#### 2.5.2.4.0.0 Sequence Number
+
+2
+
+#### 2.5.2.5.0.0 Type
+
+🔹 ForwardedRequest
+
+#### 2.5.2.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7.0.0 Return Message
+
+7. HTTP 202 Accepted
+
+#### 2.5.2.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.2.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.2.10.0.0 Technical Details
+
+##### 2.5.2.10.1.0 Protocol
+
+HTTP/1.1
+
+##### 2.5.2.10.2.0 Method
+
+POST /invoices
+
+##### 2.5.2.10.3.0 Parameters
+
+Forwards the multipart/form-data stream. Propagates 'X-Correlation-ID' header. Validates JWT and adds user claims to request headers.
+
+##### 2.5.2.10.4.0 Authentication
+
+JWT validation at gateway.
+
+##### 2.5.2.10.5.0 Error Handling
+
+Gateway translates internal errors to standardized 5xx responses.
+
+##### 2.5.2.10.6.0 Performance
+
+###### 2.5.2.10.6.1 Latency
+
+< 50ms internal hop
+
+### 2.5.3.0.0.0 SelfCall
+
+#### 2.5.3.1.0.0 Source Id
+
+product-service-003
+
+#### 2.5.3.2.0.0 Target Id
+
+product-service-003
+
+#### 2.5.3.3.0.0 Message
+
+3. Create Invoice entity with 'Processing' status
+
+#### 2.5.3.4.0.0 Sequence Number
+
+3
+
+#### 2.5.3.5.0.0 Type
+
+🔹 SelfCall
+
+#### 2.5.3.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7.0.0 Return Message
+
+Entity created
+
+#### 2.5.3.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.3.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.3.10.0.0 Technical Details
+
+##### 2.5.3.10.1.0 Protocol
+
+In-process
+
+##### 2.5.3.10.2.0 Method
+
+invoiceRepository.AddAsync(invoice)
+
+##### 2.5.3.10.3.0 Parameters
+
+Invoice entity object. A unique UUID is generated for the invoice.
+
+##### 2.5.3.10.4.0 Authentication
+
+N/A
+
+##### 2.5.3.10.5.0 Error Handling
+
+Database transaction ensures atomicity. Throws exception on failure.
+
+##### 2.5.3.10.6.0 Performance
+
+###### 2.5.3.10.6.1 Latency
+
+< 20ms
+
+### 2.5.4.0.0.0 ExternalCall
+
+#### 2.5.4.1.0.0 Source Id
+
+product-service-003
+
+#### 2.5.4.2.0.0 Target Id
+
+ext-azure-blob-storage
+
+#### 2.5.4.3.0.0 Message
+
+4. Upload Invoice to Blob Storage
+
+#### 2.5.4.4.0.0 Sequence Number
+
+4
+
+#### 2.5.4.5.0.0 Type
+
+🔹 ExternalCall
+
+#### 2.5.4.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7.0.0 Return Message
+
+Blob URL
+
+#### 2.5.4.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.4.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.4.10.0.0 Technical Details
+
+##### 2.5.4.10.1.0 Protocol
+
+Azure SDK (HTTPS)
+
+##### 2.5.4.10.2.0 Method
+
+BlobClient.UploadAsync(stream, CancellationToken)
+
+##### 2.5.4.10.3.0 Parameters
+
+File stream from request, blob name (e.g., invoices/{userId}/{invoiceId}.pdf).
+
+##### 2.5.4.10.4.0 Authentication
+
+Azure Managed Identity of the ProductService Pod.
+
+##### 2.5.4.10.5.0 Error Handling
+
+SDK handles transient errors with default retry policy.
+
+##### 2.5.4.10.6.0 Performance
+
+###### 2.5.4.10.6.1 Latency
+
+Dependent on file size and network
+
+### 2.5.5.0.0.0 MessagePublication
+
+#### 2.5.5.1.0.0 Source Id
+
+product-service-003
+
+#### 2.5.5.2.0.0 Target Id
+
+ext-azure-service-bus
+
+#### 2.5.5.3.0.0 Message
+
+5. Publish 'InvoiceUploadedForProcessing' command
+
+#### 2.5.5.4.0.0 Sequence Number
+
+5
+
+#### 2.5.5.5.0.0 Type
+
+🔹 MessagePublication
+
+#### 2.5.5.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7.0.0 Return Message
+
+Acknowledgement
+
+#### 2.5.5.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.5.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.5.10.0.0 Technical Details
+
+##### 2.5.5.10.1.0 Protocol
+
+AMQP (Azure SDK)
+
+##### 2.5.5.10.2.0 Method
+
+ServiceBusSender.SendMessageAsync(message)
+
+##### 2.5.5.10.3.0 Parameters
+
+ServiceBusMessage with a JSON body. Payload schema: { invoiceId: string, userProductId: string, fileUrl: string, correlationId: string, eventVersion: '1.0' }
+
+##### 2.5.5.10.4.0 Authentication
+
+Azure Managed Identity of the ProductService Pod.
+
+##### 2.5.5.10.5.0 Error Handling
+
+SDK handles transient errors. Throws exception on persistent failure.
+
+##### 2.5.5.10.6.0 Performance
+
+###### 2.5.5.10.6.1 Latency
+
+< 50ms
+
+### 2.5.6.0.0.0 Response
+
+#### 2.5.6.1.0.0 Source Id
+
+product-service-003
+
+#### 2.5.6.2.0.0 Target Id
+
+api-gateway-001
+
+#### 2.5.6.3.0.0 Message
+
+6. Return HTTP 202 Accepted
+
+#### 2.5.6.4.0.0 Sequence Number
+
+6
+
+#### 2.5.6.5.0.0 Type
+
+🔹 Response
+
+#### 2.5.6.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7.0.0 Return Message
+
+
+
+#### 2.5.6.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.6.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.6.10.0.0 Technical Details
+
+##### 2.5.6.10.1.0 Protocol
+
+HTTP/1.1
+
+##### 2.5.6.10.2.0 Method
+
+Response
+
+##### 2.5.6.10.3.0 Parameters
+
+Status Code: 202 Accepted. Body: { 'status': 'Processing', 'invoiceId': '...' }
+
+##### 2.5.6.10.4.0 Authentication
+
+N/A
+
+##### 2.5.6.10.5.0 Error Handling
+
+N/A
+
+##### 2.5.6.10.6.0 Performance
+
+###### 2.5.6.10.6.1 Latency
+
+< 5ms
+
+### 2.5.7.0.0.0 MessageDelivery
+
+#### 2.5.7.1.0.0 Source Id
+
+ext-azure-service-bus
+
+#### 2.5.7.2.0.0 Target Id
+
+invoice-ocr-worker-010
+
+#### 2.5.7.3.0.0 Message
+
+9. Deliver 'InvoiceUploadedForProcessing' message
+
+#### 2.5.7.4.0.0 Sequence Number
+
+9
+
+#### 2.5.7.5.0.0 Type
+
+🔹 MessageDelivery
+
+#### 2.5.7.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.7.7.0.0 Return Message
+
+
+
+#### 2.5.7.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.7.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.7.10.0.0 Technical Details
+
+##### 2.5.7.10.1.0 Protocol
+
+AMQP
+
+##### 2.5.7.10.2.0 Method
+
+Message Reception
+
+##### 2.5.7.10.3.0 Parameters
+
+The message published in step 5.
+
+##### 2.5.7.10.4.0 Authentication
+
+Worker authenticates to Service Bus via Managed Identity.
+
+##### 2.5.7.10.5.0 Error Handling
+
+Service Bus guarantees at-least-once delivery. Worker must handle potential duplicates.
+
+##### 2.5.7.10.6.0 Performance
+
+###### 2.5.7.10.6.1 Latency
+
+Variable, typically < 1s
+
+### 2.5.8.0.0.0 SelfCall
+
+#### 2.5.8.1.0.0 Source Id
+
+invoice-ocr-worker-010
+
+#### 2.5.8.2.0.0 Target Id
+
+invoice-ocr-worker-010
+
+#### 2.5.8.3.0.0 Message
+
+10. Begin processing; check idempotency
+
+#### 2.5.8.4.0.0 Sequence Number
+
+10
+
+#### 2.5.8.5.0.0 Type
+
+🔹 SelfCall
+
+#### 2.5.8.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.8.7.0.0 Return Message
+
+
+
+#### 2.5.8.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.8.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.8.10.0.0 Technical Details
+
+##### 2.5.8.10.1.0 Protocol
+
+In-process
+
+##### 2.5.8.10.2.0 Method
+
+HandleMessage(message)
+
+##### 2.5.8.10.3.0 Parameters
+
+Extract correlationId and log it. Check if invoiceId has already been processed (e.g., check status in DB) to ensure idempotency.
+
+##### 2.5.8.10.4.0 Authentication
+
+N/A
+
+##### 2.5.8.10.5.0 Error Handling
+
+If already processed, complete the message and exit gracefully.
+
+##### 2.5.8.10.6.0 Performance
+
+###### 2.5.8.10.6.1 Latency
+
+< 10ms
+
+### 2.5.9.0.0.0 ExternalCall
+
+#### 2.5.9.1.0.0 Source Id
+
+invoice-ocr-worker-010
+
+#### 2.5.9.2.0.0 Target Id
+
+ext-azure-blob-storage
+
+#### 2.5.9.3.0.0 Message
+
+11. Download Invoice file
+
+#### 2.5.9.4.0.0 Sequence Number
+
+11
+
+#### 2.5.9.5.0.0 Type
+
+🔹 ExternalCall
+
+#### 2.5.9.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.9.7.0.0 Return Message
+
+File Stream
+
+#### 2.5.9.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.9.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.9.10.0.0 Technical Details
+
+##### 2.5.9.10.1.0 Protocol
+
+Azure SDK (HTTPS)
+
+##### 2.5.9.10.2.0 Method
+
+BlobClient.DownloadAsync()
+
+##### 2.5.9.10.3.0 Parameters
+
+File URL from message payload.
+
+##### 2.5.9.10.4.0 Authentication
+
+Azure Managed Identity of the worker Pod.
+
+##### 2.5.9.10.5.0 Error Handling
+
+SDK handles transient errors. Permanent failure (e.g., 404 Not Found) results in message being dead-lettered.
+
+##### 2.5.9.10.6.0 Performance
+
+###### 2.5.9.10.6.1 Latency
+
+Dependent on file size and network
+
+### 2.5.10.0.0.0 ExternalCall
+
+#### 2.5.10.1.0.0 Source Id
+
+invoice-ocr-worker-010
+
+#### 2.5.10.2.0.0 Target Id
+
+ext-azure-ai-doc-intel
+
+#### 2.5.10.3.0.0 Message
+
+12. Analyze document with OCR service
+
+#### 2.5.10.4.0.0 Sequence Number
+
+12
+
+#### 2.5.10.5.0.0 Type
+
+🔹 ExternalCall
+
+#### 2.5.10.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.10.7.0.0 Return Message
+
+13. Structured JSON data
+
+#### 2.5.10.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.10.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.10.10.0.0 Technical Details
+
+##### 2.5.10.10.1.0 Protocol
+
+HTTPS REST
+
+##### 2.5.10.10.2.0 Method
+
+POST /documentintelligence/documentModels/prebuilt-invoice:analyze
+
+##### 2.5.10.10.3.0 Parameters
+
+Request body contains the file stream. API Key is retrieved from Azure Key Vault.
+
+##### 2.5.10.10.4.0 Authentication
+
+API Key in request header.
+
+##### 2.5.10.10.5.0 Error Handling
+
+Wrapped in a Polly Retry (3 attempts, exponential backoff) and Circuit Breaker (5 consecutive failures, 30s break) policy.
+
+##### 2.5.10.10.6.0 Performance
+
+###### 2.5.10.10.6.1 Latency
+
+Typically 2-10 seconds
+
+#### 2.5.10.11.0.0 Nested Interactions
+
+##### 2.5.10.11.1.0 FailureHandling
+
+###### 2.5.10.11.1.1 Source Id
+
+invoice-ocr-worker-010
+
+###### 2.5.10.11.1.2 Target Id
+
+product-service-003
+
+###### 2.5.10.11.1.3 Message
+
+12a. [On Failure] Update invoice status to 'OcrFailed'
+
+###### 2.5.10.11.1.4 Sequence Number
+
+12.1
+
+###### 2.5.10.11.1.5 Type
+
+🔹 FailureHandling
+
+###### 2.5.10.11.1.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.10.11.1.7 Return Message
+
+HTTP 200 OK
+
+###### 2.5.10.11.1.8 Has Return
+
+✅ Yes
+
+###### 2.5.10.11.1.9 Is Activation
+
+❌ No
+
+###### 2.5.10.11.1.10 Technical Details
+
+####### 2.5.10.11.1.10.1 Protocol
+
+HTTP/1.1
+
+####### 2.5.10.11.1.10.2 Method
+
+PATCH /api/v1/internal/invoices/{invoiceId}
+
+####### 2.5.10.11.1.10.3 Parameters
+
+Payload: { 'status': 'OcrFailed', 'processingError': 'OCR service unavailable' }
+
+####### 2.5.10.11.1.10.4 Authentication
+
+Internal Service-to-Service JWT
+
+####### 2.5.10.11.1.10.5 Error Handling
+
+N/A
+
+####### 2.5.10.11.1.10.6 Performance
+
+*No data available*
+
+##### 2.5.10.11.2.0.0 FailureHandling
+
+###### 2.5.10.11.2.1.0 Source Id
+
+invoice-ocr-worker-010
+
+###### 2.5.10.11.2.2.0 Target Id
+
+ext-azure-service-bus
+
+###### 2.5.10.11.2.3.0 Message
+
+12b. [On Failure] Move message to Dead-Letter Queue
+
+###### 2.5.10.11.2.4.0 Sequence Number
+
+12.2
+
+###### 2.5.10.11.2.5.0 Type
+
+🔹 FailureHandling
+
+###### 2.5.10.11.2.6.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.10.11.2.7.0 Return Message
+
+Acknowledgement
+
+###### 2.5.10.11.2.8.0 Has Return
+
+✅ Yes
+
+###### 2.5.10.11.2.9.0 Is Activation
+
+❌ No
+
+###### 2.5.10.11.2.10.0 Technical Details
+
+####### 2.5.10.11.2.10.1 Protocol
+
+AMQP (Azure SDK)
+
+####### 2.5.10.11.2.10.2 Method
+
+ServiceBusReceiver.DeadLetterMessageAsync()
+
+####### 2.5.10.11.2.10.3 Parameters
+
+Provide error reason and description for diagnostics.
+
+####### 2.5.10.11.2.10.4 Authentication
+
+Managed Identity
+
+####### 2.5.10.11.2.10.5 Error Handling
+
+N/A
+
+####### 2.5.10.11.2.10.6 Performance
+
+*No data available*
+
+### 2.5.11.0.0.0.0 SelfCall
+
+#### 2.5.11.1.0.0.0 Source Id
+
+invoice-ocr-worker-010
+
+#### 2.5.11.2.0.0.0 Target Id
+
+invoice-ocr-worker-010
+
+#### 2.5.11.3.0.0.0 Message
+
+14. Parse and validate OCR response
+
+#### 2.5.11.4.0.0.0 Sequence Number
+
+14
+
+#### 2.5.11.5.0.0.0 Type
+
+🔹 SelfCall
+
+#### 2.5.11.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.11.7.0.0.0 Return Message
+
+
+
+#### 2.5.11.8.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.11.9.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.11.10.0.0.0 Technical Details
+
+##### 2.5.11.10.1.0.0 Protocol
+
+In-process
+
+##### 2.5.11.10.2.0.0 Method
+
+OcrResponseParser.Parse(json)
+
+##### 2.5.11.10.3.0.0 Parameters
+
+JSON payload from OCR service.
+
+##### 2.5.11.10.4.0.0 Authentication
+
+N/A
+
+##### 2.5.11.10.5.0.0 Error Handling
+
+If parsing fails or key fields are missing, handle as a failure (steps 12a, 12b).
+
+##### 2.5.11.10.6.0.0 Performance
+
+###### 2.5.11.10.6.1.0 Latency
+
+< 5ms
+
+### 2.5.12.0.0.0.0 InternalCall
+
+#### 2.5.12.1.0.0.0 Source Id
+
+invoice-ocr-worker-010
+
+#### 2.5.12.2.0.0.0 Target Id
+
+product-service-003
+
+#### 2.5.12.3.0.0.0 Message
+
+15. Update Invoice with extracted data
+
+#### 2.5.12.4.0.0.0 Sequence Number
+
+15
+
+#### 2.5.12.5.0.0.0 Type
+
+🔹 InternalCall
+
+#### 2.5.12.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.12.7.0.0.0 Return Message
+
+16. HTTP 200 OK
+
+#### 2.5.12.8.0.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.12.9.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.12.10.0.0.0 Technical Details
+
+##### 2.5.12.10.1.0.0 Protocol
+
+HTTP/1.1
+
+##### 2.5.12.10.2.0.0 Method
+
+PATCH /api/v1/internal/invoices/{invoiceId}
+
+##### 2.5.12.10.3.0.0 Parameters
+
+Payload: { 'status': 'PendingConfirmation', 'extractedDataRaw': { ... } }. 'X-Correlation-ID' is propagated.
+
+##### 2.5.12.10.4.0.0 Authentication
+
+Internal Service-to-Service JWT, authorized via RBAC policy.
+
+##### 2.5.12.10.5.0.0 Error Handling
+
+Handles 4xx/5xx responses. Failure here would cause the message to be retried by the worker, and eventually dead-lettered.
+
+##### 2.5.12.10.6.0.0 Performance
+
+###### 2.5.12.10.6.1.0 Latency
+
+< 50ms
+
+### 2.5.13.0.0.0.0 MessageAcknowledgement
+
+#### 2.5.13.1.0.0.0 Source Id
+
+invoice-ocr-worker-010
+
+#### 2.5.13.2.0.0.0 Target Id
+
+ext-azure-service-bus
+
+#### 2.5.13.3.0.0.0 Message
+
+17. Acknowledge and complete message
+
+#### 2.5.13.4.0.0.0 Sequence Number
+
+17
+
+#### 2.5.13.5.0.0.0 Type
+
+🔹 MessageAcknowledgement
+
+#### 2.5.13.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.13.7.0.0.0 Return Message
+
+Acknowledgement
+
+#### 2.5.13.8.0.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.13.9.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.13.10.0.0.0 Technical Details
+
+##### 2.5.13.10.1.0.0 Protocol
+
+AMQP (Azure SDK)
+
+##### 2.5.13.10.2.0.0 Method
+
+ServiceBusReceiver.CompleteMessageAsync()
+
+##### 2.5.13.10.3.0.0 Parameters
+
+The message being processed.
+
+##### 2.5.13.10.4.0.0 Authentication
+
+Managed Identity
+
+##### 2.5.13.10.5.0.0 Error Handling
+
+If this fails, the message lock may expire and be redelivered, requiring idempotency (step 10).
+
+##### 2.5.13.10.6.0.0 Performance
+
+###### 2.5.13.10.6.1.0 Latency
+
+< 30ms
+
+## 2.6.0.0.0.0.0 Notes
+
+### 2.6.1.0.0.0.0 Content
+
+#### 2.6.1.1.0.0.0 Content
+
+Correlation & Tracing: The 'X-Correlation-ID' header from the initial request must be passed into the Service Bus message properties and logged at every step in both services to enable end-to-end distributed tracing in Azure Application Insights.
+
+#### 2.6.1.2.0.0.0 Position
+
+Top
+
+#### 2.6.1.3.0.0.0 Participant Id
+
+*Not specified*
+
+#### 2.6.1.4.0.0.0 Sequence Number
+
+0
+
+### 2.6.2.0.0.0.0 Content
+
+#### 2.6.2.1.0.0.0 Content
+
+Idempotency is critical. The worker MUST check if an invoice has already been processed before taking action to handle potential duplicate message deliveries from Service Bus.
+
+#### 2.6.2.2.0.0.0 Position
+
+Bottom
+
+#### 2.6.2.3.0.0.0 Participant Id
+
+invoice-ocr-worker-010
+
+#### 2.6.2.4.0.0.0 Sequence Number
+
+10
+
+### 2.6.3.0.0.0.0 Content
+
+#### 2.6.3.1.0.0.0 Content
+
+Dead-Letter Queue (DLQ) for 'ocr-processing-queue' must be monitored. An alert should be configured to trigger if the DLQ message count > 0, indicating a poison message or persistent failure requiring manual intervention.
+
+#### 2.6.3.2.0.0.0 Position
+
+Bottom
+
+#### 2.6.3.3.0.0.0 Participant Id
+
+ext-azure-service-bus
+
+#### 2.6.3.4.0.0.0 Sequence Number
+
+12.2
+
+## 2.7.0.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | Service-to-service communication (worker-to-produc... |
+| Performance Targets | End-to-end processing time from message publicatio... |
+| Error Handling Strategy | The worker's call to the OCR service is protected ... |
+| Testing Considerations | Integration tests should cover the full flow by us... |
+| Monitoring Requirements | Key metrics to monitor: [Azure Service Bus] Active... |
+| Deployment Considerations | The InvoiceOcrWorker is deployed as a separate mic... |
+

@@ -1,0 +1,4 @@
+"gate_name","trigger","criteria","action_on_failure","responsible_role"
+"Code Merge Gate","Pull Request","[""Unit Test Coverage > 80%"",""No Critical/High SonarQube Issues"",""Build Success"",""Pre-commit hooks passed (Linting)""]","Block Merge","Tech Lead"
+"Deployment Gate (Staging)","Release Pipeline","[""Integration Tests Pass 100%"",""tfsec Infrastructure Scan Pass"",""Database Migrations Verified (Dry Run)"",""Smoke Tests Pass""]","Halt Deployment","DevOps Engineer"
+"Performance Gate","Nightly Build","[""API P95 Latency < 250ms"",""WebSocket Latency < 2s"",""No Memory Leaks Detected""]","Alert Team","QA Engineer"

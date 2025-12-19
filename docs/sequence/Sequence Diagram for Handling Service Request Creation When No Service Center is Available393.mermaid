@@ -1,0 +1,27 @@
+sequenceDiagram
+    actor "Mobile Client (Customer)" as MobileClientCustomer
+    participant "API Gateway" as APIGateway
+    participant "Service Request Service" as ServiceRequestService
+    participant "Service Center Service" as ServiceCenterService
+
+    activate APIGateway
+    MobileClientCustomer->>APIGateway: 1. Submits service request for a product and location.
+    APIGateway-->>MobileClientCustomer: Forwards HTTP 404 with structured error response.
+    activate ServiceRequestService
+    APIGateway->>ServiceRequestService: 2. Forwards request to create service request.
+    ServiceRequestService-->>APIGateway: Returns HTTP 404 with structured error.
+    activate ServiceCenterService
+    ServiceRequestService->>ServiceCenterService: 3. Find available service center by brand and location.
+    ServiceCenterService-->>ServiceRequestService: Returns HTTP 200 OK with an empty array.
+    ServiceCenterService->>ServiceCenterService: 4. [Internal] Execute geospatial query against PostGIS database.
+    ServiceCenterService-->>ServiceCenterService: Returns 0 rows.
+    ServiceRequestService->>ServiceRequestService: 5. [Internal] Handle 'No Service Center Found' condition.
+    ServiceRequestService-->>ServiceRequestService: Constructed structured error response.
+    MobileClientCustomer->>MobileClientCustomer: 6. Renders a user-friendly error message with brand contact details.
+
+    note over ServiceRequestService: A critical design choice is to return a specific, machine-readable error code ('NO_SERVICE_CENTER...
+    note over ServiceRequestService: No ServiceRequest entity is created or persisted in the database for this flow. This prevents orp...
+
+    deactivate ServiceCenterService
+    deactivate ServiceRequestService
+    deactivate APIGateway

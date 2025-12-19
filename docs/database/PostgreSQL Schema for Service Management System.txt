@@ -1,0 +1,369 @@
+-- Enable necessary extensions
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS postgis;
+
+-- =============================================
+-- Entity: User
+-- Description: Represents a user of the system.
+-- =============================================
+CREATE TABLE "User" (
+    "userId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "email" VARCHAR(255) NOT NULL,
+    "passwordHash" VARCHAR(255) NOT NULL,
+    "firstName" VARCHAR(100) NOT NULL,
+    "lastName" VARCHAR(100) NOT NULL,
+    "role" VARCHAR(20) NOT NULL DEFAULT 'Customer' CHECK ("role" IN ('Customer', 'Technician', 'ServiceAdmin', 'BrandAdmin', 'SuperAdmin')),
+    "serviceCenterId" UUID,
+    "brandId" UUID,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =============================================
+-- Entity: Device
+-- Description: Stores device information for push notifications.
+-- =============================================
+CREATE TABLE "Device" (
+    "deviceId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "userId" UUID NOT NULL,
+    "fcmToken" VARCHAR(255) NOT NULL,
+    "deviceType" VARCHAR(10) NOT NULL CHECK ("deviceType" IN ('Android', 'iOS')),
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =============================================
+-- Entity: Brand
+-- Description: Represents a product brand or manufacturer.
+-- =============================================
+CREATE TABLE "Brand" (
+    "brandId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "name" VARCHAR(150) NOT NULL,
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =============================================
+-- Entity: ProductModel
+-- Description: Represents a specific product model.
+-- =============================================
+CREATE TABLE "ProductModel" (
+    "productModelId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "brandId" UUID NOT NULL,
+    "modelNumber" VARCHAR(100) NOT NULL,
+    "name" VARCHAR(200) NOT NULL,
+    "defaultWarrantyMonths" INTEGER NOT NULL DEFAULT 12 CHECK ("defaultWarrantyMonths" > 0)
+);
+
+-- =============================================
+-- Entity: UserProduct
+-- Description: Represents a product instance owned by a user.
+-- =============================================
+CREATE TABLE "UserProduct" (
+    "userProductId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "userId" UUID NOT NULL,
+    "productModelId" UUID NOT NULL,
+    "serialNumber" VARCHAR(100) NOT NULL,
+    "purchaseDate" DATE NOT NULL,
+    "warrantyExpiryDate" DATE NOT NULL,
+    "serviceRequestCount" INTEGER NOT NULL DEFAULT 0 CHECK ("serviceRequestCount" >= 0),
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =============================================
+-- Entity: OwnershipTransferRequest
+-- Description: Tracks product ownership transfer requests.
+-- =============================================
+CREATE TABLE "OwnershipTransferRequest" (
+    "transferRequestId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "userProductId" UUID NOT NULL,
+    "fromUserId" UUID NOT NULL,
+    "toUserEmail" VARCHAR(255) NOT NULL,
+    "status" VARCHAR(20) NOT NULL DEFAULT 'Pending' CHECK ("status" IN ('Pending', 'Accepted', 'Rejected', 'Expired')),
+    "expiresAt" TIMESTAMPTZ NOT NULL,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =============================================
+-- Entity: Invoice
+-- Description: Stores uploaded invoice files and OCR data.
+-- =============================================
+CREATE TABLE "Invoice" (
+    "invoiceId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "userProductId" UUID NOT NULL,
+    "fileUrl" VARCHAR(512) NOT NULL,
+    "ocrStatus" VARCHAR(20) NOT NULL DEFAULT 'Pending' CHECK ("ocrStatus" IN ('Pending', 'Success', 'Failed')),
+    "extractedData" JSONB,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =============================================
+-- Entity: Address
+-- Description: Stores structured address information.
+-- =============================================
+CREATE TABLE "Address" (
+    "addressId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "street" VARCHAR(255) NOT NULL,
+    "city" VARCHAR(100) NOT NULL,
+    "state" VARCHAR(100) NOT NULL,
+    "postalCode" VARCHAR(20) NOT NULL,
+    "country" VARCHAR(50) NOT NULL
+);
+
+-- =============================================
+-- Entity: ServiceCenter
+-- Description: Represents a service center that handles repairs.
+-- =============================================
+CREATE TABLE "ServiceCenter" (
+    "serviceCenterId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "name" VARCHAR(200) NOT NULL,
+    "addressId" UUID NOT NULL,
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =============================================
+-- Entity: ServiceCenterBrand (Join Table)
+-- Description: Associates service centers with authorized brands.
+-- =============================================
+CREATE TABLE "ServiceCenterBrand" (
+    "serviceCenterId" UUID NOT NULL,
+    "brandId" UUID NOT NULL,
+    PRIMARY KEY ("serviceCenterId", "brandId")
+);
+
+-- =============================================
+-- Entity: ServiceAreaPolygon
+-- Description: Stores geofenced polygon data for service areas.
+-- =============================================
+CREATE TABLE "ServiceAreaPolygon" (
+    "serviceAreaPolygonId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "serviceCenterId" UUID NOT NULL,
+    "polygonData" GEOMETRY(Polygon, 4326) NOT NULL
+);
+
+-- =============================================
+-- Entity: ServiceAreaPostalCode
+-- Description: Stores postal codes for service areas.
+-- =============================================
+CREATE TABLE "ServiceAreaPostalCode" (
+    "serviceAreaPostalCodeId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "serviceCenterId" UUID NOT NULL,
+    "postalCode" VARCHAR(20) NOT NULL
+);
+
+-- =============================================
+-- Entity: IssueType
+-- Description: Lookup table for common issue types.
+-- =============================================
+CREATE TABLE "IssueType" (
+    "issueTypeId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "issueDescription" VARCHAR(255) NOT NULL,
+    "isActive" BOOLEAN NOT NULL DEFAULT true
+);
+
+-- =============================================
+-- Entity: ServiceRequest
+-- Description: Represents a single service request ticket.
+-- =============================================
+CREATE TABLE "ServiceRequest" (
+    "serviceRequestId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "userProductId" UUID NOT NULL,
+    "brandId" UUID NOT NULL,
+    "productModelId" UUID NOT NULL,
+    "serviceCenterId" UUID NOT NULL,
+    "assignedTechnicianId" UUID,
+    "issueTypeId" UUID NOT NULL,
+    "issueDescription" TEXT,
+    "status" VARCHAR(30) NOT NULL DEFAULT 'Created' CHECK ("status" IN ('Created', 'Assigned', 'In-Progress', 'Resolved', 'Disputed', 'Closed')),
+    "resolvedAt" TIMESTAMPTZ,
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =============================================
+-- Entity: ChatMessage (Partitioned)
+-- Description: Stores messages within a service request's chat.
+-- =============================================
+CREATE TABLE "ChatMessage" (
+    "chatMessageId" UUID NOT NULL,
+    "serviceRequestId" UUID NOT NULL,
+    "senderId" UUID NOT NULL,
+    "messageText" TEXT NOT NULL,
+    "sentAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY ("chatMessageId", "sentAt")
+) PARTITION BY RANGE ("sentAt");
+
+-- =============================================
+-- Entity: GpsLocationHistory (Partitioned)
+-- Description: Stores real-time GPS location of technicians.
+-- =============================================
+CREATE TABLE "GpsLocationHistory" (
+    "locationId" BIGSERIAL NOT NULL,
+    "serviceRequestId" UUID NOT NULL,
+    "technicianId" UUID NOT NULL,
+    "location" GEOGRAPHY(Point, 4326) NOT NULL,
+    "timestamp" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY ("locationId", "timestamp")
+) PARTITION BY RANGE ("timestamp");
+
+-- =============================================
+-- Entity: CustomerSignature
+-- Description: Stores customer's digital signature for proof of completion.
+-- =============================================
+CREATE TABLE "CustomerSignature" (
+    "signatureId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "serviceRequestId" UUID NOT NULL,
+    "imageUrl" VARCHAR(512) NOT NULL,
+    "signedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =============================================
+-- Entity: AuditLog (Partitioned)
+-- Description: Records critical actions in an immutable audit trail.
+-- =============================================
+CREATE TABLE "AuditLog" (
+    "auditLogId" BIGSERIAL NOT NULL,
+    "userId" UUID,
+    "actionType" VARCHAR(100) NOT NULL,
+    "targetEntity" VARCHAR(100) NOT NULL,
+    "targetEntityId" VARCHAR(100) NOT NULL,
+    "changeDetails" JSONB,
+    "timestamp" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY ("auditLogId", "timestamp")
+) PARTITION BY RANGE ("timestamp");
+
+-- =============================================
+-- UNIQUE CONSTRAINTS
+-- =============================================
+ALTER TABLE "User" ADD CONSTRAINT "UC_User_Email" UNIQUE ("email");
+ALTER TABLE "Device" ADD CONSTRAINT "UC_Device_FcmToken" UNIQUE ("fcmToken");
+ALTER TABLE "Brand" ADD CONSTRAINT "UC_Brand_Name" UNIQUE ("name");
+ALTER TABLE "ProductModel" ADD CONSTRAINT "UC_ProductModel_Brand_ModelNumber" UNIQUE ("brandId", "modelNumber");
+ALTER TABLE "UserProduct" ADD CONSTRAINT "UC_UserProduct_SerialNumber" UNIQUE ("serialNumber");
+ALTER TABLE "Invoice" ADD CONSTRAINT "UC_Invoice_UserProductId" UNIQUE ("userProductId");
+ALTER TABLE "ServiceCenter" ADD CONSTRAINT "UC_ServiceCenter_AddressId" UNIQUE ("addressId");
+ALTER TABLE "IssueType" ADD CONSTRAINT "UC_IssueType_IssueDescription" UNIQUE ("issueDescription");
+ALTER TABLE "CustomerSignature" ADD CONSTRAINT "UC_CustomerSignature_ServiceRequestId" UNIQUE ("serviceRequestId");
+
+
+-- =============================================
+-- INDEXES
+-- =============================================
+-- User Indexes
+CREATE INDEX "IX_User_FullName" ON "User" USING btree ("lastName", "firstName");
+CREATE INDEX "IX_User_Role" ON "User" USING btree ("role");
+CREATE INDEX "IX_User_Active_NotDeleted" ON "User" USING btree ("isActive", "isDeleted");
+
+-- Device Indexes
+CREATE INDEX "IX_Device_UserId" ON "Device" USING btree ("userId");
+
+-- ProductModel Indexes
+CREATE INDEX "IX_ProductModel_BrandId" ON "ProductModel" USING btree ("brandId");
+
+-- UserProduct Indexes
+CREATE INDEX "IX_UserProduct_UserId" ON "UserProduct" USING btree ("userId");
+CREATE INDEX "IX_UserProduct_ProductModelId" ON "UserProduct" USING btree ("productModelId");
+CREATE INDEX "IX_UserProduct_User_WarrantyExpiry" ON "UserProduct" USING btree ("userId", "warrantyExpiryDate");
+
+-- OwnershipTransferRequest Indexes
+CREATE UNIQUE INDEX "UC_OwnershipTransferRequest_Pending_UserProduct" ON "OwnershipTransferRequest" ("userProductId") WHERE "status" = 'Pending';
+CREATE INDEX "IX_OwnershipTransferRequest_Status_ExpiresAt" ON "OwnershipTransferRequest" USING btree ("status", "expiresAt");
+
+-- ServiceCenterBrand Indexes
+CREATE INDEX "IX_ServiceCenterBrand_BrandId" ON "ServiceCenterBrand" USING btree ("brandId");
+
+-- ServiceAreaPolygon Indexes
+CREATE INDEX "IX_ServiceAreaPolygon_ServiceCenterId" ON "ServiceAreaPolygon" USING btree ("serviceCenterId");
+CREATE INDEX "SP_ServiceAreaPolygon_PolygonData" ON "ServiceAreaPolygon" USING gist ("polygonData");
+
+-- ServiceAreaPostalCode Indexes
+CREATE INDEX "IX_ServiceAreaPostalCode_ServiceCenter_PostalCode" ON "ServiceAreaPostalCode" USING btree ("serviceCenterId", "postalCode");
+
+-- ServiceRequest Indexes
+CREATE INDEX "IX_ServiceRequest_UserProduct" ON "ServiceRequest" USING btree ("userProductId");
+CREATE INDEX "IX_ServiceRequest_ServiceCenter" ON "ServiceRequest" USING btree ("serviceCenterId");
+CREATE INDEX "IX_ServiceRequest_Technician" ON "ServiceRequest" USING btree ("assignedTechnicianId");
+CREATE INDEX "IX_ServiceRequest_Status_Date" ON "ServiceRequest" USING btree ("status", "createdAt");
+CREATE INDEX "IX_ServiceRequest_Status_ResolvedAt" ON "ServiceRequest" USING btree ("status", "resolvedAt");
+CREATE INDEX "IX_ServiceRequest_BrandId" ON "ServiceRequest" USING btree ("brandId");
+CREATE INDEX "IX_ServiceRequest_ProductModelId" ON "ServiceRequest" USING btree ("productModelId");
+
+-- ChatMessage Indexes
+CREATE INDEX "IX_ChatMessage_ServiceRequest_SentAt" ON "ChatMessage" USING btree ("serviceRequestId", "sentAt");
+
+-- GpsLocationHistory Indexes
+CREATE INDEX "IX_GpsLocationHistory_ServiceRequest_Timestamp" ON "GpsLocationHistory" USING btree ("serviceRequestId", "timestamp");
+CREATE INDEX "SP_GpsLocationHistory_Location" ON "GpsLocationHistory" USING gist ("location");
+
+-- AuditLog Indexes
+CREATE INDEX "IX_AuditLog_Target" ON "AuditLog" USING btree ("targetEntity", "targetEntityId");
+CREATE INDEX "IX_AuditLog_Timestamp" ON "AuditLog" USING btree ("timestamp");
+CREATE INDEX "IX_AuditLog_ChangeDetails_GIN" ON "AuditLog" USING gin ("changeDetails");
+
+
+-- =============================================
+-- FOREIGN KEY CONSTRAINTS
+-- =============================================
+-- User Foreign Keys
+ALTER TABLE "User" ADD CONSTRAINT "FK_User_ServiceCenter" FOREIGN KEY ("serviceCenterId") REFERENCES "ServiceCenter"("serviceCenterId") ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE "User" ADD CONSTRAINT "FK_User_Brand" FOREIGN KEY ("brandId") REFERENCES "Brand"("brandId") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+-- Device Foreign Keys
+ALTER TABLE "Device" ADD CONSTRAINT "FK_Device_User" FOREIGN KEY ("userId") REFERENCES "User"("userId") ON UPDATE CASCADE ON DELETE CASCADE;
+
+-- ProductModel Foreign Keys
+ALTER TABLE "ProductModel" ADD CONSTRAINT "FK_ProductModel_Brand" FOREIGN KEY ("brandId") REFERENCES "Brand"("brandId") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+-- UserProduct Foreign Keys
+ALTER TABLE "UserProduct" ADD CONSTRAINT "FK_UserProduct_User" FOREIGN KEY ("userId") REFERENCES "User"("userId") ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE "UserProduct" ADD CONSTRAINT "FK_UserProduct_ProductModel" FOREIGN KEY ("productModelId") REFERENCES "ProductModel"("productModelId") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+-- OwnershipTransferRequest Foreign Keys
+ALTER TABLE "OwnershipTransferRequest" ADD CONSTRAINT "FK_OwnershipTransferRequest_UserProduct" FOREIGN KEY ("userProductId") REFERENCES "UserProduct"("userProductId") ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE "OwnershipTransferRequest" ADD CONSTRAINT "FK_OwnershipTransferRequest_FromUser" FOREIGN KEY ("fromUserId") REFERENCES "User"("userId") ON UPDATE CASCADE ON DELETE CASCADE;
+
+-- Invoice Foreign Keys
+ALTER TABLE "Invoice" ADD CONSTRAINT "FK_Invoice_UserProduct" FOREIGN KEY ("userProductId") REFERENCES "UserProduct"("userProductId") ON UPDATE CASCADE ON DELETE CASCADE;
+
+-- ServiceCenter Foreign Keys
+ALTER TABLE "ServiceCenter" ADD CONSTRAINT "FK_ServiceCenter_Address" FOREIGN KEY ("addressId") REFERENCES "Address"("addressId") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+-- ServiceCenterBrand Foreign Keys
+ALTER TABLE "ServiceCenterBrand" ADD CONSTRAINT "FK_ServiceCenterBrand_ServiceCenter" FOREIGN KEY ("serviceCenterId") REFERENCES "ServiceCenter"("serviceCenterId") ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE "ServiceCenterBrand" ADD CONSTRAINT "FK_ServiceCenterBrand_Brand" FOREIGN KEY ("brandId") REFERENCES "Brand"("brandId") ON UPDATE CASCADE ON DELETE CASCADE;
+
+-- ServiceAreaPolygon Foreign Keys
+ALTER TABLE "ServiceAreaPolygon" ADD CONSTRAINT "FK_ServiceAreaPolygon_ServiceCenter" FOREIGN KEY ("serviceCenterId") REFERENCES "ServiceCenter"("serviceCenterId") ON UPDATE CASCADE ON DELETE CASCADE;
+
+-- ServiceAreaPostalCode Foreign Keys
+ALTER TABLE "ServiceAreaPostalCode" ADD CONSTRAINT "FK_ServiceAreaPostalCode_ServiceCenter" FOREIGN KEY ("serviceCenterId") REFERENCES "ServiceCenter"("serviceCenterId") ON UPDATE CASCADE ON DELETE CASCADE;
+
+-- ServiceRequest Foreign Keys
+ALTER TABLE "ServiceRequest" ADD CONSTRAINT "FK_ServiceRequest_UserProduct" FOREIGN KEY ("userProductId") REFERENCES "UserProduct"("userProductId") ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE "ServiceRequest" ADD CONSTRAINT "FK_ServiceRequest_Brand" FOREIGN KEY ("brandId") REFERENCES "Brand"("brandId") ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE "ServiceRequest" ADD CONSTRAINT "FK_ServiceRequest_ProductModel" FOREIGN KEY ("productModelId") REFERENCES "ProductModel"("productModelId") ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE "ServiceRequest" ADD CONSTRAINT "FK_ServiceRequest_ServiceCenter" FOREIGN KEY ("serviceCenterId") REFERENCES "ServiceCenter"("serviceCenterId") ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE "ServiceRequest" ADD CONSTRAINT "FK_ServiceRequest_AssignedTechnician" FOREIGN KEY ("assignedTechnicianId") REFERENCES "User"("userId") ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE "ServiceRequest" ADD CONSTRAINT "FK_ServiceRequest_IssueType" FOREIGN KEY ("issueTypeId") REFERENCES "IssueType"("issueTypeId") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+-- ChatMessage Foreign Keys
+ALTER TABLE "ChatMessage" ADD CONSTRAINT "FK_ChatMessage_ServiceRequest" FOREIGN KEY ("serviceRequestId") REFERENCES "ServiceRequest"("serviceRequestId") ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE "ChatMessage" ADD CONSTRAINT "FK_ChatMessage_Sender" FOREIGN KEY ("senderId") REFERENCES "User"("userId") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+-- GpsLocationHistory Foreign Keys
+ALTER TABLE "GpsLocationHistory" ADD CONSTRAINT "FK_GpsLocationHistory_ServiceRequest" FOREIGN KEY ("serviceRequestId") REFERENCES "ServiceRequest"("serviceRequestId") ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE "GpsLocationHistory" ADD CONSTRAINT "FK_GpsLocationHistory_Technician" FOREIGN KEY ("technicianId") REFERENCES "User"("userId") ON UPDATE CASCADE ON DELETE CASCADE;
+
+-- CustomerSignature Foreign Keys
+ALTER TABLE "CustomerSignature" ADD CONSTRAINT "FK_CustomerSignature_ServiceRequest" FOREIGN KEY ("serviceRequestId") REFERENCES "ServiceRequest"("serviceRequestId") ON UPDATE CASCADE ON DELETE CASCADE;
+
+-- AuditLog Foreign Keys
+ALTER TABLE "AuditLog" ADD CONSTRAINT "FK_AuditLog_User" FOREIGN KEY ("userId") REFERENCES "User"("userId") ON UPDATE CASCADE ON DELETE SET NULL;

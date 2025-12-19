@@ -1,0 +1,45 @@
+sequenceDiagram
+    participant "Operations Team Member" as OperationsTeamMember
+    participant "Monitoring System" as MonitoringSystem
+    participant "API Gateway" as APIGateway
+    participant "Azure Management Plane" as AzureManagementPlane
+    participant "Azure DB for PostgreSQL" as AzureDBforPostgreSQL
+    participant "Azure Key Vault" as AzureKeyVault
+    participant "CI/CD Pipeline" as CICDPipeline
+    participant "Azure Kubernetes Service" as AzureKubernetesService
+
+    MonitoringSystem->>OperationsTeamMember: 1. 1. [Trigger] Fire Critical Alert: Data Corruption Detected / High DB Error Rate
+    activate OperationsTeamMember
+    OperationsTeamMember->>OperationsTeamMember: 2. 2. Investigate, confirm corruption, and declare Major Incident. Decision: Execute PITR.
+    OperationsTeamMember->>APIGateway: 3. 3. Enable Maintenance Mode
+    APIGateway-->>OperationsTeamMember: HTTP 200 OK
+    activate AzureManagementPlane
+    OperationsTeamMember->>AzureManagementPlane: 4. 4. Initiate Database Restore Workflow
+    AzureManagementPlane-->>OperationsTeamMember: Displays restore configuration UI
+    activate AzureDBforPostgreSQL
+    AzureManagementPlane->>AzureDBforPostgreSQL: 5. 5. [Long-Running] Provision new DB instance from backup
+    AzureDBforPostgreSQL-->>AzureManagementPlane: Operation Succeeded (after ~30-180 mins)
+    OperationsTeamMember->>AzureKeyVault: 6. 6. Update Database Connection String Secret
+    AzureKeyVault-->>OperationsTeamMember: HTTP 200 OK
+    activate CICDPipeline
+    OperationsTeamMember->>CICDPipeline: 7. 7. Trigger Application Rolling Restart
+    CICDPipeline-->>OperationsTeamMember: Workflow run started successfully
+    activate AzureKubernetesService
+    CICDPipeline->>AzureKubernetesService: 8. 8. Execute Rolling Restart of application pods
+    AzureKubernetesService-->>CICDPipeline: Pods successfully restarted
+    AzureKubernetesService->>AzureKeyVault: 9. 9. New pods fetch updated secret
+    AzureKeyVault-->>AzureKubernetesService: Returns secret value
+    OperationsTeamMember->>APIGateway: 10. 10. Disable Maintenance Mode
+    APIGateway-->>OperationsTeamMember: HTTP 200 OK
+    OperationsTeamMember->>MonitoringSystem: 11. 11. Validate System Health and Data Integrity
+    MonitoringSystem-->>OperationsTeamMember: Dashboards show healthy state
+
+    note over AzureDBforPostgreSQL: RPO (Recovery Point Objective): < 15 minutes. Data loss between the last backup and the time of t...
+    note over OperationsTeamMember: RTO (Recovery Time Objective): < 4 hours. The entire process from incident declaration to system ...
+    note over OperationsTeamMember: Post-Incident Communication: Operations must inform stakeholders of the recovery, the data loss w...
+
+    deactivate AzureKubernetesService
+    deactivate CICDPipeline
+    deactivate AzureDBforPostgreSQL
+    deactivate AzureManagementPlane
+    deactivate OperationsTeamMember

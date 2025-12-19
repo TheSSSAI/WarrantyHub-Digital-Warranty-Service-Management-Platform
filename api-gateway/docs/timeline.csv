@@ -1,0 +1,3 @@
+"scenario_name","team_size","estimated_duration_weeks","total_cost","risk_level","capacity_utilization","skill_constraints","critical_path_duration","parallel_work_percentage","resource_bottlenecks","mitigation_strategies","success_probability","quality_risk","timeline_buffer"
+"Baseline Plan","8","6","55440","High","82.5","Mobile Dev bottleneck in Sprint 3","185","45","Mobile Dev (Sprint 3 load: 27.8h against tight deadline)","Strict adherence to dependency dates","70","High","0.5"
+"Optimized Allocation","8","6","55440","Medium","82.5","Frontend Dev taking Mobile UI tasks","185","55","Reduced Mobile Dev bottleneck","Reassign TASK-MOB-007 to Frontend Dev; Reassign TASK-BE-012 to QA Engineer","85","Medium","1"

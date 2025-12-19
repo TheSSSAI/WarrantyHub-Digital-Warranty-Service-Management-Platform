@@ -1,0 +1,875 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-SF-001
+
+## 1.2 Name
+
+API Request Authentication and Authorization at Gateway and Service Level
+
+## 1.3 Description
+
+A client makes an API call with a JWT. The API Gateway validates the token's signature and expiry. The backend microservice then re-validates and inspects the token's claims to enforce fine-grained, role-based permissions.
+
+## 1.4 Type
+
+🔹 SecurityFlow
+
+## 1.5 Purpose
+
+To enforce a strict, zero-trust security model where every API request is authenticated and authorized at multiple layers, protecting system resources from unauthorized access.
+
+## 1.6 Complexity
+
+Medium
+
+## 1.7 Priority
+
+🚨 Critical
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- mobile-client-013
+- api-gateway-001
+- product-service-003
+
+## 1.10 Key Interactions
+
+- Client attaches its JWT to the `Authorization: Bearer <token>` header of an API request.
+- The API Gateway receives the request and performs JWT validation (checks signature against public key, expiry, issuer).
+- If valid, the API Gateway forwards the request and the user's claims to the backend microservice (e.g., ProductService).
+- The ProductService's authorization middleware (e.g., ASP.NET Core) re-validates the token and inspects its claims.
+- The service's endpoint authorization policy checks if the user's role (from the token claims) is permitted (e.g., `@Authorize(Roles = "BrandAdmin")`).
+- If authorized, the request is processed; otherwise, a 403 Forbidden response is returned.
+
+## 1.11 Triggers
+
+- Any API call to a protected endpoint.
+
+## 1.12 Outcomes
+
+- A valid, authorized request is processed successfully.
+- An unauthenticated request is rejected by the gateway with a 401 Unauthorized error.
+- An authenticated but unauthorized request is rejected by the microservice with a 403 Forbidden error.
+
+## 1.13 Business Rules
+
+- A strict Role-Based Access Control (RBAC) model must be enforced.
+- A 'User' can only access their own data, potentially enforced by Row-Level Security (RLS) in the database as a secondary defense.
+- A 'Technician' can only access jobs assigned to them.
+
+## 1.14 Error Scenarios
+
+- The JWT is expired or malformed.
+- The user attempts to access a resource they do not have permission for.
+- The signature validation fails due to a key mismatch.
+
+## 1.15 Integration Points
+
+- Azure API Management
+- ASP.NET Core Authorization Middleware
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-SF-001
+
+## 2.2 Name
+
+Technical Sequence: Multi-Layered API Authentication and Authorization
+
+## 2.3 Description
+
+Implements a Defense in Depth and Zero Trust security model for API requests. A client's JWT is first validated at the edge by the API Gateway (authentication). If valid, the request is forwarded, and the backend microservice performs a second, finer-grained authorization check based on token claims and endpoint policies before granting access to a resource.
+
+## 2.4 Participants
+
+### 2.4.1 Client
+
+#### 2.4.1.1 Repository Id
+
+mobile-client-013
+
+#### 2.4.1.2 Display Name
+
+Mobile Client
+
+#### 2.4.1.3 Type
+
+🔹 Client
+
+#### 2.4.1.4 Technology
+
+Flutter 3.19+
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #E0E0E0 |
+| Stereotype | <<User Agent>> |
+
+### 2.4.2.0 Gateway
+
+#### 2.4.2.1 Repository Id
+
+api-gateway-001
+
+#### 2.4.2.2 Display Name
+
+API Gateway
+
+#### 2.4.2.3 Type
+
+🔹 Gateway
+
+#### 2.4.2.4 Technology
+
+YARP on .NET 8
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | rectangle |
+| Color | #B39DDB |
+| Stereotype | <<Security Boundary>> |
+
+### 2.4.3.0 Service
+
+#### 2.4.3.1 Repository Id
+
+product-service-003
+
+#### 2.4.3.2 Display Name
+
+Product Service
+
+#### 2.4.3.3 Type
+
+🔹 Service
+
+#### 2.4.3.4 Technology
+
+.NET 8, ASP.NET Core 8
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | rectangle |
+| Color | #90CAF9 |
+| Stereotype | <<Resource Server>> |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 API_REQUEST
+
+#### 2.5.1.1 Source Id
+
+mobile-client-013
+
+#### 2.5.1.2 Target Id
+
+api-gateway-001
+
+#### 2.5.1.3 Message
+
+1. Request Protected Resource: GET /api/v1/products/{productId}
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 API_REQUEST
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+
+
+#### 2.5.1.8 Has Return
+
+✅ Yes
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS/TLS 1.2+ |
+| Method | GET |
+| Parameters | Header: 'Authorization: Bearer <JWT>', Header: 'X-... |
+| Authentication | JWT Bearer Token issued by the Identity Service. |
+| Error Handling | Client must handle 401, 403, and 5xx HTTP status c... |
+| Performance | Client-side timeout should be configured for unres... |
+
+#### 2.5.1.11 Nested Interactions
+
+*No items available*
+
+### 2.5.2.0 SECURITY_CHECK
+
+#### 2.5.2.1 Source Id
+
+api-gateway-001
+
+#### 2.5.2.2 Target Id
+
+api-gateway-001
+
+#### 2.5.2.3 Message
+
+2. Perform JWT Validation (1st Layer Authentication)
+
+#### 2.5.2.4 Sequence Number
+
+2
+
+#### 2.5.2.5 Type
+
+🔹 SECURITY_CHECK
+
+#### 2.5.2.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7 Return Message
+
+Validation Result (Valid/Invalid)
+
+#### 2.5.2.8 Has Return
+
+✅ Yes
+
+#### 2.5.2.9 Is Activation
+
+❌ No
+
+#### 2.5.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Internal |
+| Method | Azure API Management 'validate-jwt' policy or cust... |
+| Parameters | JWT from Authorization header, public key from JWK... |
+| Authentication | N/A |
+| Error Handling | If any validation step fails, the interaction term... |
+| Performance | Validation must complete in < 5ms (P99) to minimiz... |
+
+#### 2.5.2.11 Nested Interactions
+
+##### 2.5.2.11.1 VALIDATION
+
+###### 2.5.2.11.1.1 Source Id
+
+api-gateway-001
+
+###### 2.5.2.11.1.2 Target Id
+
+api-gateway-001
+
+###### 2.5.2.11.1.3 Message
+
+2.1. Validate token signature against Identity Service's public key (retrieved from JWKS endpoint).
+
+###### 2.5.2.11.1.4 Sequence Number
+
+2.1
+
+###### 2.5.2.11.1.5 Type
+
+🔹 VALIDATION
+
+###### 2.5.2.11.1.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.2.11.1.7 Has Return
+
+❌ No
+
+###### 2.5.2.11.1.8 Technical Details
+
+*No data available*
+
+##### 2.5.2.11.2.0 VALIDATION
+
+###### 2.5.2.11.2.1 Source Id
+
+api-gateway-001
+
+###### 2.5.2.11.2.2 Target Id
+
+api-gateway-001
+
+###### 2.5.2.11.2.3 Message
+
+2.2. Verify token has not expired by checking the 'exp' claim against current UTC time.
+
+###### 2.5.2.11.2.4 Sequence Number
+
+2.2
+
+###### 2.5.2.11.2.5 Type
+
+🔹 VALIDATION
+
+###### 2.5.2.11.2.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.2.11.2.7 Has Return
+
+❌ No
+
+###### 2.5.2.11.2.8 Technical Details
+
+*No data available*
+
+##### 2.5.2.11.3.0 VALIDATION
+
+###### 2.5.2.11.3.1 Source Id
+
+api-gateway-001
+
+###### 2.5.2.11.3.2 Target Id
+
+api-gateway-001
+
+###### 2.5.2.11.3.3 Message
+
+2.3. Validate 'iss' (issuer) and 'aud' (audience) claims against configured values.
+
+###### 2.5.2.11.3.4 Sequence Number
+
+2.3
+
+###### 2.5.2.11.3.5 Type
+
+🔹 VALIDATION
+
+###### 2.5.2.11.3.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.2.11.3.7 Has Return
+
+❌ No
+
+###### 2.5.2.11.3.8 Technical Details
+
+*No data available*
+
+### 2.5.3.0.0.0 API_RESPONSE
+
+#### 2.5.3.1.0.0 Source Id
+
+api-gateway-001
+
+#### 2.5.3.2.0.0 Target Id
+
+mobile-client-013
+
+#### 2.5.3.3.0.0 Message
+
+3a. [ALT: Validation Fails] Return 401 Unauthorized
+
+#### 2.5.3.4.0.0 Sequence Number
+
+3
+
+#### 2.5.3.5.0.0 Type
+
+🔹 API_RESPONSE
+
+#### 2.5.3.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7.0.0 Return Message
+
+HTTP/1.1 401 Unauthorized; Body: {"error": "Authentication failed: Invalid token"}
+
+#### 2.5.3.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.3.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.3.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS |
+| Method | HTTP Response |
+| Parameters | Header: 'WWW-Authenticate: Bearer error="invalid_t... |
+| Authentication | N/A |
+| Error Handling | Logs the failed authentication attempt with source... |
+| Performance | N/A |
+
+#### 2.5.3.11.0.0 Nested Interactions
+
+*No items available*
+
+### 2.5.4.0.0.0 INTERNAL_REQUEST
+
+#### 2.5.4.1.0.0 Source Id
+
+api-gateway-001
+
+#### 2.5.4.2.0.0 Target Id
+
+product-service-003
+
+#### 2.5.4.3.0.0 Message
+
+3b. [SUCCESS] Forward Request with User Claims
+
+#### 2.5.4.4.0.0 Sequence Number
+
+4
+
+#### 2.5.4.5.0.0 Type
+
+🔹 INTERNAL_REQUEST
+
+#### 2.5.4.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7.0.0 Return Message
+
+
+
+#### 2.5.4.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.4.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.4.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTP |
+| Method | GET |
+| Parameters | Propagated Headers: 'X-Correlation-ID', 'X-User-ID... |
+| Authentication | Trusted subsystem. Communication is within a priva... |
+| Error Handling | Caller (Gateway) uses Polly retry and circuit brea... |
+| Performance | Internal network latency target < 10ms (P99). |
+
+#### 2.5.4.11.0.0 Nested Interactions
+
+*No items available*
+
+### 2.5.5.0.0.0 SECURITY_CHECK
+
+#### 2.5.5.1.0.0 Source Id
+
+product-service-003
+
+#### 2.5.5.2.0.0 Target Id
+
+product-service-003
+
+#### 2.5.5.3.0.0 Message
+
+4. Execute Authorization Middleware (2nd Layer Authorization)
+
+#### 2.5.5.4.0.0 Sequence Number
+
+5
+
+#### 2.5.5.5.0.0 Type
+
+🔹 SECURITY_CHECK
+
+#### 2.5.5.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7.0.0 Return Message
+
+Authorization Result (Authorized/Forbidden)
+
+#### 2.5.5.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.5.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.5.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Internal |
+| Method | ASP.NET Core Authorization Middleware |
+| Parameters | User claims from headers, endpoint's [Authorize] a... |
+| Authentication | N/A |
+| Error Handling | If authorization fails, middleware short-circuits ... |
+| Performance | Authorization checks must complete in < 2ms (P99). |
+
+#### 2.5.5.11.0.0 Nested Interactions
+
+##### 2.5.5.11.1.0 VALIDATION
+
+###### 2.5.5.11.1.1 Source Id
+
+product-service-003
+
+###### 2.5.5.11.1.2 Target Id
+
+product-service-003
+
+###### 2.5.5.11.1.3 Message
+
+4.1. [ZERO TRUST] Optionally re-validate token signature and expiry.
+
+###### 2.5.5.11.1.4 Sequence Number
+
+5.1
+
+###### 2.5.5.11.1.5 Type
+
+🔹 VALIDATION
+
+###### 2.5.5.11.1.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.5.11.1.7 Has Return
+
+❌ No
+
+###### 2.5.5.11.1.8 Technical Details
+
+*No data available*
+
+##### 2.5.5.11.2.0 POLICY_ENFORCEMENT
+
+###### 2.5.5.11.2.1 Source Id
+
+product-service-003
+
+###### 2.5.5.11.2.2 Target Id
+
+product-service-003
+
+###### 2.5.5.11.2.3 Message
+
+4.2. Apply endpoint's authorization policy (e.g., [Authorize(Roles = "BrandAdmin")]).
+
+###### 2.5.5.11.2.4 Sequence Number
+
+5.2
+
+###### 2.5.5.11.2.5 Type
+
+🔹 POLICY_ENFORCEMENT
+
+###### 2.5.5.11.2.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.5.11.2.7 Has Return
+
+❌ No
+
+###### 2.5.5.11.2.8 Technical Details
+
+*No data available*
+
+##### 2.5.5.11.3.0 VALIDATION
+
+###### 2.5.5.11.3.1 Source Id
+
+product-service-003
+
+###### 2.5.5.11.3.2 Target Id
+
+product-service-003
+
+###### 2.5.5.11.3.3 Message
+
+4.3. Check if user's roles from 'X-User-Roles' header satisfy the policy requirements.
+
+###### 2.5.5.11.3.4 Sequence Number
+
+5.3
+
+###### 2.5.5.11.3.5 Type
+
+🔹 VALIDATION
+
+###### 2.5.5.11.3.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.5.11.3.7 Has Return
+
+❌ No
+
+###### 2.5.5.11.3.8 Technical Details
+
+*No data available*
+
+### 2.5.6.0.0.0 INTERNAL_RESPONSE
+
+#### 2.5.6.1.0.0 Source Id
+
+product-service-003
+
+#### 2.5.6.2.0.0 Target Id
+
+api-gateway-001
+
+#### 2.5.6.3.0.0 Message
+
+5a. [ALT: Authorization Fails] Return 403 Forbidden
+
+#### 2.5.6.4.0.0 Sequence Number
+
+6
+
+#### 2.5.6.5.0.0 Type
+
+🔹 INTERNAL_RESPONSE
+
+#### 2.5.6.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7.0.0 Return Message
+
+HTTP/1.1 403 Forbidden; Body: {"error": "User is not authorized to perform this action"}
+
+#### 2.5.6.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.6.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.6.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTP |
+| Method | HTTP Response |
+| Parameters | N/A |
+| Authentication | N/A |
+| Error Handling | Logs the authorization failure with User ID, reque... |
+| Performance | N/A |
+
+#### 2.5.6.11.0.0 Nested Interactions
+
+*No items available*
+
+### 2.5.7.0.0.0 INTERNAL_RESPONSE
+
+#### 2.5.7.1.0.0 Source Id
+
+product-service-003
+
+#### 2.5.7.2.0.0 Target Id
+
+api-gateway-001
+
+#### 2.5.7.3.0.0 Message
+
+5b. [SUCCESS] Process request in controller and return 200 OK
+
+#### 2.5.7.4.0.0 Sequence Number
+
+7
+
+#### 2.5.7.5.0.0 Type
+
+🔹 INTERNAL_RESPONSE
+
+#### 2.5.7.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.7.7.0.0 Return Message
+
+HTTP/1.1 200 OK; Body: <Product Data JSON>
+
+#### 2.5.7.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.7.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.7.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTP |
+| Method | HTTP Response |
+| Parameters | Response Body: JSON representation of the product ... |
+| Authentication | N/A |
+| Error Handling | Standard controller exception handling. |
+| Performance | Controller logic should adhere to overall API SLOs... |
+
+#### 2.5.7.11.0.0 Nested Interactions
+
+*No items available*
+
+### 2.5.8.0.0.0 API_RESPONSE
+
+#### 2.5.8.1.0.0 Source Id
+
+api-gateway-001
+
+#### 2.5.8.2.0.0 Target Id
+
+mobile-client-013
+
+#### 2.5.8.3.0.0 Message
+
+6. Forward Backend Response
+
+#### 2.5.8.4.0.0 Sequence Number
+
+8
+
+#### 2.5.8.5.0.0 Type
+
+🔹 API_RESPONSE
+
+#### 2.5.8.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.8.7.0.0 Return Message
+
+HTTP/1.1 200 OK or 403 Forbidden
+
+#### 2.5.8.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.8.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.8.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS |
+| Method | HTTP Response |
+| Parameters | The response body and status code from the upstrea... |
+| Authentication | N/A |
+| Error Handling | N/A |
+| Performance | N/A |
+
+#### 2.5.8.11.0.0 Nested Interactions
+
+*No items available*
+
+## 2.6.0.0.0.0 Notes
+
+### 2.6.1.0.0.0 Content
+
+#### 2.6.1.1.0.0 Content
+
+Defense in Depth: Authentication is handled at the Gateway (Layer 1), while fine-grained Authorization is handled at the Microservice (Layer 2).
+
+#### 2.6.1.2.0.0 Position
+
+top-right
+
+#### 2.6.1.3.0.0 Participant Id
+
+api-gateway-001
+
+#### 2.6.1.4.0.0 Sequence Number
+
+2
+
+### 2.6.2.0.0.0 Content
+
+#### 2.6.2.1.0.0 Content
+
+Zero Trust: The backend service does not implicitly trust the gateway. It re-validates the user's identity and permissions for every single request.
+
+#### 2.6.2.2.0.0 Position
+
+bottom-right
+
+#### 2.6.2.3.0.0 Participant Id
+
+product-service-003
+
+#### 2.6.2.4.0.0 Sequence Number
+
+5
+
+### 2.6.3.0.0.0 Content
+
+#### 2.6.3.1.0.0 Content
+
+Observability: The 'X-Correlation-ID' header must be generated by the client (or the gateway if missing) and propagated through all subsequent calls to enable distributed tracing of the entire request lifecycle.
+
+#### 2.6.3.2.0.0 Position
+
+top-left
+
+#### 2.6.3.3.0.0 Participant Id
+
+*Not specified*
+
+#### 2.6.3.4.0.0 Sequence Number
+
+1
+
+## 2.7.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | Gateway JWT validation must use an OIDC discovery ... |
+| Performance Targets | The total latency added by the combined security c... |
+| Error Handling Strategy | Strictly differentiate between HTTP 401 Unauthoriz... |
+| Testing Considerations | Integration tests must cover all failure scenarios... |
+| Monitoring Requirements | Dashboards must be created to monitor the rate of ... |
+| Deployment Considerations | The Identity Service's private signing key must be... |
+

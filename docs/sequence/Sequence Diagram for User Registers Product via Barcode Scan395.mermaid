@@ -1,0 +1,30 @@
+sequenceDiagram
+    actor "MobileClient" as MobileClient
+    participant "APIGateway" as APIGateway
+    participant "ProductService" as ProductService
+
+    activate MobileClient
+    MobileClient->>MobileClient: 1. User taps 'Scan Product'. UI state updates to 'initializing_camera'.
+    MobileClient->>MobileClient: 2. Request camera permissions and initialize camera controller.
+    MobileClient-->>MobileClient: Camera view displayed or error state.
+    MobileClient->>MobileClient: 3. Barcode detected by camera stream. UI state updates to 'processing_scan'.
+    activate APIGateway
+    MobileClient->>APIGateway: 4. GET /api/v1/products/lookup-by-barcode
+    APIGateway-->>MobileClient: 200 OK with product data, 404 Not Found, or error status.
+    activate ProductService
+    APIGateway->>ProductService: 5. GET /products/lookup-by-barcode
+    ProductService-->>APIGateway: Internal service response.
+    ProductService->>ProductService: 6. Query database for product model matching barcode.
+    ProductService-->>ProductService: ProductModel entity or null.
+    ProductService->>APIGateway: 7. Return 200 OK with ProductLookupDto or 404 Not Found.
+    APIGateway->>MobileClient: 8. Forward HTTP response.
+    MobileClient->>MobileClient: 9. Process API response, navigate to registration form, and pre-fill data.
+    MobileClient-->>MobileClient: Registration form displayed to user.
+
+    note over ProductService: The ProductService must have a dedicated, indexed table mapping various barcode types (UPC, EAN, ...
+    note over MobileClient: Client-side state management is critical. The UI must clearly reflect the current state: Idle, In...
+    note over MobileClient: Per business rules, even after a successful lookup, the Serial Number field must remain blank and...
+
+    deactivate ProductService
+    deactivate APIGateway
+    deactivate MobileClient

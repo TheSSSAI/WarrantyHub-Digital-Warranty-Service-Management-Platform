@@ -1,0 +1,511 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-BP-003
+
+## 1.2 Name
+
+User Disputes a Resolved Service Request, Triggering Escalation
+
+## 1.3 Description
+
+A customer, dissatisfied with a service resolution, initiates a dispute within the allowed timeframe. The ticket is reopened and escalated to the Brand Administrator for review.
+
+## 1.4 Type
+
+🔹 BusinessProcess
+
+## 1.5 Purpose
+
+To provide a formal mechanism for customers to escalate issues they feel were not properly resolved, ensuring brand oversight and quality control, as per REQ-FUNC-008.
+
+## 1.6 Complexity
+
+Medium
+
+## 1.7 Priority
+
+🟡 Medium
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- mobile-client-013
+- api-gateway-001
+- service-request-service-005
+
+## 1.10 Key Interactions
+
+- User navigates to a 'Resolved' service request in their app.
+- User clicks the 'Dispute Resolution' button.
+- Client sends an API request to the ServiceRequestService to dispute the ticket.
+- The service validates that `CURRENT_DATE - resolved_at <= 7 days`.
+- The service updates the ticket's status from 'Resolved' to 'Disputed' in the database.
+- The service triggers a notification to be sent to the responsible Brand Administrator.
+- The disputed ticket now appears in the Brand Admin's escalation queue in their web portal.
+
+## 1.11 Triggers
+
+- A user is unsatisfied with a service resolution and initiates a dispute.
+
+## 1.12 Outcomes
+
+- The service request is reopened with a 'Disputed' status.
+- The Brand Administrator is notified and becomes responsible for the next action.
+- The original service center is notified of the dispute.
+
+## 1.13 Business Rules
+
+- A dispute can only be initiated within 7 calendar days of a ticket's resolution.
+- Disputed tickets must be reviewed by a Brand Admin within 5 business days (SLA).
+
+## 1.14 Error Scenarios
+
+- User attempts to dispute after the 7-day window has passed, receiving a 400 Bad Request error.
+- The notification to the Brand Admin fails.
+- The API call to update the ticket status fails.
+
+## 1.15 Integration Points
+
+- Notification Service
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-BP-003
+
+## 2.2 Name
+
+Business Process: User Dispute of a Resolved Service Request
+
+## 2.3 Description
+
+Provides the technical implementation for a customer disputing a resolved service request. The sequence involves a synchronous API call to validate the business rule (dispute within 7 days) and update the ticket state, followed by asynchronous, event-driven notifications and auditing to ensure system decoupling and reliability.
+
+## 2.4 Participants
+
+### 2.4.1 Client
+
+#### 2.4.1.1 Repository Id
+
+mobile-client-013
+
+#### 2.4.1.2 Display Name
+
+Mobile Client
+
+#### 2.4.1.3 Type
+
+🔹 Client
+
+#### 2.4.1.4 Technology
+
+Flutter 3.19+
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #F5A623 |
+| Stereotype | Customer |
+
+### 2.4.2.0 Gateway
+
+#### 2.4.2.1 Repository Id
+
+api-gateway-001
+
+#### 2.4.2.2 Display Name
+
+API Gateway
+
+#### 2.4.2.3 Type
+
+🔹 Gateway
+
+#### 2.4.2.4 Technology
+
+YARP on .NET 8
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #4A90E2 |
+| Stereotype | Gateway |
+
+### 2.4.3.0 Service
+
+#### 2.4.3.1 Repository Id
+
+service-request-service-005
+
+#### 2.4.3.2 Display Name
+
+Service Request Service
+
+#### 2.4.3.3 Type
+
+🔹 Service
+
+#### 2.4.3.4 Technology
+
+.NET 8, ASP.NET Core 8
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #7ED321 |
+| Stereotype | Microservice |
+
+### 2.4.4.0 Database
+
+#### 2.4.4.1 Repository Id
+
+persistence-layer-014
+
+#### 2.4.4.2 Display Name
+
+Persistence Layer
+
+#### 2.4.4.3 Type
+
+🔹 Database
+
+#### 2.4.4.4 Technology
+
+Azure PostgreSQL 16
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #9013FE |
+| Stereotype | Database |
+
+### 2.4.5.0 MessageBroker
+
+#### 2.4.5.1 Repository Id
+
+messaging-infra-015
+
+#### 2.4.5.2 Display Name
+
+Messaging Infrastructure
+
+#### 2.4.5.3 Type
+
+🔹 MessageBroker
+
+#### 2.4.5.4 Technology
+
+Azure Service Bus
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | queue |
+| Color | #D0021B |
+| Stereotype | Topic |
+
+### 2.4.6.0 Service
+
+#### 2.4.6.1 Repository Id
+
+notification-service-006
+
+#### 2.4.6.2 Display Name
+
+Notification Service
+
+#### 2.4.6.3 Type
+
+🔹 Service
+
+#### 2.4.6.4 Technology
+
+.NET 8 Worker Service
+
+#### 2.4.6.5 Order
+
+6
+
+#### 2.4.6.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #BD10E0 |
+| Stereotype | Microservice |
+
+### 2.4.7.0 Service
+
+#### 2.4.7.1 Repository Id
+
+audit-service-009
+
+#### 2.4.7.2 Display Name
+
+Audit Service
+
+#### 2.4.7.3 Type
+
+🔹 Service
+
+#### 2.4.7.4 Technology
+
+.NET 8 Worker Service
+
+#### 2.4.7.5 Order
+
+7
+
+#### 2.4.7.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #50E3C2 |
+| Stereotype | Microservice |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Request
+
+#### 2.5.1.1 Source Id
+
+mobile-client-013
+
+#### 2.5.1.2 Target Id
+
+api-gateway-001
+
+#### 2.5.1.3 Message
+
+1. Dispute Service Request
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Request
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+8. HTTP 200 OK
+
+#### 2.5.1.8 Has Return
+
+✅ Yes
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS |
+| Method | POST /api/v1/service-requests/{serviceRequestId}/d... |
+| Parameters | URL Path: serviceRequestId (UUID). Body: { "reason... |
+| Authentication | Required. Bearer Token (JWT) in Authorization head... |
+| Error Handling | Receives 400 for invalid request, 401 for unauthor... |
+| Performance | End-to-end latency should be < 500ms. |
+
+#### 2.5.1.11 Nested Interactions
+
+- {'sourceId': 'api-gateway-001', 'targetId': 'service-request-service-005', 'message': '2. Forward Dispute Request', 'sequenceNumber': 2, 'type': 'Request', 'isSynchronous': True, 'returnMessage': '7. HTTP 200 OK', 'hasReturn': True, 'isActivation': True, 'technicalDetails': {'protocol': 'HTTP', 'method': 'POST /internal/service-requests/{serviceRequestId}/dispute', 'parameters': 'JWT claims (userId) are propagated in headers.', 'authentication': 'Internal service-to-service auth (mTLS or trusted subnet).', 'errorHandling': 'Propagates error responses from the service back to the client.', 'performance': 'P95 latency < 250ms.'}, 'nestedInteractions': [{'sourceId': 'service-request-service-005', 'targetId': 'persistence-layer-014', 'message': '3. Fetch Service Request for Validation', 'sequenceNumber': 3, 'type': 'DatabaseQuery', 'isSynchronous': True, 'returnMessage': 'Returns ServiceRequest record', 'hasReturn': True, 'isActivation': False, 'technicalDetails': {'protocol': 'SQL', 'method': 'SELECT id, status, resolved_at, user_id FROM service_requests WHERE id = @serviceRequestId', 'parameters': '@serviceRequestId: UUID', 'authentication': 'Database credentials from Azure Key Vault.', 'errorHandling': 'Throws NpgsqlException on connection failure. Handled by service.', 'performance': 'Query time < 10ms (indexed lookup).'}}, {'sourceId': 'service-request-service-005', 'targetId': 'service-request-service-005', 'message': '4. Validate Business Rule: Dispute Window', 'sequenceNumber': 4, 'type': 'InternalLogic', 'isSynchronous': True, 'returnMessage': 'Validation result (pass/fail)', 'hasReturn': True, 'isActivation': False, 'technicalDetails': {'protocol': 'N/A', 'method': "Check if (CURRENT_TIMESTAMP - resolved_at) <= 7 days AND status == 'Resolved' AND user_id matches JWT claim.", 'parameters': 'resolved_at (Timestamp), status (string)', 'authentication': 'N/A', 'errorHandling': "If validation fails, immediately returns a 400 Bad Request response with a clear error message (e.g., 'Dispute period has expired.').", 'performance': 'Negligible.'}}, {'sourceId': 'service-request-service-005', 'targetId': 'persistence-layer-014', 'message': '5. Update Service Request Status', 'sequenceNumber': 5, 'type': 'DatabaseUpdate', 'isSynchronous': True, 'returnMessage': 'Rows affected: 1', 'hasReturn': True, 'isActivation': False, 'technicalDetails': {'protocol': 'SQL', 'method': "BEGIN; UPDATE service_requests SET status = 'Disputed', updated_at = CURRENT_TIMESTAMP WHERE id = @serviceRequestId; COMMIT;", 'parameters': '@serviceRequestId: UUID', 'authentication': 'Database credentials from Azure Key Vault.', 'errorHandling': 'If the update fails, the transaction is rolled back, and a 500 Internal Server Error is returned.', 'performance': 'Update time < 20ms.'}}, {'sourceId': 'service-request-service-005', 'targetId': 'messaging-infra-015', 'message': '6. Publish Events', 'sequenceNumber': 6, 'type': 'EventPublish', 'isSynchronous': False, 'returnMessage': '', 'hasReturn': False, 'isActivation': False, 'technicalDetails': {'protocol': 'AMQP', 'method': "Publish to topic 'domain-events-topic' and 'system-events-topic'", 'parameters': "[Event 1: ServiceRequestStatusChanged] Payload: { serviceRequestId, userId, oldStatus: 'Resolved', newStatus: 'Disputed' }. [Event 2: CriticalActionOccurred] Payload: { userId, actionType: 'DisputeRequest', targetEntity: 'ServiceRequest', targetEntityId }.", 'authentication': 'Managed Identity for Azure Service Bus.', 'errorHandling': 'If publish fails, log a critical error for investigation. Implement retry logic with exponential backoff.', 'performance': 'Publish time < 50ms.'}}]}
+
+### 2.5.2.0 EventConsume
+
+#### 2.5.2.1 Source Id
+
+messaging-infra-015
+
+#### 2.5.2.2 Target Id
+
+notification-service-006
+
+#### 2.5.2.3 Message
+
+9. Consume ServiceRequestStatusChanged Event
+
+#### 2.5.2.4 Sequence Number
+
+9
+
+#### 2.5.2.5 Type
+
+🔹 EventConsume
+
+#### 2.5.2.6 Is Synchronous
+
+❌ No
+
+#### 2.5.2.7 Return Message
+
+
+
+#### 2.5.2.8 Has Return
+
+❌ No
+
+#### 2.5.2.9 Is Activation
+
+✅ Yes
+
+#### 2.5.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | AMQP |
+| Method | Subscription 'notifications-sub' on topic 'domain-... |
+| Parameters | Event payload |
+| Authentication | Managed Identity for Azure Service Bus. |
+| Error Handling | If processing fails, message is retried and eventu... |
+| Performance | End-to-end event processing latency < 5 seconds. |
+
+#### 2.5.2.11 Nested Interactions
+
+- {'sourceId': 'notification-service-006', 'targetId': 'notification-service-006', 'message': '10. Prepare and Send Push Notification', 'sequenceNumber': 10, 'type': 'ExternalCall', 'isSynchronous': False, 'returnMessage': '', 'hasReturn': False, 'isActivation': False, 'technicalDetails': {'protocol': 'HTTPS', 'method': "Call FCM API to send notification to Brand Admin's device.", 'parameters': 'FCM device token, notification payload.', 'authentication': 'Firebase Admin SDK credentials.', 'errorHandling': 'Retry on transient FCM errors. Log permanent failures.', 'performance': 'FCM API call latency < 1 second.'}}
+
+### 2.5.3.0 EventConsume
+
+#### 2.5.3.1 Source Id
+
+messaging-infra-015
+
+#### 2.5.3.2 Target Id
+
+audit-service-009
+
+#### 2.5.3.3 Message
+
+11. Consume CriticalActionOccurred Event
+
+#### 2.5.3.4 Sequence Number
+
+11
+
+#### 2.5.3.5 Type
+
+🔹 EventConsume
+
+#### 2.5.3.6 Is Synchronous
+
+❌ No
+
+#### 2.5.3.7 Return Message
+
+
+
+#### 2.5.3.8 Has Return
+
+❌ No
+
+#### 2.5.3.9 Is Activation
+
+✅ Yes
+
+#### 2.5.3.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | AMQP |
+| Method | Subscription 'auditing-sub' on topic 'system-event... |
+| Parameters | Event payload |
+| Authentication | Managed Identity for Azure Service Bus. |
+| Error Handling | If processing fails, message is retried and eventu... |
+| Performance | End-to-end event processing latency < 2 seconds. |
+
+#### 2.5.3.11 Nested Interactions
+
+- {'sourceId': 'audit-service-009', 'targetId': 'persistence-layer-014', 'message': '12. Persist Audit Log', 'sequenceNumber': 12, 'type': 'DatabaseInsert', 'isSynchronous': False, 'returnMessage': '', 'hasReturn': False, 'isActivation': False, 'technicalDetails': {'protocol': 'SQL', 'method': 'INSERT INTO audit_logs (...) VALUES (...)', 'parameters': 'Event payload data', 'authentication': 'Database credentials from Azure Key Vault.', 'errorHandling': 'Retry on transient DB errors. Log permanent failures for manual intervention.', 'performance': 'Insert time < 10ms.'}}
+
+## 2.6.0.0 Notes
+
+### 2.6.1.0 Content
+
+#### 2.6.1.1 Content
+
+Business Rule Enforcement: The core business logic for the 7-day dispute window (REQ-FUNC-008) is enforced within the ServiceRequestService before any state change occurs. This prevents invalid state transitions.
+
+#### 2.6.1.2 Position
+
+top
+
+#### 2.6.1.3 Participant Id
+
+service-request-service-005
+
+#### 2.6.1.4 Sequence Number
+
+4
+
+### 2.6.2.0 Content
+
+#### 2.6.2.1 Content
+
+Decoupled Communication: Notifications and auditing are handled asynchronously via an event-driven pattern. This improves the resilience and responsiveness of the initial API call and allows for independent scaling of consumer services.
+
+#### 2.6.2.2 Position
+
+bottom
+
+#### 2.6.2.3 Participant Id
+
+messaging-infra-015
+
+#### 2.6.2.4 Sequence Number
+
+6
+
+## 2.7.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | The API endpoint must be protected by RBAC, ensuri... |
+| Performance Targets | The synchronous API endpoint (`POST /api/v1/servic... |
+| Error Handling Strategy | Primary error case (dispute window expired) must r... |
+| Testing Considerations | 1. Test case where dispute is initiated within 7 d... |
+| Monitoring Requirements | 1. Dashboard widget to track the number of dispute... |
+| Deployment Considerations | The database update to 'Disputed' is a critical st... |
+

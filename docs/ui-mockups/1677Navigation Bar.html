@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Navigation Bar Component</title>
+  <style>
+    /* =========================================
+       1. DESIGN SYSTEM TOKENS
+       ========================================= */
+    :root {
+      /* Colors */
+      --color-primary-50: #eef2ff;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-500: #6b7280;
+      --color-gray-700: #374151;
+      --color-gray-800: #1f2937;
+      --color-gray-900: #111827;
+      --color-white: #ffffff;
+      --color-error: #dc3545;
+      
+      /* Typography */
+      --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-weight-medium: 500;
+      --font-weight-semibold: 600;
+      
+      /* Spacing */
+      --spacing-2: 8px;
+      --spacing-3: 12px;
+      --spacing-4: 16px;
+      --spacing-6: 24px;
+      --spacing-8: 32px;
+      
+      /* Layout */
+      --container-width: 1200px;
+      --header-height-desktop: 64px;
+      --header-height-mobile: 56px;
+      
+      /* Effects */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --radius-md: 6px;
+      --radius-full: 9999px;
+      --transition: 0.2s ease-in-out;
+    }
+
+    /* =========================================
+       2. RESET & BASE
+       ========================================= */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-family);
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-900);
+      padding-bottom: 100px; /* Space for demo */
+    }
+
+    /* =========================================
+       3. COMPONENT: NAVIGATION BAR
+       ========================================= */
+    
+    /* Base Container */
+    .navbar {
+      background-color: var(--color-white);
+      border-bottom: 1px solid var(--color-gray-200);
+      height: var(--header-height-desktop);
+      width: 100%;
+      position: relative;
+      z-index: 100;
+    }
+
+    .navbar--sticky {
+      position: sticky;
+      top: 0;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Admin Variant Override */
+    .navbar--admin {
+      background-color: var(--color-gray-900);
+      border-bottom: none;
+      color: var(--color-white);
+    }
+
+    /* Inner Layout */
+    .navbar__container {
+      max-width: var(--container-width);
+      margin: 0 auto;
+      padding: 0 var(--spacing-4);
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Brand / Logo */
+    .navbar__brand {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-2);
+      text-decoration: none;
+      color: var(--color-gray-900);
+      font-weight: var(--font-weight-semibold);
+      font-size: 1.125rem;
+      z-index: 102; /* Above mobile menu */
+    }
+    
+    .navbar--admin .navbar__brand { color: var(--color-white); }
+
+    .navbar__logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--color-primary-600);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    /* Navigation Links (Desktop) */
+    .navbar__nav {
+      display: flex;
+      gap: var(--spacing-6);
+      align-items: center;
+    }
+
+    .navbar__link {
+      text-decoration: none;
+      color: var(--color-gray-500);
+      font-size: 0.875rem;
+      font-weight: var(--font-weight-medium);
+      padding: var(--spacing-2) 0;
+      border-bottom: 2px solid transparent;
+      transition: all var(--transition);
+    }
+
+    .navbar--admin .navbar__link { color: var(--color-gray-200); }
+
+    .navbar__link:hover {
+      color: var(--color-gray-900);
+    }
+    
+    .navbar--admin .navbar__link:hover { color: var(--color-white); }
+
+    .navbar__link--active {
+      color: var(--color-primary-600);
+      border-bottom-color: var(--color-primary-600);
+    }
+    
+    .navbar--admin .navbar__link--active {
+      color: var(--color-white);
+      border-bottom-color: var(--color-white);
+    }
+
+    /* Action Area (Right Side) */
+    .navbar__actions {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-3);
+    }
+
+    /* Buttons */
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: var(--transition);
+      border: 1px solid transparent;
+    }
+
+    .nav-btn--primary {
+      background-color: var(--color-primary-600);
+      color: var(--color-white);
+    }
+    .nav-btn--primary:hover { background-color: var(--color-primary-700); }
+
+    .nav-btn--secondary {
+      background-color: transparent;
+      border-color: var(--color-gray-200);
+      color: var(--color-gray-700);
+    }
+    .nav-btn--secondary:hover { background-color: var(--color-gray-50); }
+
+    .nav-btn--icon {
+      padding: 8px;
+      border-radius: var(--radius-full);
+      color: var(--color-gray-500);
+      position: relative;
+    }
+    .navbar--admin .nav-btn--icon { color: var(--color-gray-200); }
+    .nav-btn--icon:hover { background-color: var(--color-gray-100); color: var(--color-gray-900); }
+    .navbar--admin .nav-btn--icon:hover { background-color: var(--color-gray-800); color: var(--color-white); }
+
+    /* Notification Badge */
+    .badge-dot {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 8px;
+      height: 8px;
+      background-color: var(--color-error);
+      border-radius: 50%;
+      border: 2px solid var(--color-white);
+    }
+    .navbar--admin .badge-dot { border-color: var(--color-gray-900); }
+
+    /* Avatar */
+    .navbar__avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid var(--color-gray-200);
+      cursor: pointer;
+    }
+    .navbar__avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .navbar--admin .navbar__avatar { border-color: var(--color-gray-700); }
+
+    /* Mobile Toggle (Hamburger) */
+    .navbar__toggle {
+      display: none;
+      cursor: pointer;
+      padding: var(--spacing-2);
+      z-index: 102;
+    }
+    
+    .navbar__toggle-icon {
+      width: 24px;
+      height: 2px;
+      background-color: var(--color-gray-700);
+      position: relative;
+      transition: var(--transition);
+    }
+    .navbar--admin .navbar__toggle-icon { background-color: var(--color-white); }
+    
+    .navbar__toggle-icon::before,
+    .navbar__toggle-icon::after {
+      content: '';
+      position: absolute;
+      width: 24px;
+      height: 2px;
+      background-color: inherit;
+      transition: var(--transition);
+    }
+    .navbar__toggle-icon::before { top: -8px; }
+    .navbar__toggle-icon::after { bottom: -8px; }
+
+    /* Mobile Menu functionality using Checkbox Hack */
+    .nav-checkbox { display: none; }
+
+    /* =========================================
+       4. RESPONSIVE BEHAVIOR (Max-width: 768px)
+       ========================================= */
+    @media (max-width: 768px) {
+      .navbar { height: var(--header-height-mobile); }
+      
+      .navbar__toggle { display: block; }
+      
+      /* Mobile Drawer */
+      .navbar__nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--color-white);
+        flex-direction: column;
+        padding-top: 80px;
+        padding-left: var(--spacing-6);
+        padding-right: var(--spacing-6);
+        gap: var(--spacing-6);
+        transform: translateX(100%); /* Hidden by default */
+        transition: transform 0.3s ease-in-out;
+        z-index: 101;
+        align-items: flex-start;
+      }
+      
+      .navbar--admin .navbar__nav { background-color: var(--color-gray-900); }
+
+      .navbar__link {
+        font-size: 1.125rem;
+        width: 100%;
+        padding: var(--spacing-3) 0;
+        border-bottom: 1px solid var(--color-gray-100);
+      }
+      .navbar--admin .navbar__link { border-bottom-color: var(--color-gray-800); }
+
+      /* Actions in mobile menu */
+      .navbar__actions {
+        /* On mobile, we might want to move these inside the drawer or keep some visible */
+        /* For this demo: keep simplified actions in header, but full menu in drawer */
+      }
+      
+      .navbar__actions--desktop-only {
+        display: none;
+      }
+      
+      /* Inject actions into drawer via CSS order or duplication in real DOM. 
+         For this CSS-only mockup, we assume mobile structure adaptation. */
+
+      /* Toggle State */
+      .nav-checkbox:checked ~ .navbar__container .navbar__nav {
+        transform: translateX(0); /* Slide in */
+      }
+
+      /* Hamburger Animation */
+      .nav-checkbox:checked ~ .navbar__container .navbar__toggle-icon {
+        background-color: transparent;
+      }
+      .nav-checkbox:checked ~ .navbar__container .navbar__toggle-icon::before {
+        top: 0; transform: rotate(45deg);
+      }
+      .nav-checkbox:checked ~ .navbar__container .navbar__toggle-icon::after {
+        top: 0; transform: rotate(-45deg);
+      }
+      
+      /* Lock body scroll would require JS, simulated here by full screen absolute pos */
+    }
+
+    /* =========================================
+       5. SHOWCASE UTILITIES
+       ========================================= */
+    .variant-section {
+      margin-bottom: 60px;
+      border-bottom: 1px dashed var(--color-gray-300);
+      padding-bottom: 40px;
+    }
+    
+    .variant-header {
+      margin-bottom: 24px;
+      padding: 0 var(--spacing-6);
+    }
+    
+    .variant-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    
+    .variant-desc {
+      color: var(--color-gray-600);
+      max-width: 600px;
+    }
+
+    .doc-block {
+      background: var(--color-white);
+      padding: var(--spacing-6);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-gray-200);
+      margin: var(--spacing-6);
+    }
+    
+    code {
+      background: var(--color-gray-100);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.9em;
+      color: var(--color-primary-700);
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- =====================================================================
+       VARIANT 1: PUBLIC (Unauthenticated)
+       Usage: Marketing sites, landing pages.
+       ===================================================================== -->
+  <section class="variant-section">
+    <div class="variant-header">
+      <h2 class="variant-title">Variant 1: Public Navigation</h2>
+      <p class="variant-desc">Clean layout for unauthenticated users focusing on sign-up conversion and information hierarchy. Resizes to hamburger menu on mobile.</p>
+    </div>
+
+    <!-- START COMPONENT: PUBLIC NAV -->
+    <header class="navbar navbar--sticky">
+      <!-- Checkbox Hack for Mobile Toggle (ID must be unique per instance) -->
+      <input type="checkbox" id="nav-toggle-public" class="nav-checkbox">
+      
+      <div class="navbar__container">
+        <!-- Brand -->
+        <a href="#" class="navbar__brand">
+          <div class="navbar__logo-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </div>
+          <span>WarrantyApp</span>
+        </a>
+
+        <!-- Mobile Toggle Button -->
+        <label for="nav-toggle-public" class="navbar__toggle" aria-label="Toggle navigation">
+          <span class="navbar__toggle-icon"></span>
+        </label>
+
+        <!-- Navigation Links -->
+        <nav class="navbar__nav" role="navigation">
+          <a href="#" class="navbar__link">Features</a>
+          <a href="#" class="navbar__link">Pricing</a>
+          <a href="#" class="navbar__link">For Brands</a>
+          <a href="#" class="navbar__link">Support</a>
+          
+          <!-- Mobile-only actions could go here -->
+          <div class="navbar__actions navbar__actions--mobile-only" style="margin-top: auto; width: 100%; display: none;">
+             <!-- Logic to show this only on mobile would use media queries in a real app -->
+          </div>
+        </nav>
+
+        <!-- Right Side Actions (Desktop) -->
+        <div class="navbar__actions navbar__actions--desktop-only">
+          <a href="#" class="nav-btn nav-btn--secondary">Log in</a>
+          <a href="#" class="nav-btn nav-btn--primary">Sign up</a>
+        </div>
+      </div>
+    </header>
+    <!-- END COMPONENT -->
+  </section>
+
+
+  <!-- =====================================================================
+       VARIANT 2: AUTHENTICATED (Consumer)
+       Usage: Logged-in user dashboard.
+       ===================================================================== -->
+  <section class="variant-section">
+    <div class="variant-header">
+      <h2 class="variant-title">Variant 2: Authenticated (Consumer)</h2>
+      <p class="variant-desc">Includes active state indicators, notification system, and user profile avatar. Optimized for product management workflows.</p>
+    </div>
+
+    <!-- START COMPONENT: AUTH NAV -->
+    <header class="navbar">
+      <input type="checkbox" id="nav-toggle-auth" class="nav-checkbox">
+      
+      <div class="navbar__container">
+        <a href="#" class="navbar__brand">
+          <div class="navbar__logo-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </div>
+          <span>WarrantyApp</span>
+        </a>
+
+        <label for="nav-toggle-auth" class="navbar__toggle">
+          <span class="navbar__toggle-icon"></span>
+        </label>
+
+        <nav class="navbar__nav" role="navigation">
+          <a href="#" class="navbar__link">Dashboard</a>
+          <a href="#" class="navbar__link navbar__link--active" aria-current="page">My Products</a>
+          <a href="#" class="navbar__link">Warranties</a>
+          <a href="#" class="navbar__link">Claims</a>
+        </nav>
+
+        <div class="navbar__actions">
+          <!-- Notification Bell -->
+          <button class="nav-btn nav-btn--icon" aria-label="Notifications">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span class="badge-dot"></span>
+          </button>
+          
+          <!-- Add Product Button (Desktop) -->
+          <a href="#" class="nav-btn nav-btn--primary navbar__actions--desktop-only">
+            + Add Product
+          </a>
+
+          <!-- User Avatar -->
+          <div class="navbar__avatar" role="button" aria-haspopup="true" aria-expanded="false" tabindex="0">
+             <!-- Placeholder image -->
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="#e0e7ff">
+               <rect width="36" height="36" />
+               <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="14" fill="#4f46e5" font-weight="600">JD</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- END COMPONENT -->
+  </section>
+
+
+  <!-- =====================================================================
+       VARIANT 3: ADMIN PANEL
+       Usage: Service Center or Brand Admin interfaces.
+       ===================================================================== -->
+  <section class="variant-section">
+    <div class="variant-header">
+      <h2 class="variant-title">Variant 3: Admin Console</h2>
+      <p class="variant-desc">Dark theme for visual distinction. Includes specific administration links and settings access.</p>
+    </div>
+
+    <!-- START COMPONENT: ADMIN NAV -->
+    <header class="navbar navbar--admin">
+      <input type="checkbox" id="nav-toggle-admin" class="nav-checkbox">
+      
+      <div class="navbar__container">
+        <a href="#" class="navbar__brand">
+          <div class="navbar__logo-icon" style="background: white; color: var(--color-gray-900);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          </div>
+          <span>Admin Portal</span>
+        </a>
+
+        <label for="nav-toggle-admin" class="navbar__toggle">
+          <span class="navbar__toggle-icon"></span>
+        </label>
+
+        <nav class="navbar__nav" role="navigation">
+          <a href="#" class="navbar__link navbar__link--active">Overview</a>
+          <a href="#" class="navbar__link">Technicians</a>
+          <a href="#" class="navbar__link">Service Requests</a>
+          <a href="#" class="navbar__link">Reports</a>
+        </nav>
+
+        <div class="navbar__actions">
+          <button class="nav-btn nav-btn--icon" aria-label="Settings">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          </button>
+          
+          <div class="navbar__avatar" role="button" tabindex="0">
+             <svg width="36" height="36" viewBox="0 0 36 36" fill="#374151">
+               <rect width="36" height="36" />
+               <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="600">AD</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- END COMPONENT -->
+  </section>
+
+  <!-- DOCUMENTATION -->
+  <div class="doc-block">
+    <h3>Developer Notes</h3>
+    <p>This implementation uses the "Checkbox Hack" (<code>input[type="checkbox"]</code> + <code>label</code>) to demonstrate mobile menu toggling without JavaScript. In a production React/Next.js environment, this should be replaced with state management (e.g., <code>useState</code>) to toggle the <code>.navbar__nav</code> class for accessibility reasons.</p>
+    
+    <h4>Key CSS Classes:</h4>
+    <ul>
+      <li><code>.navbar</code> - Base container</li>
+      <li><code>.navbar--sticky</code> - Applies <code>position: sticky</code></li>
+      <li><code>.navbar--admin</code> - Applies dark theme tokens</li>
+      <li><code>.navbar__link--active</code> - Visual indicator for current page</li>
+    </ul>
+
+    <h4>Accessibility Checklist:</h4>
+    <ul>
+      <li>Ensure <code>aria-current="page"</code> is applied to the active link programmatically.</li>
+      <li>Ensure hamburger menu button has <code>aria-expanded</code> state managed via JS.</li>
+      <li>Ensure focus is trapped within the mobile menu when opened on small screens.</li>
+    </ul>
+  </div>
+
+</body>
+</html>

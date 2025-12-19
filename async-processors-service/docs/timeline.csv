@@ -1,0 +1,3 @@
+"scenario_name","risk_level","critical_path_driver","sprint_1_status","sprint_3_status","resource_bottleneck","mitigation","success_probability"
+"Baseline (Current Plan)","High","Mobile Development","At Risk (Mobile Auth)","Critical Risk (Location & Sync)","Mobile Developer at 88% adjusted utilization","None","60"
+"Resource Rebalancing","Medium","Mobile Development","Stable","Managed Risk","Reduced","Backend Developer takes TASK-SERV-008 (Schema Definition); Backend Lead manages Auth Configuration (TASK-MOB-001) in Azure portal to save Mobile Dev time.","80"

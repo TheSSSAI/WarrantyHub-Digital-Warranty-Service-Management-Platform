@@ -1,0 +1,5 @@
+"dependency_id","from_task","to_task","dependency_type","description","critical_path","lead_time_days","responsible_team","coordination_required","risk_level","mitigation_plan","status","resolution_date","impact_if_delayed","escalation_required"
+"DEP-001","TASK-INF-001","TASK-INF-002","Technical","AKS requires Network Subnets","true","1","DevOps","","Low","Define CIDR ranges early","Active","2024-05-26","Cluster provisioning blocked",""
+"DEP-002","TASK-INF-003","TASK-BE-003","Infrastructure","Backend routing service needs PostGIS DB","true","1","DevOps","true","Medium","Use local Docker Postgres with PostGIS for dev","Active","2024-05-29","Backend GIS development blocked on prod-like env",""
+"DEP-003","TASK-MOB-001","TASK-MOB-002","Technical","Sync logic depends on DB Schema","true","","Mobile Team","","High","Finalize schema JSON before coding models","Active","2024-05-28","Offline sync feature blocked","true"
+"DEP-004","TASK-BE-001","TASK-BE-005","Technical","WebSocket Gateway needs Auth Guard logic","","2","Backend Team","","Low","Stub Auth Guard","Active","2024-05-30","Secure socket connections blocked",""

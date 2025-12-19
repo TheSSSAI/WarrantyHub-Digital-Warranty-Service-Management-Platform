@@ -1,0 +1,33 @@
+sequenceDiagram
+    participant "Operator (SRE)" as OperatorSRE
+    participant "Monitoring System" as MonitoringSystem
+    participant "CI/CD System" as CICDSystem
+    participant "Container Registry" as ContainerRegistry
+    participant "Container Orchestrator" as ContainerOrchestrator
+    participant "Application" as Application
+
+    activate OperatorSRE
+    MonitoringSystem->>OperatorSRE: 1. 1. Send Critical Alert: SLO Breach Detected (High Error Rate / Latency)
+    OperatorSRE->>MonitoringSystem: 2. 2. Investigate Failure (Confirms new deployment is root cause)
+    MonitoringSystem-->>OperatorSRE: Dashboard data confirms SLO breach correlates with deployment time.
+    activate CICDSystem
+    OperatorSRE->>CICDSystem: 3. 3. Trigger Rollback: 'Deploy Specific Version' Workflow
+    CICDSystem-->>OperatorSRE: Workflow run started successfully.
+    activate ContainerOrchestrator
+    CICDSystem->>ContainerOrchestrator: 4. 4. Set New Image for Deployment
+    ContainerOrchestrator-->>CICDSystem: Deployment 'product-service' image updated.
+    ContainerOrchestrator->>ContainerRegistry: 5. 4a. Pull Image 'product-service:v1.2.0'
+    ContainerRegistry-->>ContainerOrchestrator: Image layers downloaded.
+    ContainerOrchestrator->>ContainerOrchestrator: 6. 4b. Execute Rolling Update Strategy
+    CICDSystem->>OperatorSRE: 7. 5. Notify: Rollback Deployment Complete
+    OperatorSRE->>Application: 8. 6. Validate: Check Health Endpoint
+    Application-->>OperatorSRE: HTTP 200 OK, Status: Healthy
+    OperatorSRE->>MonitoringSystem: 9. 7. Validate: Confirm Metrics Returned to Normal
+    MonitoringSystem-->>OperatorSRE: Error rate and latency metrics are within SLO.
+
+    note over OperatorSRE: Decision Point: Operator consults the runbook to confirm that the observed SLO breach warrants a ...
+    note over CICDSystem: The 'Deploy Specific Version' workflow must be distinct from the main branch CI/CD pipeline and r...
+
+    deactivate ContainerOrchestrator
+    deactivate CICDSystem
+    deactivate OperatorSRE

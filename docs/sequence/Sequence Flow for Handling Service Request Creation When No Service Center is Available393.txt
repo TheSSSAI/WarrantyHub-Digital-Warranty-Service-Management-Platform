@@ -1,0 +1,675 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-EH-002
+
+## 1.2 Name
+
+Handling Service Request Creation When No Service Center is Available
+
+## 1.3 Description
+
+A user attempts to raise a service request, but the system cannot find any service center that covers their geographic location. The user is shown an informative message with alternative contact details.
+
+## 1.4 Type
+
+🔹 ErrorHandling
+
+## 1.5 Purpose
+
+To provide a clear and helpful user experience when automated service routing is not possible, guiding the user toward a manual resolution path.
+
+## 1.6 Complexity
+
+Low
+
+## 1.7 Priority
+
+🟡 Medium
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- mobile-client-013
+- api-gateway-001
+- service-request-service-005
+- service-center-service-004
+
+## 1.10 Key Interactions
+
+- User submits a service request.
+- The ServiceRequestService calls the ServiceCenterService to find an eligible service center.
+- The ServiceCenterService performs its geospatial query and finds no matching service centers in the database.
+- It returns an empty list to the ServiceRequestService.
+- The ServiceRequestService detects this condition and returns a specific error response (e.g., HTTP 404 with a specific error code) to the client application.
+- The client application interprets this response and displays a user-friendly message: 'No service centers are available for your location and product. Please contact the brand directly at [brand contact info].'
+
+## 1.11 Triggers
+
+- The service center routing logic fails to find a match.
+
+## 1.12 Outcomes
+
+- No service request ticket is created.
+- The user is informed about the lack of service coverage in their area.
+- The user is provided with alternative contact information for the brand.
+
+## 1.13 Business Rules
+
+- If no service center is available, an informative message must be displayed to the user.
+- The Brand Admin is responsible for providing their direct contact information.
+
+## 1.14 Error Scenarios
+
+- The brand's contact information is missing or out of date.
+- The client displays a generic, unhelpful error message instead of the specific guidance.
+
+## 1.15 Integration Points
+
+*No items available*
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-EH-002-Impl
+
+## 2.2 Name
+
+Error Handling: No Available Service Center for Service Request
+
+## 2.3 Description
+
+Provides a detailed technical specification for handling the scenario where a user submits a service request for a location not covered by any registered service center. The sequence ensures a graceful failure by returning a structured, actionable error to the client, which then displays a user-friendly message with alternative contact information. This prevents the creation of an un-routable service ticket and improves the user experience.
+
+## 2.4 Participants
+
+### 2.4.1 Client
+
+#### 2.4.1.1 Repository Id
+
+mobile-client-013
+
+#### 2.4.1.2 Display Name
+
+Mobile Client (Customer)
+
+#### 2.4.1.3 Type
+
+🔹 Client
+
+#### 2.4.1.4 Technology
+
+Flutter 3.19+, Dart
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #1E90FF |
+| Stereotype | UI/UX |
+
+### 2.4.2.0 Gateway
+
+#### 2.4.2.1 Repository Id
+
+api-gateway-001
+
+#### 2.4.2.2 Display Name
+
+API Gateway
+
+#### 2.4.2.3 Type
+
+🔹 Gateway
+
+#### 2.4.2.4 Technology
+
+YARP on .NET 8
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | rectangle |
+| Color | #4682B4 |
+| Stereotype | Gateway |
+
+### 2.4.3.0 Microservice
+
+#### 2.4.3.1 Repository Id
+
+service-request-service-005
+
+#### 2.4.3.2 Display Name
+
+Service Request Service
+
+#### 2.4.3.3 Type
+
+🔹 Microservice
+
+#### 2.4.3.4 Technology
+
+.NET 8, ASP.NET Core 8, SignalR
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | rectangle |
+| Color | #5F9EA0 |
+| Stereotype | Service |
+
+### 2.4.4.0 Microservice
+
+#### 2.4.4.1 Repository Id
+
+service-center-service-004
+
+#### 2.4.4.2 Display Name
+
+Service Center Service
+
+#### 2.4.4.3 Type
+
+🔹 Microservice
+
+#### 2.4.4.4 Technology
+
+.NET 8, ASP.NET Core 8, NetTopologySuite
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | rectangle |
+| Color | #5F9EA0 |
+| Stereotype | Service |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Request
+
+#### 2.5.1.1 Source Id
+
+mobile-client-013
+
+#### 2.5.1.2 Target Id
+
+api-gateway-001
+
+#### 2.5.1.3 Message
+
+Submits service request for a product and location.
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Request
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+Forwards HTTP 404 with structured error response.
+
+#### 2.5.1.8 Has Return
+
+✅ Yes
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+##### 2.5.1.10.1 Protocol
+
+HTTPS/REST
+
+##### 2.5.1.10.2 Method
+
+POST /api/v1/service-requests
+
+##### 2.5.1.10.3 Parameters
+
+Body: ServiceRequestCreationDto { userProductId: UUID, issueDescription: string, userLocation: { latitude: double, longitude: double }, ... }
+
+##### 2.5.1.10.4 Authentication
+
+Authorization: Bearer {JWT}
+
+##### 2.5.1.10.5 Error Handling
+
+Client-side HTTP interceptor handles 4xx/5xx status codes. A specific handler is implemented for HTTP 404 with errorCode 'NO_SERVICE_CENTER_AVAILABLE'.
+
+##### 2.5.1.10.6 Performance
+
+###### 2.5.1.10.6.1 Latency
+
+< 1000ms end-to-end for this error path.
+
+### 2.5.2.0.0.0 Request
+
+#### 2.5.2.1.0.0 Source Id
+
+api-gateway-001
+
+#### 2.5.2.2.0.0 Target Id
+
+service-request-service-005
+
+#### 2.5.2.3.0.0 Message
+
+Forwards request to create service request.
+
+#### 2.5.2.4.0.0 Sequence Number
+
+2
+
+#### 2.5.2.5.0.0 Type
+
+🔹 Request
+
+#### 2.5.2.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7.0.0 Return Message
+
+Returns HTTP 404 with structured error.
+
+#### 2.5.2.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.2.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.2.10.0.0 Technical Details
+
+##### 2.5.2.10.1.0 Protocol
+
+HTTP
+
+##### 2.5.2.10.2.0 Method
+
+POST /service-requests
+
+##### 2.5.2.10.3.0 Parameters
+
+Forwards the validated DTO from the client.
+
+##### 2.5.2.10.4.0 Authentication
+
+Propagates validated JWT to upstream service.
+
+##### 2.5.2.10.5.0 Error Handling
+
+Maps upstream service HTTP status codes directly to the downstream response.
+
+##### 2.5.2.10.6.0 Performance
+
+###### 2.5.2.10.6.1 Latency
+
+< 50ms gateway overhead.
+
+### 2.5.3.0.0.0 Request
+
+#### 2.5.3.1.0.0 Source Id
+
+service-request-service-005
+
+#### 2.5.3.2.0.0 Target Id
+
+service-center-service-004
+
+#### 2.5.3.3.0.0 Message
+
+Find available service center by brand and location.
+
+#### 2.5.3.4.0.0 Sequence Number
+
+3
+
+#### 2.5.3.5.0.0 Type
+
+🔹 Request
+
+#### 2.5.3.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7.0.0 Return Message
+
+Returns HTTP 200 OK with an empty array.
+
+#### 2.5.3.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.3.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.3.10.0.0 Technical Details
+
+##### 2.5.3.10.1.0 Protocol
+
+HTTP/REST
+
+##### 2.5.3.10.2.0 Method
+
+POST /api/v1/service-centers/find-by-location
+
+##### 2.5.3.10.3.0 Parameters
+
+Body: FindCenterRequest { brandId: UUID, location: NetTopologySuite.Geometries.Point }
+
+##### 2.5.3.10.4.0 Authentication
+
+Internal service-to-service authentication (e.g., mTLS or scoped token).
+
+##### 2.5.3.10.5.0 Error Handling
+
+Implements a Polly Retry policy for transient HTTP 5xx errors or timeouts. A Circuit Breaker is in place for sustained failures.
+
+##### 2.5.3.10.6.0 Performance
+
+###### 2.5.3.10.6.1 Latency
+
+< 150ms for this query.
+
+### 2.5.4.0.0.0 InternalProcessing
+
+#### 2.5.4.1.0.0 Source Id
+
+service-center-service-004
+
+#### 2.5.4.2.0.0 Target Id
+
+service-center-service-004
+
+#### 2.5.4.3.0.0 Message
+
+[Internal] Execute geospatial query against PostGIS database.
+
+#### 2.5.4.4.0.0 Sequence Number
+
+4
+
+#### 2.5.4.5.0.0 Type
+
+🔹 InternalProcessing
+
+#### 2.5.4.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7.0.0 Return Message
+
+Returns 0 rows.
+
+#### 2.5.4.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.4.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.4.10.0.0 Technical Details
+
+##### 2.5.4.10.1.0 Protocol
+
+SQL/Npgsql
+
+##### 2.5.4.10.2.0 Method
+
+EF Core LINQ Query translated to SQL: SELECT id, name FROM ServiceAreas WHERE BrandId = @p0 AND ST_Contains(GeofencePolygon, @p1)
+
+##### 2.5.4.10.3.0 Parameters
+
+p0: brandId, p1: user's location as a geometry point.
+
+##### 2.5.4.10.4.0 Authentication
+
+Database connection string with credentials from Azure Key Vault.
+
+##### 2.5.4.10.5.0 Error Handling
+
+Relies on EF Core's exception handling for database errors. Connection resiliency is configured.
+
+##### 2.5.4.10.6.0 Performance
+
+###### 2.5.4.10.6.1 Latency
+
+Query must execute in < 50ms, requires a spatial index (GiST) on the GeofencePolygon column.
+
+### 2.5.5.0.0.0 InternalProcessing
+
+#### 2.5.5.1.0.0 Source Id
+
+service-request-service-005
+
+#### 2.5.5.2.0.0 Target Id
+
+service-request-service-005
+
+#### 2.5.5.3.0.0 Message
+
+[Internal] Handle 'No Service Center Found' condition.
+
+#### 2.5.5.4.0.0 Sequence Number
+
+5
+
+#### 2.5.5.5.0.0 Type
+
+🔹 InternalProcessing
+
+#### 2.5.5.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7.0.0 Return Message
+
+Constructed structured error response.
+
+#### 2.5.5.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.5.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.5.10.0.0 Technical Details
+
+##### 2.5.5.10.1.0 Protocol
+
+In-Memory
+
+##### 2.5.5.10.2.0 Method
+
+Business logic check: `if (foundServiceCenters.Count == 0)`
+
+##### 2.5.5.10.3.0 Parameters
+
+The empty list from ServiceCenterService.
+
+##### 2.5.5.10.4.0 Authentication
+
+N/A
+
+##### 2.5.5.10.5.0 Error Handling
+
+Logs an INFO-level message with CorrelationId: 'No service center found for brand {BrandId} at location {Location}'. Fetches Brand contact info; if that fails, logs a WARN and uses a generic message.
+
+##### 2.5.5.10.6.0 Performance
+
+###### 2.5.5.10.6.1 Latency
+
+Negligible.
+
+### 2.5.6.0.0.0 UIUpdate
+
+#### 2.5.6.1.0.0 Source Id
+
+mobile-client-013
+
+#### 2.5.6.2.0.0 Target Id
+
+mobile-client-013
+
+#### 2.5.6.3.0.0 Message
+
+Renders a user-friendly error message with brand contact details.
+
+#### 2.5.6.4.0.0 Sequence Number
+
+6
+
+#### 2.5.6.5.0.0 Type
+
+🔹 UIUpdate
+
+#### 2.5.6.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.6.7.0.0 Return Message
+
+
+
+#### 2.5.6.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.6.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.6.10.0.0 Technical Details
+
+##### 2.5.6.10.1.0 Protocol
+
+N/A
+
+##### 2.5.6.10.2.0 Method
+
+Display an Alert Dialog or Snackbar component.
+
+##### 2.5.6.10.3.0 Parameters
+
+Message content derived from the `ErrorResponse` body, e.g., 'No service centers are available for your location and product. Please contact the brand directly at [brand contact info].'
+
+##### 2.5.6.10.4.0 Authentication
+
+N/A
+
+##### 2.5.6.10.5.0 Error Handling
+
+If the error response body is malformed or missing the contact info, a generic but helpful fallback message is displayed.
+
+##### 2.5.6.10.6.0 Performance
+
+###### 2.5.6.10.6.1 Latency
+
+UI must update immediately upon receiving the API response.
+
+## 2.6.0.0.0.0 Notes
+
+### 2.6.1.0.0.0 Content
+
+#### 2.6.1.1.0.0 Content
+
+A critical design choice is to return a specific, machine-readable error code ('NO_SERVICE_CENTER_AVAILABLE') in the HTTP 404 response body. This allows the client application to implement custom logic for this scenario, rather than treating it as a generic 'Not Found' error.
+
+#### 2.6.1.2.0.0 Position
+
+top_right
+
+#### 2.6.1.3.0.0 Participant Id
+
+service-request-service-005
+
+#### 2.6.1.4.0.0 Sequence Number
+
+5
+
+### 2.6.2.0.0.0 Content
+
+#### 2.6.2.1.0.0 Content
+
+No ServiceRequest entity is created or persisted in the database for this flow. This prevents orphaned records that cannot be assigned.
+
+#### 2.6.2.2.0.0 Position
+
+bottom_left
+
+#### 2.6.2.3.0.0 Participant Id
+
+service-request-service-005
+
+#### 2.6.2.4.0.0 Sequence Number
+
+5
+
+### 2.6.3.0.0.0 Content
+
+#### 2.6.3.1.0.0 Content
+
+Brand contact information must be a required field for Brand Admins during onboarding to ensure this fallback mechanism is effective.
+
+#### 2.6.3.2.0.0 Position
+
+bottom_right
+
+#### 2.6.3.3.0.0 Participant Id
+
+*Not specified*
+
+#### 2.6.3.4.0.0 Sequence Number
+
+*Not specified*
+
+## 2.7.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | Standard JWT authentication is enforced at the API... |
+| Performance Targets | The entire end-to-end error-path transaction (from... |
+| Error Handling Strategy | This sequence is a primary example of graceful deg... |
+| Testing Considerations | Integration tests must cover scenarios where a use... |
+| Monitoring Requirements | A specific alert should be configured in Azure Mon... |
+| Deployment Considerations | The mobile client application must be deployed wit... |
+

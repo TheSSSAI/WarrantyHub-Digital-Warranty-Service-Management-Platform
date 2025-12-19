@@ -1,0 +1,21 @@
+<!--
+    IMPORTANT: This fragment enforces Layer 1 Security (Zero Trust).
+    It validates the JWT Bearer token against Azure AD B2C.
+-->
+<fragment>
+    <validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="Unauthorized. Access token is missing or invalid.">
+        <openid-config url="{{b2c-openid-config-url}}" />
+        <audiences>
+            <audience>{{b2c-client-id}}</audience>
+        </audiences>
+        <issuers>
+            <issuer>https://warrantyhubb2c.b2clogin.com/{{b2c-tenant-id}}/v2.0/</issuer>
+        </issuers>
+        <required-claims>
+            <!-- Ensure the token has an expiration time -->
+            <claim name="exp" match="any" />
+            <!-- Ensure the token identifies a subject (user) -->
+            <claim name="sub" match="any" />
+        </required-claims>
+    </validate-jwt>
+</fragment>

@@ -1,0 +1,432 @@
+-- =====================================================================
+-- DATABASE SETUP: EXTENSIONS & HELPER FUNCTIONS
+-- =====================================================================
+
+-- Enable UUID generation
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Enable PostGIS for spatial data types and functions
+CREATE EXTENSION IF NOT EXISTS postgis;
+
+-- Trigger function to automatically update the 'updatedAt' column on any row update
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+   NEW."updatedAt" = NOW();
+   RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+
+-- =====================================================================
+-- TABLE CREATION
+-- =====================================================================
+
+-- Represents a user of the system, including customers, technicians, and administrators.
+CREATE TABLE "User" (
+    "userId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "email" VARCHAR(255) NOT NULL UNIQUE,
+    "passwordHash" VARCHAR(255) NOT NULL,
+    "firstName" VARCHAR(100) NOT NULL,
+    "lastName" VARCHAR(100) NOT NULL,
+    "role" VARCHAR(20) NOT NULL CHECK ("role" IN ('Customer', 'Technician', 'ServiceAdmin', 'BrandAdmin', 'SuperAdmin')),
+    "serviceCenterId" UUID,
+    "brandId" UUID,
+    "photoUrl" VARCHAR(512),
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Stores device information for sending push notifications via FCM.
+CREATE TABLE "Device" (
+    "deviceId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "userId" UUID NOT NULL,
+    "fcmToken" VARCHAR(255) NOT NULL UNIQUE,
+    "deviceType" VARCHAR(10) NOT NULL CHECK ("deviceType" IN ('Android', 'iOS')),
+    "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Stores user-specific notification preferences.
+CREATE TABLE "UserNotificationPreference" (
+    "userId" UUID PRIMARY KEY,
+    "preferences" JSONB NOT NULL DEFAULT '{}'
+);
+
+-- Represents a product brand or manufacturer.
+CREATE TABLE "Brand" (
+    "brandId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "name" VARCHAR(150) NOT NULL UNIQUE,
+    "status" VARCHAR(20) NOT NULL DEFAULT 'Pending' CHECK ("status" IN ('Pending', 'Approved', 'Rejected')),
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Defines a hierarchical structure for product categories.
+CREATE TABLE "ProductCategory" (
+    "productCategoryId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "name" VARCHAR(150) NOT NULL UNIQUE,
+    "description" TEXT,
+    "parentCategoryId" UUID,
+    "isActive" BOOLEAN NOT NULL DEFAULT true
+);
+
+-- Represents a specific product model from a brand.
+CREATE TABLE "ProductModel" (
+    "productModelId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "brandId" UUID NOT NULL,
+    "productCategoryId" UUID NOT NULL,
+    "modelNumber" VARCHAR(100) NOT NULL,
+    "name" VARCHAR(200) NOT NULL,
+    "serialNumberRegex" VARCHAR(255),
+    CONSTRAINT "UC_ProductModel_Brand_ModelNumber" UNIQUE ("brandId", "modelNumber")
+);
+
+-- Maps known barcode values to product models.
+CREATE TABLE "ProductBarcode" (
+    "barcodeValue" VARCHAR(255) PRIMARY KEY,
+    "productModelId" UUID NOT NULL
+);
+
+-- Represents a specific instance of a product owned by a user.
+CREATE TABLE "UserProduct" (
+    "userProductId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "userId" UUID NOT NULL,
+    "productModelId" UUID NOT NULL,
+    "serialNumber" VARCHAR(100) NOT NULL UNIQUE,
+    "purchaseDate" DATE NOT NULL,
+    "isLocked" BOOLEAN NOT NULL DEFAULT false,
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Defines a standard warranty policy for a product model.
+CREATE TABLE "WarrantyPolicy" (
+    "warrantyPolicyId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "productModelId" UUID NOT NULL UNIQUE,
+    "defaultDurationMonths" INT NOT NULL CHECK ("defaultDurationMonths" > 0),
+    "termsAndConditionsUrl" VARCHAR(512) NOT NULL
+);
+
+-- Represents a single warranty for a user's product.
+CREATE TABLE "Warranty" (
+    "warrantyId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "userProductId" UUID NOT NULL,
+    "warrantyType" VARCHAR(20) NOT NULL CHECK ("warrantyType" IN ('Primary', 'Extended')),
+    "expiryDate" DATE NOT NULL,
+    "documentUrl" VARCHAR(512)
+);
+
+-- Tracks the state of a product ownership transfer request.
+CREATE TABLE "OwnershipTransferRequest" (
+    "transferRequestId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "userProductId" UUID NOT NULL,
+    "fromUserId" UUID NOT NULL,
+    "toUserEmail" VARCHAR(255) NOT NULL,
+    "status" VARCHAR(20) NOT NULL DEFAULT 'Pending' CHECK ("status" IN ('Pending', 'Accepted', 'Rejected', 'Expired')),
+    "expiresAt" TIMESTAMP WITH TIME ZONE NOT NULL,
+    "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Stores uploaded invoice images/PDFs and their OCR results.
+CREATE TABLE "Invoice" (
+    "invoiceId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "userProductId" UUID NOT NULL UNIQUE,
+    "fileUrl" VARCHAR(512) NOT NULL,
+    "ocrStatus" VARCHAR(20) NOT NULL DEFAULT 'Pending' CHECK ("ocrStatus" IN ('Pending', 'Success', 'Failed')),
+    "extractedData" JSONB,
+    "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Stores structured address information.
+CREATE TABLE "Address" (
+    "addressId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "street" VARCHAR(255) NOT NULL,
+    "city" VARCHAR(100) NOT NULL,
+    "state" VARCHAR(100) NOT NULL,
+    "postalCode" VARCHAR(20) NOT NULL,
+    "country" VARCHAR(50) NOT NULL,
+    "location" GEOGRAPHY(Point, 4326)
+);
+
+-- Represents a service center that handles repairs.
+CREATE TABLE "ServiceCenter" (
+    "serviceCenterId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "name" VARCHAR(200) NOT NULL,
+    "addressId" UUID NOT NULL UNIQUE,
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Associates service centers with the brands they are authorized to service.
+CREATE TABLE "ServiceCenterBrand" (
+    "serviceCenterId" UUID NOT NULL,
+    "brandId" UUID NOT NULL,
+    PRIMARY KEY ("serviceCenterId", "brandId")
+);
+
+-- Stores geofenced polygon data for a service center's area.
+CREATE TABLE "ServiceAreaPolygon" (
+    "serviceAreaPolygonId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "serviceCenterId" UUID NOT NULL,
+    "brandId" UUID NOT NULL,
+    "polygonData" GEOMETRY(Polygon, 4326) NOT NULL
+);
+
+-- Stores postal codes for a service center's area.
+CREATE TABLE "ServiceAreaPostalCode" (
+    "serviceAreaPostalCodeId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "serviceCenterId" UUID NOT NULL,
+    "brandId" UUID NOT NULL,
+    "postalCode" VARCHAR(20) NOT NULL,
+    CONSTRAINT "UC_ServiceArea_ServiceCenter_Brand_PostalCode" UNIQUE ("serviceCenterId", "brandId", "postalCode")
+);
+
+-- A lookup table for common issue types.
+CREATE TABLE "IssueType" (
+    "issueTypeId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "brandId" UUID,
+    "productCategoryId" UUID,
+    "issueDescription" VARCHAR(255) NOT NULL,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    CONSTRAINT "UC_IssueType_Brand_Category_Description" UNIQUE ("brandId", "productCategoryId", "issueDescription")
+);
+
+-- Represents a single service request ticket.
+CREATE TABLE "ServiceRequest" (
+    "serviceRequestId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "userProductId" UUID NOT NULL,
+    "serviceCenterId" UUID NOT NULL,
+    "assignedTechnicianId" UUID,
+    "issueTypeId" UUID NOT NULL,
+    "issueDescription" TEXT,
+    "contactAddressId" UUID NOT NULL,
+    "preferredVisitSlotStart" TIMESTAMP WITH TIME ZONE,
+    "preferredVisitSlotEnd" TIMESTAMP WITH TIME ZONE,
+    "status" VARCHAR(30) NOT NULL DEFAULT 'Created' CHECK ("status" IN ('Created', 'Acknowledged', 'TechnicianAssigned', 'InProgress', 'Resolved', 'Disputed', 'Closed', 'Cancelled')),
+    "resolvedAt" TIMESTAMP WITH TIME ZONE,
+    "brandId" UUID NOT NULL,
+    "productModelId" UUID NOT NULL,
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Stores links to photos or videos uploaded for a service request.
+CREATE TABLE "ServiceRequestMedia" (
+    "serviceRequestMediaId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "serviceRequestId" UUID NOT NULL,
+    "mediaUrl" VARCHAR(512) NOT NULL,
+    "mediaType" VARCHAR(10) NOT NULL CHECK ("mediaType" IN ('Image', 'Video'))
+);
+
+-- Stores the customer's digital signature as proof of completion.
+CREATE TABLE "CustomerSignature" (
+    "signatureId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "serviceRequestId" UUID NOT NULL UNIQUE,
+    "imageUrl" VARCHAR(512) NOT NULL,
+    "signedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Stores customer ratings and feedback for a completed service request.
+CREATE TABLE "ServiceRating" (
+    "serviceRatingId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "serviceRequestId" UUID NOT NULL UNIQUE,
+    "rating" SMALLINT NOT NULL CHECK ("rating" BETWEEN 1 AND 5),
+    "feedback" TEXT,
+    "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- A lookup table for technician skills and certifications.
+CREATE TABLE "Skill" (
+    "skillId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "skillName" VARCHAR(100) NOT NULL UNIQUE
+);
+
+-- Associates technicians with their skills.
+CREATE TABLE "TechnicianSkill" (
+    "technicianId" UUID NOT NULL,
+    "skillId" UUID NOT NULL,
+    PRIMARY KEY ("technicianId", "skillId")
+);
+
+-- Stores user-defined recurring service reminders for products.
+CREATE TABLE "MaintenanceReminder" (
+    "reminderId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "userProductId" UUID NOT NULL,
+    "reminderTitle" VARCHAR(200) NOT NULL,
+    "recurrenceRule" VARCHAR(100) NOT NULL,
+    "nextDueDate" DATE NOT NULL
+);
+
+-- Records critical actions in an immutable audit trail.
+CREATE TABLE "AuditLog" (
+    "auditLogId" BIGSERIAL NOT NULL,
+    "userId" UUID,
+    "actionType" VARCHAR(100) NOT NULL,
+    "targetEntity" VARCHAR(100) NOT NULL,
+    "targetEntityId" VARCHAR(100) NOT NULL,
+    "changeDetails" JSONB,
+    "sourceIpAddress" VARCHAR(45),
+    "timestamp" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY ("auditLogId", "timestamp")
+) PARTITION BY RANGE ("timestamp");
+
+
+-- =====================================================================
+-- FOREIGN KEY CONSTRAINTS
+-- =====================================================================
+
+ALTER TABLE "User" ADD CONSTRAINT "FK_User_ServiceCenter" FOREIGN KEY ("serviceCenterId") REFERENCES "ServiceCenter"("serviceCenterId");
+ALTER TABLE "User" ADD CONSTRAINT "FK_User_Brand" FOREIGN KEY ("brandId") REFERENCES "Brand"("brandId");
+
+ALTER TABLE "Device" ADD CONSTRAINT "FK_Device_User" FOREIGN KEY ("userId") REFERENCES "User"("userId");
+
+ALTER TABLE "UserNotificationPreference" ADD CONSTRAINT "FK_UserNotificationPreference_User" FOREIGN KEY ("userId") REFERENCES "User"("userId");
+
+ALTER TABLE "ProductCategory" ADD CONSTRAINT "FK_ProductCategory_Parent" FOREIGN KEY ("parentCategoryId") REFERENCES "ProductCategory"("productCategoryId");
+
+ALTER TABLE "ProductModel" ADD CONSTRAINT "FK_ProductModel_Brand" FOREIGN KEY ("brandId") REFERENCES "Brand"("brandId");
+ALTER TABLE "ProductModel" ADD CONSTRAINT "FK_ProductModel_ProductCategory" FOREIGN KEY ("productCategoryId") REFERENCES "ProductCategory"("productCategoryId");
+
+ALTER TABLE "ProductBarcode" ADD CONSTRAINT "FK_ProductBarcode_ProductModel" FOREIGN KEY ("productModelId") REFERENCES "ProductModel"("productModelId");
+
+ALTER TABLE "UserProduct" ADD CONSTRAINT "FK_UserProduct_User" FOREIGN KEY ("userId") REFERENCES "User"("userId");
+ALTER TABLE "UserProduct" ADD CONSTRAINT "FK_UserProduct_ProductModel" FOREIGN KEY ("productModelId") REFERENCES "ProductModel"("productModelId");
+
+ALTER TABLE "WarrantyPolicy" ADD CONSTRAINT "FK_WarrantyPolicy_ProductModel" FOREIGN KEY ("productModelId") REFERENCES "ProductModel"("productModelId");
+
+ALTER TABLE "Warranty" ADD CONSTRAINT "FK_Warranty_UserProduct" FOREIGN KEY ("userProductId") REFERENCES "UserProduct"("userProductId");
+
+ALTER TABLE "OwnershipTransferRequest" ADD CONSTRAINT "FK_OwnershipTransferRequest_UserProduct" FOREIGN KEY ("userProductId") REFERENCES "UserProduct"("userProductId");
+ALTER TABLE "OwnershipTransferRequest" ADD CONSTRAINT "FK_OwnershipTransferRequest_FromUser" FOREIGN KEY ("fromUserId") REFERENCES "User"("userId");
+
+ALTER TABLE "Invoice" ADD CONSTRAINT "FK_Invoice_UserProduct" FOREIGN KEY ("userProductId") REFERENCES "UserProduct"("userProductId");
+
+ALTER TABLE "ServiceCenter" ADD CONSTRAINT "FK_ServiceCenter_Address" FOREIGN KEY ("addressId") REFERENCES "Address"("addressId");
+
+ALTER TABLE "ServiceCenterBrand" ADD CONSTRAINT "FK_ServiceCenterBrand_ServiceCenter" FOREIGN KEY ("serviceCenterId") REFERENCES "ServiceCenter"("serviceCenterId");
+ALTER TABLE "ServiceCenterBrand" ADD CONSTRAINT "FK_ServiceCenterBrand_Brand" FOREIGN KEY ("brandId") REFERENCES "Brand"("brandId");
+
+ALTER TABLE "ServiceAreaPolygon" ADD CONSTRAINT "FK_ServiceAreaPolygon_ServiceCenter" FOREIGN KEY ("serviceCenterId") REFERENCES "ServiceCenter"("serviceCenterId");
+ALTER TABLE "ServiceAreaPolygon" ADD CONSTRAINT "FK_ServiceAreaPolygon_Brand" FOREIGN KEY ("brandId") REFERENCES "Brand"("brandId");
+
+ALTER TABLE "ServiceAreaPostalCode" ADD CONSTRAINT "FK_ServiceAreaPostalCode_ServiceCenter" FOREIGN KEY ("serviceCenterId") REFERENCES "ServiceCenter"("serviceCenterId");
+ALTER TABLE "ServiceAreaPostalCode" ADD CONSTRAINT "FK_ServiceAreaPostalCode_Brand" FOREIGN KEY ("brandId") REFERENCES "Brand"("brandId");
+
+ALTER TABLE "IssueType" ADD CONSTRAINT "FK_IssueType_Brand" FOREIGN KEY ("brandId") REFERENCES "Brand"("brandId");
+ALTER TABLE "IssueType" ADD CONSTRAINT "FK_IssueType_ProductCategory" FOREIGN KEY ("productCategoryId") REFERENCES "ProductCategory"("productCategoryId");
+
+ALTER TABLE "ServiceRequest" ADD CONSTRAINT "FK_ServiceRequest_UserProduct" FOREIGN KEY ("userProductId") REFERENCES "UserProduct"("userProductId");
+ALTER TABLE "ServiceRequest" ADD CONSTRAINT "FK_ServiceRequest_ServiceCenter" FOREIGN KEY ("serviceCenterId") REFERENCES "ServiceCenter"("serviceCenterId");
+ALTER TABLE "ServiceRequest" ADD CONSTRAINT "FK_ServiceRequest_Technician" FOREIGN KEY ("assignedTechnicianId") REFERENCES "User"("userId");
+ALTER TABLE "ServiceRequest" ADD CONSTRAINT "FK_ServiceRequest_IssueType" FOREIGN KEY ("issueTypeId") REFERENCES "IssueType"("issueTypeId");
+ALTER TABLE "ServiceRequest" ADD CONSTRAINT "FK_ServiceRequest_Address" FOREIGN KEY ("contactAddressId") REFERENCES "Address"("addressId");
+ALTER TABLE "ServiceRequest" ADD CONSTRAINT "FK_ServiceRequest_Brand" FOREIGN KEY ("brandId") REFERENCES "Brand"("brandId");
+ALTER TABLE "ServiceRequest" ADD CONSTRAINT "FK_ServiceRequest_ProductModel" FOREIGN KEY ("productModelId") REFERENCES "ProductModel"("productModelId");
+
+ALTER TABLE "ServiceRequestMedia" ADD CONSTRAINT "FK_ServiceRequestMedia_ServiceRequest" FOREIGN KEY ("serviceRequestId") REFERENCES "ServiceRequest"("serviceRequestId");
+
+ALTER TABLE "CustomerSignature" ADD CONSTRAINT "FK_CustomerSignature_ServiceRequest" FOREIGN KEY ("serviceRequestId") REFERENCES "ServiceRequest"("serviceRequestId");
+
+ALTER TABLE "ServiceRating" ADD CONSTRAINT "FK_ServiceRating_ServiceRequest" FOREIGN KEY ("serviceRequestId") REFERENCES "ServiceRequest"("serviceRequestId");
+
+ALTER TABLE "TechnicianSkill" ADD CONSTRAINT "FK_TechnicianSkill_Technician" FOREIGN KEY ("technicianId") REFERENCES "User"("userId");
+ALTER TABLE "TechnicianSkill" ADD CONSTRAINT "FK_TechnicianSkill_Skill" FOREIGN KEY ("skillId") REFERENCES "Skill"("skillId");
+
+ALTER TABLE "MaintenanceReminder" ADD CONSTRAINT "FK_MaintenanceReminder_UserProduct" FOREIGN KEY ("userProductId") REFERENCES "UserProduct"("userProductId");
+
+ALTER TABLE "AuditLog" ADD CONSTRAINT "FK_AuditLog_User" FOREIGN KEY ("userId") REFERENCES "User"("userId");
+
+
+-- =====================================================================
+-- INDEXES
+-- =====================================================================
+
+-- User Indexes
+CREATE INDEX "IX_User_FullName" ON "User" USING btree ("lastName", "firstName");
+CREATE INDEX "IX_User_Role" ON "User" USING btree ("role");
+CREATE INDEX "IX_User_Active_NotDeleted" ON "User" USING btree ("isActive", "isDeleted");
+
+-- Device Indexes
+CREATE INDEX "IX_Device_UserId" ON "Device" USING btree ("userId");
+
+-- UserNotificationPreference Indexes
+CREATE INDEX "IX_UserNotificationPreference_Preferences" ON "UserNotificationPreference" USING gin ("preferences");
+
+-- Brand Indexes
+CREATE INDEX "IX_Brand_Status" ON "Brand" USING btree ("status");
+
+-- ProductCategory Indexes
+CREATE INDEX "IX_ProductCategory_ParentCategoryId" ON "ProductCategory" USING btree ("parentCategoryId");
+
+-- ProductModel Indexes
+CREATE INDEX "IX_ProductModel_BrandId" ON "ProductModel" USING btree ("brandId");
+CREATE INDEX "IX_ProductModel_ProductCategoryId" ON "ProductModel" USING btree ("productCategoryId");
+
+-- ProductBarcode Indexes
+CREATE INDEX "IX_ProductBarcode_ProductModelId" ON "ProductBarcode" USING btree ("productModelId");
+
+-- UserProduct Indexes
+CREATE INDEX "IX_UserProduct_UserId" ON "UserProduct" USING btree ("userId");
+CREATE INDEX "IX_UserProduct_ProductModelId" ON "UserProduct" USING btree ("productModelId");
+
+-- Warranty Indexes
+CREATE INDEX "IX_Warranty_UserProductId" ON "Warranty" USING btree ("userProductId");
+CREATE INDEX "IX_Warranty_ExpiryDate" ON "Warranty" USING btree ("expiryDate");
+
+-- OwnershipTransferRequest Indexes
+-- Filtered unique index to ensure only one pending request per product at a time.
+CREATE UNIQUE INDEX "UC_OwnershipTransferRequest_Pending_UserProduct" ON "OwnershipTransferRequest" ("userProductId") WHERE status = 'Pending';
+CREATE INDEX "IX_OwnershipTransferRequest_Status_ExpiresAt" ON "OwnershipTransferRequest" USING btree ("status", "expiresAt");
+
+-- Address Indexes (Spatial)
+CREATE INDEX "SP_Address_Location" ON "Address" USING gist ("location");
+
+-- ServiceCenterBrand Indexes
+CREATE INDEX "IX_ServiceCenterBrand_BrandId" ON "ServiceCenterBrand" USING btree ("brandId");
+
+-- ServiceAreaPolygon Indexes (Composite and Spatial)
+CREATE INDEX "IX_ServiceAreaPolygon_ServiceCenter_Brand" ON "ServiceAreaPolygon" USING btree ("serviceCenterId", "brandId");
+CREATE INDEX "SP_ServiceAreaPolygon_PolygonData" ON "ServiceAreaPolygon" USING gist ("polygonData");
+
+-- ServiceAreaPostalCode Indexes
+CREATE INDEX "IX_ServiceAreaPostalCode_PostalCode" ON "ServiceAreaPostalCode" USING btree ("postalCode");
+
+-- ServiceRequest Indexes
+CREATE INDEX "IX_ServiceRequest_UserProduct" ON "ServiceRequest" USING btree ("userProductId");
+CREATE INDEX "IX_ServiceRequest_ServiceCenter" ON "ServiceRequest" USING btree ("serviceCenterId");
+CREATE INDEX "IX_ServiceRequest_Technician" ON "ServiceRequest" USING btree ("assignedTechnicianId");
+CREATE INDEX "IX_ServiceRequest_Status_Date" ON "ServiceRequest" USING btree ("status", "createdAt");
+CREATE INDEX "IX_ServiceRequest_BrandId" ON "ServiceRequest" USING btree ("brandId");
+CREATE INDEX "IX_ServiceRequest_ProductModelId" ON "ServiceRequest" USING btree ("productModelId");
+
+-- ServiceRequestMedia Indexes
+CREATE INDEX "IX_ServiceRequestMedia_ServiceRequestId" ON "ServiceRequestMedia" USING btree ("serviceRequestId");
+
+-- TechnicianSkill Indexes
+CREATE INDEX "IX_TechnicianSkill_SkillId" ON "TechnicianSkill" USING btree ("skillId");
+
+-- MaintenanceReminder Indexes
+CREATE INDEX "IX_MaintenanceReminder_NextDueDate" ON "MaintenanceReminder" USING btree ("nextDueDate");
+
+-- AuditLog Indexes
+CREATE INDEX "IX_AuditLog_Target" ON "AuditLog" USING btree ("targetEntity", "targetEntityId");
+CREATE INDEX "IX_AuditLog_Timestamp" ON "AuditLog" USING btree ("timestamp");
+CREATE INDEX "IX_AuditLog_ChangeDetails_GIN" ON "AuditLog" USING gin ("changeDetails");
+
+-- =====================================================================
+-- TRIGGERS
+-- =====================================================================
+
+CREATE TRIGGER "TRG_User_updatedAt" BEFORE UPDATE ON "User" FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+CREATE TRIGGER "TRG_Brand_updatedAt" BEFORE UPDATE ON "Brand" FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+CREATE TRIGGER "TRG_UserProduct_updatedAt" BEFORE UPDATE ON "UserProduct" FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+CREATE TRIGGER "TRG_OwnershipTransferRequest_updatedAt" BEFORE UPDATE ON "OwnershipTransferRequest" FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+CREATE TRIGGER "TRG_ServiceCenter_updatedAt" BEFORE UPDATE ON "ServiceCenter" FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+CREATE TRIGGER "TRG_ServiceRequest_updatedAt" BEFORE UPDATE ON "ServiceRequest" FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();

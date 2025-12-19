@@ -1,0 +1,37 @@
+[
+  {
+    "name": "b2c-tenant-id",
+    "displayName": "b2c-tenant-id",
+    "value": "warrantyhubb2c.onmicrosoft.com",
+    "secret": false,
+    "tags": ["security", "auth"]
+  },
+  {
+    "name": "b2c-client-id",
+    "displayName": "b2c-client-id",
+    "value": "00000000-0000-0000-0000-000000000000",
+    "secret": false,
+    "tags": ["security", "auth"]
+  },
+  {
+    "name": "b2c-openid-config-url",
+    "displayName": "b2c-openid-config-url",
+    "value": "https://warrantyhubb2c.b2clogin.com/warrantyhubb2c.onmicrosoft.com/v2.0/.well-known/openid-configuration?p=B2C_1_SIGNIN",
+    "secret": false,
+    "tags": ["security", "auth"]
+  },
+  {
+    "name": "allowed-cors-origins",
+    "displayName": "allowed-cors-origins",
+    "value": "https://portal.warrantyhub.com,https://admin.warrantyhub.com,http://localhost:3000",
+    "secret": false,
+    "tags": ["security", "cors"]
+  },
+  {
+    "name": "apim-subscription-key-header",
+    "displayName": "apim-subscription-key-header",
+    "value": "Ocp-Apim-Subscription-Key",
+    "secret": false,
+    "tags": ["security"]
+  }
+]

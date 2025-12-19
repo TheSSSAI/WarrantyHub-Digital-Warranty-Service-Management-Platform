@@ -1,0 +1,1404 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-SI-002
+
+## 1.2 Name
+
+Real-time Chat between Customer and Technician via SignalR
+
+## 1.3 Description
+
+A customer and an assigned technician communicate with each other through a two-way chat interface within the service request, powered by a persistent WebSocket connection.
+
+## 1.4 Type
+
+🔹 ServiceInteraction
+
+## 1.5 Purpose
+
+To provide a direct and recorded line of communication between the customer and the service provider to clarify issues, coordinate visit times, and share updates, as per REQ-FUNC-007.
+
+## 1.6 Complexity
+
+Medium
+
+## 1.7 Priority
+
+🔴 High
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- mobile-client-013
+- service-request-service-005
+
+## 1.10 Key Interactions
+
+- Both the customer and technician clients authenticate and establish a persistent WebSocket connection with the ServiceRequestService's SignalR Hub, joining a group specific to their service request ID.
+- The customer types a message and sends it.
+- The client invokes a hub method (e.g., `SendMessage`) over the WebSocket with the message payload.
+- The ServiceRequestService receives the message, persists it to the database for history, associating it with the service request.
+- The service then broadcasts the message to all other clients in the same SignalR group (i.e., the technician).
+- The technician's client receives the message via its `OnMessageReceived` handler and displays it in the UI.
+
+## 1.11 Triggers
+
+- A user sends a message in the service request chat.
+
+## 1.12 Outcomes
+
+- The message is delivered in real-time to the other party.
+- A complete history of the conversation is saved to the database.
+
+## 1.13 Business Rules
+
+- Chat history must be retained for the life of the service request plus 1 year.
+- Only the customer and the assigned service center/technician can participate in the chat (enforced by joining the correct SignalR group).
+
+## 1.14 Error Scenarios
+
+- WebSocket connection is lost, and the client needs to implement reconnection logic.
+- The message fails to persist in the database.
+- The broadcast fails due to a Redis backplane issue.
+
+## 1.15 Integration Points
+
+- ASP.NET Core SignalR
+- Azure Cache for Redis (as SignalR backplane)
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-OPS-001
+
+## 2.2 Name
+
+Production System Rollback Procedure for Critical Deployment Failure
+
+## 2.3 Description
+
+A detailed technical sequence for an Operations Team Member to execute a rollback of application code, database state, or infrastructure configuration in response to a critical incident. This sequence operationalizes the runbook defined in US-132, aiming to minimize Mean Time To Recovery (MTTR) and uphold the 99.9% uptime SLA.
+
+## 2.4 Participants
+
+### 2.4.1 ObservabilityPlatform
+
+#### 2.4.1.1 Repository Id
+
+monitoring-system
+
+#### 2.4.1.2 Display Name
+
+Monitoring System
+
+#### 2.4.1.3 Type
+
+🔹 ObservabilityPlatform
+
+#### 2.4.1.4 Technology
+
+Prometheus, Grafana, Alertmanager
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #FFC300 |
+| Stereotype | System |
+
+### 2.4.2.0 HumanActor
+
+#### 2.4.2.1 Repository Id
+
+ops-team-member
+
+#### 2.4.2.2 Display Name
+
+Operations Team Member
+
+#### 2.4.2.3 Type
+
+🔹 HumanActor
+
+#### 2.4.2.4 Technology
+
+kubectl, Terraform CLI, Azure CLI
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #DAF7A6 |
+| Stereotype | Human |
+
+### 2.4.3.0 AutomationServer
+
+#### 2.4.3.1 Repository Id
+
+ci-cd-pipeline
+
+#### 2.4.3.2 Display Name
+
+CI/CD Pipeline
+
+#### 2.4.3.3 Type
+
+🔹 AutomationServer
+
+#### 2.4.3.4 Technology
+
+GitHub Actions
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | participant |
+| Color | #C70039 |
+| Stereotype | System |
+
+### 2.4.4.0 ArtifactRepository
+
+#### 2.4.4.1 Repository Id
+
+container-registry
+
+#### 2.4.4.2 Display Name
+
+Container Registry
+
+#### 2.4.4.3 Type
+
+🔹 ArtifactRepository
+
+#### 2.4.4.4 Technology
+
+Azure Container Registry (ACR)
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #581845 |
+| Stereotype | System |
+
+### 2.4.5.0 KubernetesDeployment
+
+#### 2.4.5.1 Repository Id
+
+production-app
+
+#### 2.4.5.2 Display Name
+
+Production Application
+
+#### 2.4.5.3 Type
+
+🔹 KubernetesDeployment
+
+#### 2.4.5.4 Technology
+
+Azure Kubernetes Service (AKS)
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | participant |
+| Color | #900C3F |
+| Stereotype | System |
+
+### 2.4.6.0 CloudControlPlane
+
+#### 2.4.6.1 Repository Id
+
+azure-portal-cli
+
+#### 2.4.6.2 Display Name
+
+Azure Management Interface
+
+#### 2.4.6.3 Type
+
+🔹 CloudControlPlane
+
+#### 2.4.6.4 Technology
+
+Azure Portal / Azure CLI
+
+#### 2.4.6.5 Order
+
+6
+
+#### 2.4.6.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | boundary |
+| Color | #0078D4 |
+| Stereotype | System |
+
+### 2.4.7.0 Database
+
+#### 2.4.7.1 Repository Id
+
+production-db
+
+#### 2.4.7.2 Display Name
+
+Production Database
+
+#### 2.4.7.3 Type
+
+🔹 Database
+
+#### 2.4.7.4 Technology
+
+Azure DB for PostgreSQL
+
+#### 2.4.7.5 Order
+
+7
+
+#### 2.4.7.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #3498DB |
+| Stereotype | System |
+
+### 2.4.8.0 VersionControlSystem
+
+#### 2.4.8.1 Repository Id
+
+infra-repo
+
+#### 2.4.8.2 Display Name
+
+Infrastructure Repo
+
+#### 2.4.8.3 Type
+
+🔹 VersionControlSystem
+
+#### 2.4.8.4 Technology
+
+Git (GitHub)
+
+#### 2.4.8.5 Order
+
+8
+
+#### 2.4.8.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #17202A |
+| Stereotype | System |
+
+### 2.4.9.0 IaCTool
+
+#### 2.4.9.1 Repository Id
+
+terraform-cli
+
+#### 2.4.9.2 Display Name
+
+Terraform CLI
+
+#### 2.4.9.3 Type
+
+🔹 IaCTool
+
+#### 2.4.9.4 Technology
+
+Terraform
+
+#### 2.4.9.5 Order
+
+9
+
+#### 2.4.9.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | participant |
+| Color | #623CE4 |
+| Stereotype | System |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Notification
+
+#### 2.5.1.1 Source Id
+
+monitoring-system
+
+#### 2.5.1.2 Target Id
+
+ops-team-member
+
+#### 2.5.1.3 Message
+
+1. Fire Critical Alert (e.g., SLO Breach: P95 > 500ms)
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Notification
+
+#### 2.5.1.6 Is Synchronous
+
+❌ No
+
+#### 2.5.1.7 Return Message
+
+
+
+#### 2.5.1.8 Has Return
+
+❌ No
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+##### 2.5.1.10.1 Protocol
+
+PagerDuty/Slack
+
+##### 2.5.1.10.2 Method
+
+Webhook
+
+##### 2.5.1.10.3 Parameters
+
+###### 2.5.1.10.3.1 alertName
+
+####### 2.5.1.10.3.1.1 Name
+
+alertName
+
+####### 2.5.1.10.3.1.2 Value
+
+HighAPILatency
+
+###### 2.5.1.10.3.2.0 severity
+
+####### 2.5.1.10.3.2.1 Name
+
+severity
+
+####### 2.5.1.10.3.2.2 Value
+
+critical
+
+###### 2.5.1.10.3.3.0 details
+
+####### 2.5.1.10.3.3.1 Name
+
+details
+
+####### 2.5.1.10.3.3.2 Value
+
+P95 latency is 650ms, exceeding 500ms threshold.
+
+##### 2.5.1.10.4.0.0 Authentication
+
+N/A
+
+##### 2.5.1.10.5.0.0 Error Handling
+
+Alertmanager retry policies.
+
+##### 2.5.1.10.6.0.0 Performance
+
+Latency < 10s
+
+### 2.5.2.0.0.0.0 Analysis
+
+#### 2.5.2.1.0.0.0 Source Id
+
+ops-team-member
+
+#### 2.5.2.2.0.0.0 Target Id
+
+monitoring-system
+
+#### 2.5.2.3.0.0.0 Message
+
+2. Triage Incident & Decide on Rollback Strategy
+
+#### 2.5.2.4.0.0.0 Sequence Number
+
+2
+
+#### 2.5.2.5.0.0.0 Type
+
+🔹 Analysis
+
+#### 2.5.2.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7.0.0.0 Return Message
+
+Decision: Application Rollback / DB Rollback / Infra Rollback
+
+#### 2.5.2.8.0.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.2.9.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.2.10.0.0.0 Technical Details
+
+##### 2.5.2.10.1.0.0 Protocol
+
+Manual
+
+##### 2.5.2.10.2.0.0 Method
+
+Review Grafana dashboards, check deployment timestamps.
+
+##### 2.5.2.10.3.0.0 Parameters
+
+*No items available*
+
+##### 2.5.2.10.4.0.0 Authentication
+
+Grafana RBAC
+
+##### 2.5.2.10.5.0.0 Error Handling
+
+If cause is unclear, escalate to incident commander.
+
+##### 2.5.2.10.6.0.0 Performance
+
+MTTD < 10 minutes
+
+### 2.5.3.0.0.0.0 FragmentStart
+
+#### 2.5.3.1.0.0.0 Message
+
+[ALT: Select Rollback Type]
+
+#### 2.5.3.2.0.0.0 Sequence Number
+
+3
+
+#### 2.5.3.3.0.0.0 Type
+
+🔹 FragmentStart
+
+#### 2.5.3.4.0.0.0 Nested Interactions
+
+##### 2.5.3.4.1.0.0 FragmentStart
+
+###### 2.5.3.4.1.1.0 Message
+
+[Application Rollback]
+
+###### 2.5.3.4.1.2.0 Sequence Number
+
+4
+
+###### 2.5.3.4.1.3.0 Type
+
+🔹 FragmentStart
+
+###### 2.5.3.4.1.4.0 Nested Interactions
+
+####### 2.5.3.4.1.4.1 CLI Request
+
+######## 2.5.3.4.1.4.1.1 Source Id
+
+ops-team-member
+
+######## 2.5.3.4.1.4.1.2 Target Id
+
+container-registry
+
+######## 2.5.3.4.1.4.1.3 Message
+
+5. Identify previous stable image tag
+
+######## 2.5.3.4.1.4.1.4 Sequence Number
+
+5
+
+######## 2.5.3.4.1.4.1.5 Type
+
+🔹 CLI Request
+
+######## 2.5.3.4.1.4.1.6 Is Synchronous
+
+✅ Yes
+
+######## 2.5.3.4.1.4.1.7 Return Message
+
+List of tags (e.g., `v1.2.0-stable`)
+
+######## 2.5.3.4.1.4.1.8 Has Return
+
+✅ Yes
+
+######## 2.5.3.4.1.4.1.9 Is Activation
+
+❌ No
+
+######## 2.5.3.4.1.4.1.10 Technical Details
+
+######### 2.5.3.4.1.4.1.10.1 Protocol
+
+Azure CLI
+
+######### 2.5.3.4.1.4.1.10.2 Method
+
+az acr repository show-tags
+
+######### 2.5.3.4.1.4.1.10.3 Parameters
+
+########## 2.5.3.4.1.4.1.10.3.1 name
+
+########### 2.5.3.4.1.4.1.10.3.1.1 Name
+
+name
+
+########### 2.5.3.4.1.4.1.10.3.1.2 Value
+
+<registry-name>
+
+########## 2.5.3.4.1.4.1.10.3.2.0 repository
+
+########### 2.5.3.4.1.4.1.10.3.2.1 Name
+
+repository
+
+########### 2.5.3.4.1.4.1.10.3.2.2 Value
+
+warranty-hub/product-service
+
+######### 2.5.3.4.1.4.1.10.4.0.0 Authentication
+
+Azure AD credentials with AcrPull role.
+
+######### 2.5.3.4.1.4.1.10.5.0.0 Error Handling
+
+Handle invalid repository name or authentication failure.
+
+######### 2.5.3.4.1.4.1.10.6.0.0 Performance
+
+Latency < 5s
+
+####### 2.5.3.4.1.4.2.0.0.0.0 Manual Trigger
+
+######## 2.5.3.4.1.4.2.1.0.0.0 Source Id
+
+ops-team-member
+
+######## 2.5.3.4.1.4.2.2.0.0.0 Target Id
+
+ci-cd-pipeline
+
+######## 2.5.3.4.1.4.2.3.0.0.0 Message
+
+6. Trigger deployment pipeline with stable tag
+
+######## 2.5.3.4.1.4.2.4.0.0.0 Sequence Number
+
+6
+
+######## 2.5.3.4.1.4.2.5.0.0.0 Type
+
+🔹 Manual Trigger
+
+######## 2.5.3.4.1.4.2.6.0.0.0 Is Synchronous
+
+❌ No
+
+######## 2.5.3.4.1.4.2.7.0.0.0 Return Message
+
+
+
+######## 2.5.3.4.1.4.2.8.0.0.0 Has Return
+
+❌ No
+
+######## 2.5.3.4.1.4.2.9.0.0.0 Is Activation
+
+✅ Yes
+
+######## 2.5.3.4.1.4.2.10.0.0.0 Technical Details
+
+######### 2.5.3.4.1.4.2.10.1.0.0 Protocol
+
+GitHub UI/API
+
+######### 2.5.3.4.1.4.2.10.2.0.0 Method
+
+workflow_dispatch
+
+######### 2.5.3.4.1.4.2.10.3.0.0 Parameters
+
+########## 2.5.3.4.1.4.2.10.3.1.0 ref
+
+########### 2.5.3.4.1.4.2.10.3.1.1 Name
+
+ref
+
+########### 2.5.3.4.1.4.2.10.3.1.2 Value
+
+main
+
+########## 2.5.3.4.1.4.2.10.3.2.0 inputs.imageTag
+
+########### 2.5.3.4.1.4.2.10.3.2.1 Name
+
+inputs.imageTag
+
+########### 2.5.3.4.1.4.2.10.3.2.2 Value
+
+v1.2.0-stable
+
+######### 2.5.3.4.1.4.2.10.4.0.0 Authentication
+
+GitHub credentials with 'write' permissions.
+
+######### 2.5.3.4.1.4.2.10.5.0.0 Error Handling
+
+Pipeline failure notifications.
+
+######### 2.5.3.4.1.4.2.10.6.0.0 Performance
+
+N/A
+
+####### 2.5.3.4.1.4.3.0.0.0.0 Deployment
+
+######## 2.5.3.4.1.4.3.1.0.0.0 Source Id
+
+ci-cd-pipeline
+
+######## 2.5.3.4.1.4.3.2.0.0.0 Target Id
+
+production-app
+
+######## 2.5.3.4.1.4.3.3.0.0.0 Message
+
+7. Deploy previous container image
+
+######## 2.5.3.4.1.4.3.4.0.0.0 Sequence Number
+
+7
+
+######## 2.5.3.4.1.4.3.5.0.0.0 Type
+
+🔹 Deployment
+
+######## 2.5.3.4.1.4.3.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+######## 2.5.3.4.1.4.3.7.0.0.0 Return Message
+
+Deployment successful
+
+######## 2.5.3.4.1.4.3.8.0.0.0 Has Return
+
+✅ Yes
+
+######## 2.5.3.4.1.4.3.9.0.0.0 Is Activation
+
+✅ Yes
+
+######## 2.5.3.4.1.4.3.10.0.0.0 Technical Details
+
+######### 2.5.3.4.1.4.3.10.1.0.0 Protocol
+
+Kubernetes API
+
+######### 2.5.3.4.1.4.3.10.2.0.0 Method
+
+kubectl set image deployment/...
+
+######### 2.5.3.4.1.4.3.10.3.0.0 Parameters
+
+########## 2.5.3.4.1.4.3.10.3.1.0 deployment
+
+########### 2.5.3.4.1.4.3.10.3.1.1 Name
+
+deployment
+
+########### 2.5.3.4.1.4.3.10.3.1.2 Value
+
+product-service-deployment
+
+########## 2.5.3.4.1.4.3.10.3.2.0 container
+
+########### 2.5.3.4.1.4.3.10.3.2.1 Name
+
+container
+
+########### 2.5.3.4.1.4.3.10.3.2.2 Value
+
+<registry>.azurecr.io/product-service:v1.2.0-stable
+
+######### 2.5.3.4.1.4.3.10.4.0.0 Authentication
+
+Service Principal with AKS Contributor role.
+
+######### 2.5.3.4.1.4.3.10.5.0.0 Error Handling
+
+If deployment fails, Kubernetes will attempt to roll back to the previous ReplicaSet automatically. Pipeline will fail.
+
+######### 2.5.3.4.1.4.3.10.6.0.0 Performance
+
+RTO (App) < 30 minutes
+
+##### 2.5.3.4.2.0.0.0.0.0.0 FragmentStart
+
+###### 2.5.3.4.2.1.0.0.0.0.0 Message
+
+[Database Rollback (PITR)]
+
+###### 2.5.3.4.2.2.0.0.0.0.0 Sequence Number
+
+8
+
+###### 2.5.3.4.2.3.0.0.0.0.0 Type
+
+🔹 FragmentStart
+
+###### 2.5.3.4.2.4.0.0.0.0.0 Nested Interactions
+
+####### 2.5.3.4.2.4.1.0.0.0.0 CLI Command
+
+######## 2.5.3.4.2.4.1.1.0.0.0 Source Id
+
+ops-team-member
+
+######## 2.5.3.4.2.4.1.2.0.0.0 Target Id
+
+azure-portal-cli
+
+######## 2.5.3.4.2.4.1.3.0.0.0 Message
+
+9. Initiate Point-in-Time Recovery
+
+######## 2.5.3.4.2.4.1.4.0.0.0 Sequence Number
+
+9
+
+######## 2.5.3.4.2.4.1.5.0.0.0 Type
+
+🔹 CLI Command
+
+######## 2.5.3.4.2.4.1.6.0.0.0 Is Synchronous
+
+❌ No
+
+######## 2.5.3.4.2.4.1.7.0.0.0 Return Message
+
+Restore operation started
+
+######## 2.5.3.4.2.4.1.8.0.0.0 Has Return
+
+✅ Yes
+
+######## 2.5.3.4.2.4.1.9.0.0.0 Is Activation
+
+✅ Yes
+
+######## 2.5.3.4.2.4.1.10.0.0.0 Technical Details
+
+######### 2.5.3.4.2.4.1.10.1.0.0 Protocol
+
+Azure CLI
+
+######### 2.5.3.4.2.4.1.10.2.0.0 Method
+
+az postgres flexible-server restore
+
+######### 2.5.3.4.2.4.1.10.3.0.0 Parameters
+
+########## 2.5.3.4.2.4.1.10.3.1.0 name
+
+########### 2.5.3.4.2.4.1.10.3.1.1 Name
+
+name
+
+########### 2.5.3.4.2.4.1.10.3.1.2 Value
+
+prod-db-restored
+
+########## 2.5.3.4.2.4.1.10.3.2.0 source-server
+
+########### 2.5.3.4.2.4.1.10.3.2.1 Name
+
+source-server
+
+########### 2.5.3.4.2.4.1.10.3.2.2 Value
+
+prod-db
+
+########## 2.5.3.4.2.4.1.10.3.3.0 point-in-time
+
+########### 2.5.3.4.2.4.1.10.3.3.1 Name
+
+point-in-time
+
+########### 2.5.3.4.2.4.1.10.3.3.2 Value
+
+YYYY-MM-DDTHH:MM:SSZ
+
+######### 2.5.3.4.2.4.1.10.4.0.0 Authentication
+
+Azure AD credentials with PostgreSQL Contributor role.
+
+######### 2.5.3.4.2.4.1.10.5.0.0 Error Handling
+
+Command failure due to insufficient permissions or invalid timestamp.
+
+######### 2.5.3.4.2.4.1.10.6.0.0 Performance
+
+N/A
+
+####### 2.5.3.4.2.4.2.0.0.0.0 Internal Process
+
+######## 2.5.3.4.2.4.2.1.0.0.0 Source Id
+
+azure-portal-cli
+
+######## 2.5.3.4.2.4.2.2.0.0.0 Target Id
+
+production-db
+
+######## 2.5.3.4.2.4.2.3.0.0.0 Message
+
+10. Provision new DB instance and restore data
+
+######## 2.5.3.4.2.4.2.4.0.0.0 Sequence Number
+
+10
+
+######## 2.5.3.4.2.4.2.5.0.0.0 Type
+
+🔹 Internal Process
+
+######## 2.5.3.4.2.4.2.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+######## 2.5.3.4.2.4.2.7.0.0.0 Return Message
+
+Restore complete, new server endpoint available
+
+######## 2.5.3.4.2.4.2.8.0.0.0 Has Return
+
+✅ Yes
+
+######## 2.5.3.4.2.4.2.9.0.0.0 Is Activation
+
+✅ Yes
+
+######## 2.5.3.4.2.4.2.10.0.0.0 Technical Details
+
+######### 2.5.3.4.2.4.2.10.1.0.0 Protocol
+
+Azure Control Plane
+
+######### 2.5.3.4.2.4.2.10.2.0.0 Method
+
+PointInTimeRestore
+
+######### 2.5.3.4.2.4.2.10.3.0.0 Parameters
+
+*No items available*
+
+######### 2.5.3.4.2.4.2.10.4.0.0 Authentication
+
+N/A
+
+######### 2.5.3.4.2.4.2.10.5.0.0 Error Handling
+
+Azure platform handles internal failures; operation status is reported.
+
+######### 2.5.3.4.2.4.2.10.6.0.0 Performance
+
+RTO depends on DB size, aligns with < 4hr system RTO.
+
+####### 2.5.3.4.2.4.3.0.0.0.0 Configuration Update
+
+######## 2.5.3.4.2.4.3.1.0.0.0 Source Id
+
+ops-team-member
+
+######## 2.5.3.4.2.4.3.2.0.0.0 Target Id
+
+ci-cd-pipeline
+
+######## 2.5.3.4.2.4.3.3.0.0.0 Message
+
+11. Update DB connection string & redeploy all apps
+
+######## 2.5.3.4.2.4.3.4.0.0.0 Sequence Number
+
+11
+
+######## 2.5.3.4.2.4.3.5.0.0.0 Type
+
+🔹 Configuration Update
+
+######## 2.5.3.4.2.4.3.6.0.0.0 Is Synchronous
+
+❌ No
+
+######## 2.5.3.4.2.4.3.7.0.0.0 Return Message
+
+
+
+######## 2.5.3.4.2.4.3.8.0.0.0 Has Return
+
+❌ No
+
+######## 2.5.3.4.2.4.3.9.0.0.0 Is Activation
+
+✅ Yes
+
+######## 2.5.3.4.2.4.3.10.0.0.0 Technical Details
+
+######### 2.5.3.4.2.4.3.10.1.0.0 Protocol
+
+GitHub UI/API
+
+######### 2.5.3.4.2.4.3.10.2.0.0 Method
+
+Update repository secret/variable and trigger deployment
+
+######### 2.5.3.4.2.4.3.10.3.0.0 Parameters
+
+- {'name': 'DB_CONNECTION_STRING', 'value': 'new endpoint'}
+
+######### 2.5.3.4.2.4.3.10.4.0.0 Authentication
+
+GitHub credentials with 'admin' permissions.
+
+######### 2.5.3.4.2.4.3.10.5.0.0 Error Handling
+
+Pipeline failures on redeployment.
+
+######### 2.5.3.4.2.4.3.10.6.0.0 Performance
+
+N/A
+
+##### 2.5.3.4.3.0.0.0.0.0.0 FragmentStart
+
+###### 2.5.3.4.3.1.0.0.0.0.0 Message
+
+[Infrastructure Rollback]
+
+###### 2.5.3.4.3.2.0.0.0.0.0 Sequence Number
+
+12
+
+###### 2.5.3.4.3.3.0.0.0.0.0 Type
+
+🔹 FragmentStart
+
+###### 2.5.3.4.3.4.0.0.0.0.0 Nested Interactions
+
+####### 2.5.3.4.3.4.1.0.0.0.0 VCS Command
+
+######## 2.5.3.4.3.4.1.1.0.0.0 Source Id
+
+ops-team-member
+
+######## 2.5.3.4.3.4.1.2.0.0.0 Target Id
+
+infra-repo
+
+######## 2.5.3.4.3.4.1.3.0.0.0 Message
+
+12. Revert to previous stable commit
+
+######## 2.5.3.4.3.4.1.4.0.0.0 Sequence Number
+
+13
+
+######## 2.5.3.4.3.4.1.5.0.0.0 Type
+
+🔹 VCS Command
+
+######## 2.5.3.4.3.4.1.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+######## 2.5.3.4.3.4.1.7.0.0.0 Return Message
+
+HEAD is now at <previous_commit_hash>
+
+######## 2.5.3.4.3.4.1.8.0.0.0 Has Return
+
+✅ Yes
+
+######## 2.5.3.4.3.4.1.9.0.0.0 Is Activation
+
+❌ No
+
+######## 2.5.3.4.3.4.1.10.0.0.0 Technical Details
+
+######### 2.5.3.4.3.4.1.10.1.0.0 Protocol
+
+Git CLI
+
+######### 2.5.3.4.3.4.1.10.2.0.0 Method
+
+git checkout <previous_stable_commit_hash>
+
+######### 2.5.3.4.3.4.1.10.3.0.0 Parameters
+
+*No items available*
+
+######### 2.5.3.4.3.4.1.10.4.0.0 Authentication
+
+SSH key / PAT
+
+######### 2.5.3.4.3.4.1.10.5.0.0 Error Handling
+
+Invalid commit hash.
+
+######### 2.5.3.4.3.4.1.10.6.0.0 Performance
+
+N/A
+
+####### 2.5.3.4.3.4.2.0.0.0.0 CLI Command
+
+######## 2.5.3.4.3.4.2.1.0.0.0 Source Id
+
+ops-team-member
+
+######## 2.5.3.4.3.4.2.2.0.0.0 Target Id
+
+terraform-cli
+
+######## 2.5.3.4.3.4.2.3.0.0.0 Message
+
+13. Generate and review execution plan
+
+######## 2.5.3.4.3.4.2.4.0.0.0 Sequence Number
+
+14
+
+######## 2.5.3.4.3.4.2.5.0.0.0 Type
+
+🔹 CLI Command
+
+######## 2.5.3.4.3.4.2.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+######## 2.5.3.4.3.4.2.7.0.0.0 Return Message
+
+Terraform plan output
+
+######## 2.5.3.4.3.4.2.8.0.0.0 Has Return
+
+✅ Yes
+
+######## 2.5.3.4.3.4.2.9.0.0.0 Is Activation
+
+✅ Yes
+
+######## 2.5.3.4.3.4.2.10.0.0.0 Technical Details
+
+######### 2.5.3.4.3.4.2.10.1.0.0 Protocol
+
+Terraform CLI
+
+######### 2.5.3.4.3.4.2.10.2.0.0 Method
+
+terraform plan -out=tfplan
+
+######### 2.5.3.4.3.4.2.10.3.0.0 Parameters
+
+*No items available*
+
+######### 2.5.3.4.3.4.2.10.4.0.0 Authentication
+
+Azure Service Principal credentials.
+
+######### 2.5.3.4.3.4.2.10.5.0.0 Error Handling
+
+Plan fails due to state drift or syntax errors. Must stop and investigate if plan shows unexpected destructive changes.
+
+######### 2.5.3.4.3.4.2.10.6.0.0 Performance
+
+Latency depends on infrastructure size.
+
+####### 2.5.3.4.3.4.3.0.0.0.0 CLI Command
+
+######## 2.5.3.4.3.4.3.1.0.0.0 Source Id
+
+ops-team-member
+
+######## 2.5.3.4.3.4.3.2.0.0.0 Target Id
+
+terraform-cli
+
+######## 2.5.3.4.3.4.3.3.0.0.0 Message
+
+14. Apply infrastructure changes
+
+######## 2.5.3.4.3.4.3.4.0.0.0 Sequence Number
+
+15
+
+######## 2.5.3.4.3.4.3.5.0.0.0 Type
+
+🔹 CLI Command
+
+######## 2.5.3.4.3.4.3.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+######## 2.5.3.4.3.4.3.7.0.0.0 Return Message
+
+Apply complete!
+
+######## 2.5.3.4.3.4.3.8.0.0.0 Has Return
+
+✅ Yes
+
+######## 2.5.3.4.3.4.3.9.0.0.0 Is Activation
+
+❌ No
+
+######## 2.5.3.4.3.4.3.10.0.0.0 Technical Details
+
+######### 2.5.3.4.3.4.3.10.1.0.0 Protocol
+
+Terraform CLI
+
+######### 2.5.3.4.3.4.3.10.2.0.0 Method
+
+terraform apply "tfplan"
+
+######### 2.5.3.4.3.4.3.10.3.0.0 Parameters
+
+*No items available*
+
+######### 2.5.3.4.3.4.3.10.4.0.0 Authentication
+
+Azure Service Principal credentials.
+
+######### 2.5.3.4.3.4.3.10.5.0.0 Error Handling
+
+Apply can fail mid-way, potentially leaving infrastructure in an inconsistent state. Requires manual intervention.
+
+######### 2.5.3.4.3.4.3.10.6.0.0 Performance
+
+Latency depends on infrastructure size.
+
+### 2.5.4.0.0.0.0.0.0.0.0 Validation
+
+#### 2.5.4.1.0.0.0.0.0.0.0 Source Id
+
+ops-team-member
+
+#### 2.5.4.2.0.0.0.0.0.0.0 Target Id
+
+monitoring-system
+
+#### 2.5.4.3.0.0.0.0.0.0.0 Message
+
+15. Post-Rollback Validation
+
+#### 2.5.4.4.0.0.0.0.0.0.0 Sequence Number
+
+16
+
+#### 2.5.4.5.0.0.0.0.0.0.0 Type
+
+🔹 Validation
+
+#### 2.5.4.6.0.0.0.0.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7.0.0.0.0.0.0.0 Return Message
+
+System is confirmed stable
+
+#### 2.5.4.8.0.0.0.0.0.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.4.9.0.0.0.0.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.4.10.0.0.0.0.0.0.0 Technical Details
+
+##### 2.5.4.10.1.0.0.0.0.0.0 Protocol
+
+Manual
+
+##### 2.5.4.10.2.0.0.0.0.0.0 Method
+
+Execute post-rollback validation checklist.
+
+##### 2.5.4.10.3.0.0.0.0.0.0 Parameters
+
+###### 2.5.4.10.3.1.0.0.0.0.0 Check
+
+####### 2.5.4.10.3.1.1.0.0.0.0 Check
+
+Review Grafana for error rates, latency.
+
+###### 2.5.4.10.3.2.0.0.0.0.0 Check
+
+####### 2.5.4.10.3.2.1.0.0.0.0 Check
+
+Check AKS pod statuses are 'Running'.
+
+###### 2.5.4.10.3.3.0.0.0.0.0 Check
+
+####### 2.5.4.10.3.3.1.0.0.0.0 Check
+
+Perform smoke test on user registration and service request creation.
+
+##### 2.5.4.10.4.0.0.0.0.0.0 Authentication
+
+Grafana RBAC
+
+##### 2.5.4.10.5.0.0.0.0.0.0 Error Handling
+
+If validation fails, re-triage or escalate incident.
+
+##### 2.5.4.10.6.0.0.0.0.0.0 Performance
+
+N/A
+
+## 2.6.0.0.0.0.0.0.0.0.0 Notes
+
+### 2.6.1.0.0.0.0.0.0.0.0 Content
+
+#### 2.6.1.1.0.0.0.0.0.0.0 Content
+
+AC-003, AC-007: Database PITR is the only approved method for DB rollback. This accepts potential data loss within the RPO window (15 mins). 'Down' migrations are forbidden in production.
+
+#### 2.6.1.2.0.0.0.0.0.0.0 Position
+
+bottom
+
+#### 2.6.1.3.0.0.0.0.0.0.0 Participant Id
+
+production-db
+
+#### 2.6.1.4.0.0.0.0.0.0.0 Sequence Number
+
+9
+
+### 2.6.2.0.0.0.0.0.0.0.0 Content
+
+#### 2.6.2.1.0.0.0.0.0.0.0 Content
+
+AC-004: The Terraform plan MUST be reviewed carefully before applying to prevent unintended destructive changes caused by state drift.
+
+#### 2.6.2.2.0.0.0.0.0.0.0 Position
+
+bottom
+
+#### 2.6.2.3.0.0.0.0.0.0.0 Participant Id
+
+terraform-cli
+
+#### 2.6.2.4.0.0.0.0.0.0.0 Sequence Number
+
+14
+
+### 2.6.3.0.0.0.0.0.0.0.0 Content
+
+#### 2.6.3.1.0.0.0.0.0.0.0 Content
+
+AC-005: Successful post-rollback validation is mandatory before an incident can be resolved.
+
+#### 2.6.3.2.0.0.0.0.0.0.0 Position
+
+bottom
+
+#### 2.6.3.3.0.0.0.0.0.0.0 Participant Id
+
+ops-team-member
+
+#### 2.6.3.4.0.0.0.0.0.0.0 Sequence Number
+
+16
+
+### 2.6.4.0.0.0.0.0.0.0.0 Content
+
+#### 2.6.4.1.0.0.0.0.0.0.0 Content
+
+AC-006: This entire procedure must be tested in a staging environment quarterly to ensure its effectiveness and familiarity.
+
+#### 2.6.4.2.0.0.0.0.0.0.0 Position
+
+bottom
+
+#### 2.6.4.3.0.0.0.0.0.0.0 Participant Id
+
+*Not specified*
+
+#### 2.6.4.4.0.0.0.0.0.0.0 Sequence Number
+
+*Not specified*
+
+## 2.7.0.0.0.0.0.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | Execution of rollback procedures is highly privile... |
+| Performance Targets | The goal is to complete a standard application-onl... |
+| Error Handling Strategy | If a rollback step fails, the operator must not pr... |
+| Testing Considerations | The rollback procedure must be treated as producti... |
+| Monitoring Requirements | Monitoring is both the trigger and the validation ... |
+| Deployment Considerations | The rollback runbook must be stored in a version-c... |
+

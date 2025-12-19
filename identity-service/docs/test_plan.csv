@@ -1,0 +1,2 @@
+"strategy_version","target_platform","total_test_scenarios","automation_target","quality_confidence_score","risk_coverage_percentage","maintenance_overhead","critical_path_coverage","environments_required"
+"1.0","Warranty Service Platform (Microservices + Mobile)","145","85","0.94","98","Medium","100%","[""Dev"",""QA/Integration"",""Staging/Perf"",""Prod""]"

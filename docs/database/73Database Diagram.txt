@@ -1,0 +1,1 @@
+This diagram illustrates the structure of the 'TechnicianLocation' entity, designed for a time-series database like TimescaleDB. It captures high-frequency GPS data for technicians. The composite primary key, consisting of 'timestamp' and 'technicianId', uniquely identifies each location update, making it highly efficient for time-based queries and analysis.

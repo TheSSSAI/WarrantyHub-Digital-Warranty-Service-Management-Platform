@@ -1,0 +1,35 @@
+sequenceDiagram
+    actor "Customer Mobile Client" as CustomerMobileClient
+    participant "GeolocationService" as GeolocationService
+    participant "APIGateway" as APIGateway
+    participant "ServiceRequestService" as ServiceRequestService
+    participant "Mapbox Directions API" as MapboxDirectionsAPI
+    actor "Customer Mobile Client" as CustomerMobileClient
+
+    activate GeolocationService
+    CustomerMobileClient->>GeolocationService: 1. 1. SendGpsUpdate(jobId, latitude, longitude)
+    activate APIGateway
+    GeolocationService->>APIGateway: 2. 2. GET /api/v1/service-requests/{jobId}/destination
+    APIGateway-->>GeolocationService: 2.3. Return DestinationAddress DTO
+    activate ServiceRequestService
+    APIGateway->>ServiceRequestService: 2.1. 2.1. Forward GET /api/v1/service-requests/{jobId}/destination
+    ServiceRequestService-->>APIGateway: 2.2. HTTP 200 OK with DestinationAddress DTO
+    activate MapboxDirectionsAPI
+    GeolocationService->>MapboxDirectionsAPI: 3. 3. Request Directions (wrapped in Circuit Breaker)
+    MapboxDirectionsAPI-->>GeolocationService: 3.5. Return transformed ETADuration model or null on failure
+    GeolocationService->>GeolocationService: 3.1. 3.1. [Policy] Check Circuit Breaker State
+    GeolocationService-->>GeolocationService: IsClosedOrHalfOpen
+    GeolocationService->>MapboxDirectionsAPI: 3.2. 3.2. [Adapter] GET /directions/v5/mapbox/driving-traffic/{origin_lon,origin_lat;dest_lon,dest_lat}
+    MapboxDirectionsAPI-->>GeolocationService: 3.3. HTTP 200 OK with DirectionsResponse JSON
+    GeolocationService->>GeolocationService: 3.4. 3.4. [Adapter] Transform JSON response to internal ETADuration model
+    GeolocationService-->>GeolocationService: ETADuration { DurationSeconds, DistanceMeters }
+    GeolocationService->>CustomerMobileClient: 4. 4. BroadcastEtaUpdate(etaMinutes, distanceMeters)
+
+    note over MapboxDirectionsAPI: The Mapbox API Key is a sensitive secret and must be loaded at runtime from Azure Key Vault, neve...
+    note over GeolocationService: The broadcast in step 4 is targeted. During the WebSocket connection setup, the customer's client...
+    note over GeolocationService: The entire flow is idempotent for a given GPS update. If the same update is processed twice, the ...
+
+    deactivate MapboxDirectionsAPI
+    deactivate ServiceRequestService
+    deactivate APIGateway
+    deactivate GeolocationService

@@ -1,0 +1,3 @@
+"scenario_name","team_size","estimated_duration_weeks","total_cost","risk_level","capacity_utilization","skill_constraints","critical_path_duration","parallel_work_percentage","resource_bottlenecks","mitigation_strategies","success_probability","quality_risk","timeline_buffer"
+"Optimized Baseline","6","6","105000","Medium","76","Mobile Sync complexity in Sprint 3","145","65","Backend API availability for Mobile integration","API-first design with mock servers","85","Medium","1.5"
+"Mobile Complexity Surge","6","7","122500","High","92","WatermelonDB sync edge cases","185","50","Mobile/Frontend Developer bandwidth","Reallocate Tech Lead to coding tasks; Cut non-critical animations","70","High",""

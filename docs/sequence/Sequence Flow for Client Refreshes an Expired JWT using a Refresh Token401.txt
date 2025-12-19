@@ -1,0 +1,944 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-AF-002
+
+## 1.2 Name
+
+Client Refreshes an Expired JWT using a Refresh Token
+
+## 1.3 Description
+
+A client application's JWT expires. It makes a request to a secure endpoint using a long-lived refresh token to obtain a new, short-lived JWT without requiring user credentials.
+
+## 1.4 Type
+
+🔹 AuthenticationFlow
+
+## 1.5 Purpose
+
+To provide a seamless user experience by maintaining an authenticated session without repeatedly asking for a password, while still using short-lived access tokens for better security.
+
+## 1.6 Complexity
+
+High
+
+## 1.7 Priority
+
+🚨 Critical
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- mobile-client-013
+- api-gateway-001
+- identity-service-002
+
+## 1.10 Key Interactions
+
+- Client makes an API call with an expired JWT and receives a 401 Unauthorized response.
+- The client's auth handler intercepts the 401 error.
+- The client sends a request to a dedicated '/token/refresh' endpoint on the IdentityService, providing its stored refresh token.
+- The IdentityService validates the refresh token against its store, ensuring it's not expired or revoked.
+- If valid, the IdentityService generates a new short-lived JWT and a new refresh token (rotating refresh tokens).
+- The IdentityService revokes the old refresh token.
+- The client receives the new JWT and refresh token, stores them securely, and automatically retries the original failed API request with the new JWT.
+
+## 1.11 Triggers
+
+- An API call fails with a 401 Unauthorized status due to an expired JWT.
+
+## 1.12 Outcomes
+
+- The client obtains a new valid JWT and session is extended.
+- The user's session remains active without re-authentication.
+- The original API request succeeds on retry.
+
+## 1.13 Business Rules
+
+- Refresh tokens must be long-lived but single-use (rotating).
+- If a refresh token is compromised or invalid, the user must be forced to log in again.
+
+## 1.14 Error Scenarios
+
+- The refresh token is expired or has been revoked.
+- The refresh endpoint is unavailable.
+- The client fails to securely store the new tokens.
+
+## 1.15 Integration Points
+
+- Azure Active Directory B2C (Token endpoint)
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-AF-002
+
+## 2.2 Name
+
+Implementation Sequence: JWT Refresh using Rotating Refresh Tokens
+
+## 2.3 Description
+
+A detailed technical sequence for a client application to refresh an expired JWT access token by exchanging a single-use, long-lived refresh token. This sequence follows the OAuth 2.0 refresh token grant type with a rotating token strategy to enhance security. It details the client-side interception of a 401 error, the token exchange with the Identity Service, secure storage of new tokens, and the automatic retrying of the original failed request.
+
+## 2.4 Participants
+
+### 2.4.1 Client Application
+
+#### 2.4.1.1 Repository Id
+
+mobile-client-013
+
+#### 2.4.1.2 Display Name
+
+Mobile Client
+
+#### 2.4.1.3 Type
+
+🔹 Client Application
+
+#### 2.4.1.4 Technology
+
+Flutter 3.19+
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #4CAF50 |
+| Stereotype | Client |
+
+### 2.4.2.0 Gateway
+
+#### 2.4.2.1 Repository Id
+
+api-gateway-001
+
+#### 2.4.2.2 Display Name
+
+API Gateway
+
+#### 2.4.2.3 Type
+
+🔹 Gateway
+
+#### 2.4.2.4 Technology
+
+YARP on .NET 8
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | rectangle |
+| Color | #2196F3 |
+| Stereotype | Gateway |
+
+### 2.4.3.0 Microservice
+
+#### 2.4.3.1 Repository Id
+
+identity-service-002
+
+#### 2.4.3.2 Display Name
+
+Identity Service
+
+#### 2.4.3.3 Type
+
+🔹 Microservice
+
+#### 2.4.3.4 Technology
+
+.NET 8, ASP.NET Core 8
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | rectangle |
+| Color | #FFC107 |
+| Stereotype | Service |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 HTTP Request
+
+#### 2.5.1.1 Source Id
+
+mobile-client-013
+
+#### 2.5.1.2 Target Id
+
+api-gateway-001
+
+#### 2.5.1.3 Message
+
+1. Request Protected Resource with Expired JWT
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 HTTP Request
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+2. Respond with 401 Unauthorized
+
+#### 2.5.1.8 Has Return
+
+✅ Yes
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+##### 2.5.1.10.1 Protocol
+
+HTTP/2
+
+##### 2.5.1.10.2 Method
+
+GET /api/v1/products
+
+##### 2.5.1.10.3 Parameters
+
+###### 2.5.1.10.3.1 Authorization
+
+####### 2.5.1.10.3.1.1 Name
+
+Authorization
+
+####### 2.5.1.10.3.1.2 Value
+
+Bearer <expired_jwt>
+
+####### 2.5.1.10.3.1.3 In
+
+header
+
+###### 2.5.1.10.3.2.0 X-Correlation-ID
+
+####### 2.5.1.10.3.2.1 Name
+
+X-Correlation-ID
+
+####### 2.5.1.10.3.2.2 Value
+
+uuid-1234
+
+####### 2.5.1.10.3.2.3 In
+
+header
+
+##### 2.5.1.10.4.0.0 Authentication
+
+JWT Bearer Token
+
+##### 2.5.1.10.5.0.0 Error Handling
+
+Client-side HTTP interceptor must be configured to catch 401 responses.
+
+##### 2.5.1.10.6.0.0 Performance
+
+###### 2.5.1.10.6.1.0 Latency Sla Ms
+
+250
+
+#### 2.5.1.11.0.0.0 Nested Interactions
+
+- {'sourceId': 'api-gateway-001', 'targetId': 'api-gateway-001', 'message': '1a. Validate JWT Signature and Claims', 'sequenceNumber': 1.1, 'type': 'Internal Process', 'isSynchronous': True, 'returnMessage': 'JWT expired', 'hasReturn': True, 'isActivation': False, 'technicalDetails': {'protocol': 'Internal', 'method': 'JwtBearerHandler.HandleAuthenticateAsync()', 'parameters': [], 'authentication': 'N/A', 'errorHandling': 'Detects TokenExpiredException.', 'performance': {'latencySlaMs': 5}}, 'nestedInteractions': []}
+
+### 2.5.2.0.0.0.0 Internal Process
+
+#### 2.5.2.1.0.0.0 Source Id
+
+mobile-client-013
+
+#### 2.5.2.2.0.0.0 Target Id
+
+mobile-client-013
+
+#### 2.5.2.3.0.0.0 Message
+
+3. Intercept 401 Response
+
+#### 2.5.2.4.0.0.0 Sequence Number
+
+3
+
+#### 2.5.2.5.0.0.0 Type
+
+🔹 Internal Process
+
+#### 2.5.2.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7.0.0.0 Return Message
+
+
+
+#### 2.5.2.8.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.2.9.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.2.10.0.0.0 Technical Details
+
+##### 2.5.2.10.1.0.0 Protocol
+
+Internal
+
+##### 2.5.2.10.2.0.0 Method
+
+AuthHttpInterceptor.intercept()
+
+##### 2.5.2.10.3.0.0 Parameters
+
+- {'name': 'errorResponse', 'type': 'HttpResponse', 'description': 'The 401 response object.'}
+
+##### 2.5.2.10.4.0.0 Authentication
+
+N/A
+
+##### 2.5.2.10.5.0.0 Error Handling
+
+If no refresh token is available in secure storage, redirect to login screen.
+
+##### 2.5.2.10.6.0.0 Performance
+
+*No data available*
+
+#### 2.5.2.11.0.0.0 Nested Interactions
+
+*No items available*
+
+### 2.5.3.0.0.0.0 HTTP Request
+
+#### 2.5.3.1.0.0.0 Source Id
+
+mobile-client-013
+
+#### 2.5.3.2.0.0.0 Target Id
+
+identity-service-002
+
+#### 2.5.3.3.0.0.0 Message
+
+4. Request New Token with Refresh Token
+
+#### 2.5.3.4.0.0.0 Sequence Number
+
+4
+
+#### 2.5.3.5.0.0.0 Type
+
+🔹 HTTP Request
+
+#### 2.5.3.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7.0.0.0 Return Message
+
+9. Respond with New JWT and Refresh Token
+
+#### 2.5.3.8.0.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.3.9.0.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.3.10.0.0.0 Technical Details
+
+##### 2.5.3.10.1.0.0 Protocol
+
+HTTP/2
+
+##### 2.5.3.10.2.0.0 Method
+
+POST /api/identity/token/refresh
+
+##### 2.5.3.10.3.0.0 Parameters
+
+- {'name': 'Body', 'in': 'body', 'schema': {'type': 'object', 'properties': {'refreshToken': {'type': 'string', 'example': 'long_lived_opaque_refresh_token'}}, 'required': ['refreshToken']}}
+
+##### 2.5.3.10.4.0.0 Authentication
+
+None (Endpoint is public but requires valid refresh token in body)
+
+##### 2.5.3.10.5.0.0 Error Handling
+
+If this call fails with 401/403, client must clear tokens and force re-login. If 5xx, retry with backoff.
+
+##### 2.5.3.10.6.0.0 Performance
+
+###### 2.5.3.10.6.1.0 Latency Sla Ms
+
+150
+
+#### 2.5.3.11.0.0.0 Nested Interactions
+
+##### 2.5.3.11.1.0.0 Internal Process
+
+###### 2.5.3.11.1.1.0 Source Id
+
+identity-service-002
+
+###### 2.5.3.11.1.2.0 Target Id
+
+identity-service-002
+
+###### 2.5.3.11.1.3.0 Message
+
+5. Validate Refresh Token
+
+###### 2.5.3.11.1.4.0 Sequence Number
+
+5
+
+###### 2.5.3.11.1.5.0 Type
+
+🔹 Internal Process
+
+###### 2.5.3.11.1.6.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.3.11.1.7.0 Return Message
+
+Token is valid and active
+
+###### 2.5.3.11.1.8.0 Has Return
+
+✅ Yes
+
+###### 2.5.3.11.1.9.0 Is Activation
+
+❌ No
+
+###### 2.5.3.11.1.10.0 Technical Details
+
+####### 2.5.3.11.1.10.1 Protocol
+
+Database Query
+
+####### 2.5.3.11.1.10.2 Method
+
+DBContext.RefreshTokens.FirstOrDefaultAsync()
+
+####### 2.5.3.11.1.10.3 Parameters
+
+- {'name': 'WHERE', 'value': 'TokenHash == HASH(refreshToken) AND IsRevoked == false AND ExpiresAt > UtcNow'}
+
+####### 2.5.3.11.1.10.4 Authentication
+
+N/A
+
+####### 2.5.3.11.1.10.5 Error Handling
+
+If token is not found, expired, or revoked, throw SecurityTokenException leading to a 401 response.
+
+####### 2.5.3.11.1.10.6 Performance
+
+######## 2.5.3.11.1.10.6.1 Latency Sla Ms
+
+20
+
+######## 2.5.3.11.1.10.6.2 Notes
+
+Query must use an index on the TokenHash column.
+
+###### 2.5.3.11.1.11.0.0 Nested Interactions
+
+*No items available*
+
+##### 2.5.3.11.2.0.0.0 Internal Process
+
+###### 2.5.3.11.2.1.0.0 Source Id
+
+identity-service-002
+
+###### 2.5.3.11.2.2.0.0 Target Id
+
+identity-service-002
+
+###### 2.5.3.11.2.3.0.0 Message
+
+6. Revoke Old Refresh Token (Single-Use)
+
+###### 2.5.3.11.2.4.0.0 Sequence Number
+
+6
+
+###### 2.5.3.11.2.5.0.0 Type
+
+🔹 Internal Process
+
+###### 2.5.3.11.2.6.0.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.3.11.2.7.0.0 Return Message
+
+Token marked as revoked
+
+###### 2.5.3.11.2.8.0.0 Has Return
+
+✅ Yes
+
+###### 2.5.3.11.2.9.0.0 Is Activation
+
+❌ No
+
+###### 2.5.3.11.2.10.0.0 Technical Details
+
+####### 2.5.3.11.2.10.1.0 Protocol
+
+Database Command
+
+####### 2.5.3.11.2.10.2.0 Method
+
+DBContext.RefreshTokens.Update()
+
+####### 2.5.3.11.2.10.3.0 Parameters
+
+- {'name': 'SET', 'value': 'IsRevoked = true, RevokedAt = UtcNow'}
+
+####### 2.5.3.11.2.10.4.0 Authentication
+
+N/A
+
+####### 2.5.3.11.2.10.5.0 Error Handling
+
+Operation must be part of a transaction with the creation of the new token.
+
+####### 2.5.3.11.2.10.6.0 Performance
+
+######## 2.5.3.11.2.10.6.1 Latency Sla Ms
+
+10
+
+###### 2.5.3.11.2.11.0.0 Nested Interactions
+
+*No items available*
+
+##### 2.5.3.11.3.0.0.0 Internal Process
+
+###### 2.5.3.11.3.1.0.0 Source Id
+
+identity-service-002
+
+###### 2.5.3.11.3.2.0.0 Target Id
+
+identity-service-002
+
+###### 2.5.3.11.3.3.0.0 Message
+
+7. Generate and Persist New Tokens
+
+###### 2.5.3.11.3.4.0.0 Sequence Number
+
+7
+
+###### 2.5.3.11.3.5.0.0 Type
+
+🔹 Internal Process
+
+###### 2.5.3.11.3.6.0.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.3.11.3.7.0.0 Return Message
+
+New tokens generated
+
+###### 2.5.3.11.3.8.0.0 Has Return
+
+✅ Yes
+
+###### 2.5.3.11.3.9.0.0 Is Activation
+
+❌ No
+
+###### 2.5.3.11.3.10.0.0 Technical Details
+
+####### 2.5.3.11.3.10.1.0 Protocol
+
+Internal Logic & DB Command
+
+####### 2.5.3.11.3.10.2.0 Method
+
+TokenService.GenerateTokens() & DBContext.RefreshTokens.AddAsync()
+
+####### 2.5.3.11.3.10.3.0 Parameters
+
+- {'name': 'userId', 'value': 'User ID from old token record'}
+
+####### 2.5.3.11.3.10.4.0 Authentication
+
+N/A
+
+####### 2.5.3.11.3.10.5.0 Error Handling
+
+Entire token rotation (revoke old, create new) must be within a single atomic database transaction.
+
+####### 2.5.3.11.3.10.6.0 Performance
+
+######## 2.5.3.11.3.10.6.1 Latency Sla Ms
+
+30
+
+###### 2.5.3.11.3.11.0.0 Nested Interactions
+
+*No items available*
+
+##### 2.5.3.11.4.0.0.0 Internal Process
+
+###### 2.5.3.11.4.1.0.0 Source Id
+
+identity-service-002
+
+###### 2.5.3.11.4.2.0.0 Target Id
+
+identity-service-002
+
+###### 2.5.3.11.4.3.0.0 Message
+
+8. Log Security Event
+
+###### 2.5.3.11.4.4.0.0 Sequence Number
+
+8
+
+###### 2.5.3.11.4.5.0.0 Type
+
+🔹 Internal Process
+
+###### 2.5.3.11.4.6.0.0 Is Synchronous
+
+❌ No
+
+###### 2.5.3.11.4.7.0.0 Return Message
+
+
+
+###### 2.5.3.11.4.8.0.0 Has Return
+
+❌ No
+
+###### 2.5.3.11.4.9.0.0 Is Activation
+
+❌ No
+
+###### 2.5.3.11.4.10.0.0 Technical Details
+
+####### 2.5.3.11.4.10.1.0 Protocol
+
+Async Logging
+
+####### 2.5.3.11.4.10.2.0 Method
+
+Logger.LogInformation()
+
+####### 2.5.3.11.4.10.3.0 Parameters
+
+- {'name': 'message', 'value': "User '{UserId}' successfully refreshed authentication token. Old token ID: {OldTokenId}, New token ID: {NewTokenId}."}
+
+####### 2.5.3.11.4.10.4.0 Authentication
+
+N/A
+
+####### 2.5.3.11.4.10.5.0 Error Handling
+
+N/A
+
+####### 2.5.3.11.4.10.6.0 Performance
+
+*No data available*
+
+###### 2.5.3.11.4.11.0.0 Nested Interactions
+
+*No items available*
+
+### 2.5.4.0.0.0.0.0 Internal Process
+
+#### 2.5.4.1.0.0.0.0 Source Id
+
+mobile-client-013
+
+#### 2.5.4.2.0.0.0.0 Target Id
+
+mobile-client-013
+
+#### 2.5.4.3.0.0.0.0 Message
+
+10. Securely Store New Tokens
+
+#### 2.5.4.4.0.0.0.0 Sequence Number
+
+10
+
+#### 2.5.4.5.0.0.0.0 Type
+
+🔹 Internal Process
+
+#### 2.5.4.6.0.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7.0.0.0.0 Return Message
+
+
+
+#### 2.5.4.8.0.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.4.9.0.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.4.10.0.0.0.0 Technical Details
+
+##### 2.5.4.10.1.0.0.0 Protocol
+
+Internal
+
+##### 2.5.4.10.2.0.0.0 Method
+
+SecureStorage.write()
+
+##### 2.5.4.10.3.0.0.0 Parameters
+
+###### 2.5.4.10.3.1.0.0 key
+
+####### 2.5.4.10.3.1.1.0 Name
+
+key
+
+####### 2.5.4.10.3.1.2.0 Value
+
+'jwt', 'refreshToken'
+
+###### 2.5.4.10.3.2.0.0 value
+
+####### 2.5.4.10.3.2.1.0 Name
+
+value
+
+####### 2.5.4.10.3.2.2.0 Value
+
+The new tokens received from the Identity Service.
+
+##### 2.5.4.10.4.0.0.0 Authentication
+
+N/A
+
+##### 2.5.4.10.5.0.0.0 Error Handling
+
+If storage fails, the session will be lost. The app must handle this gracefully.
+
+##### 2.5.4.10.6.0.0.0 Performance
+
+###### 2.5.4.10.6.1.0.0 Notes
+
+Uses platform-native secure storage (Keychain/Keystore).
+
+#### 2.5.4.11.0.0.0.0 Nested Interactions
+
+*No items available*
+
+### 2.5.5.0.0.0.0.0 HTTP Request
+
+#### 2.5.5.1.0.0.0.0 Source Id
+
+mobile-client-013
+
+#### 2.5.5.2.0.0.0.0 Target Id
+
+api-gateway-001
+
+#### 2.5.5.3.0.0.0.0 Message
+
+11. Retry Original Request with New JWT
+
+#### 2.5.5.4.0.0.0.0 Sequence Number
+
+11
+
+#### 2.5.5.5.0.0.0.0 Type
+
+🔹 HTTP Request
+
+#### 2.5.5.6.0.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7.0.0.0.0 Return Message
+
+12. Respond with 200 OK and Resource Data
+
+#### 2.5.5.8.0.0.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.5.9.0.0.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.5.10.0.0.0.0 Technical Details
+
+##### 2.5.5.10.1.0.0.0 Protocol
+
+HTTP/2
+
+##### 2.5.5.10.2.0.0.0 Method
+
+GET /api/v1/products
+
+##### 2.5.5.10.3.0.0.0 Parameters
+
+###### 2.5.5.10.3.1.0.0 Authorization
+
+####### 2.5.5.10.3.1.1.0 Name
+
+Authorization
+
+####### 2.5.5.10.3.1.2.0 Value
+
+Bearer <new_jwt>
+
+####### 2.5.5.10.3.1.3.0 In
+
+header
+
+###### 2.5.5.10.3.2.0.0 X-Correlation-ID
+
+####### 2.5.5.10.3.2.1.0 Name
+
+X-Correlation-ID
+
+####### 2.5.5.10.3.2.2.0 Value
+
+uuid-1234
+
+##### 2.5.5.10.4.0.0.0 Authentication
+
+JWT Bearer Token
+
+##### 2.5.5.10.5.0.0.0 Error Handling
+
+If this retry fails, the interceptor should not attempt another refresh to avoid infinite loops.
+
+##### 2.5.5.10.6.0.0.0 Performance
+
+###### 2.5.5.10.6.1.0.0 Latency Sla Ms
+
+250
+
+#### 2.5.5.11.0.0.0.0 Nested Interactions
+
+*No items available*
+
+## 2.6.0.0.0.0.0.0 Notes
+
+### 2.6.1.0.0.0.0.0 Content
+
+#### 2.6.1.1.0.0.0.0 Content
+
+Client-side authentication logic must be encapsulated in an HTTP interceptor or middleware to handle token refresh transparently without disrupting business logic code.
+
+#### 2.6.1.2.0.0.0.0 Position
+
+top-left
+
+#### 2.6.1.3.0.0.0.0 Participant Id
+
+mobile-client-013
+
+#### 2.6.1.4.0.0.0.0 Sequence Number
+
+3
+
+### 2.6.2.0.0.0.0.0 Content
+
+#### 2.6.2.1.0.0.0.0 Content
+
+The use of ROTATING refresh tokens is a critical security measure. Each time a refresh token is used, it is invalidated and a new one is issued. This mitigates the risk of a leaked refresh token being used indefinitely.
+
+#### 2.6.2.2.0.0.0.0 Position
+
+bottom-right
+
+#### 2.6.2.3.0.0.0.0 Participant Id
+
+identity-service-002
+
+#### 2.6.2.4.0.0.0.0 Sequence Number
+
+6
+
+### 2.6.3.0.0.0.0.0 Content
+
+#### 2.6.3.1.0.0.0.0 Content
+
+The `/api/identity/token/refresh` endpoint must NOT be protected by the standard JWT validation middleware. It is a public endpoint that authenticates the request based on the validity of the refresh token provided in the payload.
+
+#### 2.6.3.2.0.0.0.0 Position
+
+top-right
+
+#### 2.6.3.3.0.0.0.0 Participant Id
+
+identity-service-002
+
+#### 2.6.3.4.0.0.0.0 Sequence Number
+
+4
+
+## 2.7.0.0.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | Refresh tokens must be stored on the client using ... |
+| Performance Targets | The P95 latency for the `/api/identity/token/refre... |
+| Error Handling Strategy | If the refresh token is invalid, expired, or revok... |
+| Testing Considerations | Test cases must include: 1) Successful refresh flo... |
+| Monitoring Requirements | Monitor the latency and error rate (4xx and 5xx) o... |
+| Deployment Considerations | The routing configuration in the API Gateway must ... |
+

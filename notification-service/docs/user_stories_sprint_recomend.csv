@@ -1,0 +1,4 @@
+"sprint_number","story_ids","total_points","sprint_goal","dependencies_resolved"
+"1","[""US-AUTH-001"",""US-ROUTE-001""]","13","Establish secure user foundation and core service routing logic to enable ticket creation.","true"
+"2","[""US-OCR-001"",""US-ANALYTICS-001""]","16","Enhance product onboarding experience and provide visibility to brand administrators.","true"
+"3","[""US-LOC-001"",""US-OFFLINE-001""]","26","Deliver advanced mobile technician features including real-time tracking and offline resilience (Note: High velocity required or split sprint).","true"

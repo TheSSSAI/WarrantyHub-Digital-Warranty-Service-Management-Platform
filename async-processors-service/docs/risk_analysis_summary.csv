@@ -1,0 +1,2 @@
+"total_risks_identified","critical_risks","high_priority_risks","average_risk_score","key_risk_themes","immediate_actions_required"
+"7","2","3","16.4","[""Mobile OS Constraints on Background Processing"",""Identity Management Complexity (Azure AD B2C)"",""Data Consistency in Offline/Distributed Systems""]","[""Initiate technical spike for React Native background location tracking modules immediately."",""Validate Azure AD B2C custom policy integration with NestJS Passport."",""Finalize offline data sync strategy and conflict resolution logic.""]"

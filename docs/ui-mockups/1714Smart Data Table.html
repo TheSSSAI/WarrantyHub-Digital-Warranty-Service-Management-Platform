@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Data Table Component</title>
+  <style>
+    /* =========================================
+       1. DESIGN TOKENS
+       ========================================= */
+    :root {
+      /* Colors */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      
+      --color-white: #ffffff;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-600: #4b5563;
+      --color-gray-700: #374151;
+      --color-gray-900: #111827;
+
+      --color-success-bg: #ecfdf5;
+      --color-success-text: #065f46;
+      --color-warning-bg: #fffbeb;
+      --color-warning-text: #92400e;
+      --color-error-bg: #fef2f2;
+      --color-error-text: #b91c1c;
+
+      /* Typography */
+      --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-size-xs: 12px;
+      --font-size-sm: 14px;
+      --font-size-md: 16px;
+      
+      /* Spacing */
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+
+      /* Borders & Shadows */
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-full: 9999px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --border-color: var(--color-gray-200);
+
+      /* Component Specific Tokens */
+      --table-header-bg: var(--color-gray-50);
+      --table-header-text: var(--color-gray-500);
+      --table-row-hover: var(--color-gray-50);
+      --table-cell-padding: 16px 24px;
+      --table-cell-padding-compact: 12px 16px;
+    }
+
+    /* =========================================
+       2. RESET & BASE
+       ========================================= */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-family-primary);
+      background-color: var(--color-gray-100);
+      color: var(--color-gray-900);
+      padding: var(--spacing-lg);
+      line-height: 1.5;
+    }
+
+    h2 { font-size: 20px; font-weight: 600; margin-bottom: var(--spacing-sm); color: var(--color-gray-900); }
+    p { color: var(--color-gray-500); margin-bottom: var(--spacing-lg); font-size: var(--font-size-sm); }
+    
+    /* Focus Management */
+    :focus-visible {
+      outline: 2px solid var(--color-primary-600);
+      outline-offset: 2px;
+    }
+
+    /* =========================================
+       3. ATOMIC & MOLECULAR DEPENDENCIES
+       ========================================= */
+    /* Button Atom */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: background-color 0.2s;
+      gap: var(--spacing-sm);
+    }
+    .btn--primary { background: var(--color-primary-600); color: var(--color-white); }
+    .btn--primary:hover { background: var(--color-primary-700); }
+    .btn--secondary { background: var(--color-white); border-color: var(--color-gray-300); color: var(--color-gray-700); }
+    .btn--secondary:hover { background: var(--color-gray-50); }
+    .btn--ghost { background: transparent; color: var(--color-gray-600); padding: 4px 8px; }
+    .btn--ghost:hover { background: var(--color-gray-100); color: var(--color-gray-900); }
+    .btn--icon { padding: 8px; }
+
+    /* Input Atom */
+    .input {
+      padding: 8px 12px;
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-sm);
+      width: 100%;
+    }
+    .input-group { position: relative; max-width: 300px; }
+    .input-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--color-gray-400); }
+    .input--with-icon { padding-left: 36px; }
+
+    /* Avatar Atom */
+    .avatar {
+      width: 32px; height: 32px;
+      border-radius: var(--radius-full);
+      background: var(--color-gray-200);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 600; color: var(--color-gray-600);
+      overflow: hidden;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* Badge Atom */
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      font-size: var(--font-size-xs);
+      font-weight: 500;
+    }
+    .badge--success { background: var(--color-success-bg); color: var(--color-success-text); }
+    .badge--warning { background: var(--color-warning-bg); color: var(--color-warning-text); }
+    .badge--error { background: var(--color-error-bg); color: var(--color-error-text); }
+    .badge--neutral { background: var(--color-gray-100); color: var(--color-gray-700); }
+
+    /* Checkbox Atom */
+    .checkbox {
+      width: 16px; height: 16px;
+      border: 1px solid var(--color-gray-300);
+      border-radius: 4px;
+      cursor: pointer;
+      accent-color: var(--color-primary-600);
+    }
+
+    /* Icon Helper */
+    .icon { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    
+    /* =========================================
+       4. ORGANISM: SMART DATA TABLE
+       ========================================= */
+    .smart-table-container {
+      background: var(--color-white);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden; /* Ensures border radius clips content */
+    }
+
+    /* 4a. Table Toolbar (Filter/Search) */
+    .smart-table__toolbar {
+      padding: var(--spacing-md) var(--spacing-lg);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--spacing-md);
+      background-color: var(--color-white);
+    }
+
+    .smart-table__actions {
+      display: flex;
+      gap: var(--spacing-sm);
+      align-items: center;
+    }
+
+    /* 4b. Table Structure */
+    .smart-table-wrapper {
+      width: 100%;
+      overflow-x: auto; /* Horizontal scroll on smaller screens */
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .smart-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: var(--font-size-sm);
+      white-space: nowrap;
+    }
+
+    /* Header */
+    .smart-table__head {
+      background-color: var(--table-header-bg);
+    }
+
+    .smart-table__header-cell {
+      padding: 12px 24px;
+      color: var(--table-header-text);
+      font-weight: 500;
+      font-size: var(--font-size-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .smart-table__header-cell--sortable {
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    .smart-table__header-cell--sortable:hover {
+      color: var(--color-gray-700);
+      background-color: var(--color-gray-100);
+    }
+
+    .smart-table__sort-icon {
+      display: inline-block;
+      margin-left: 4px;
+      vertical-align: middle;
+      opacity: 0.3;
+    }
+    
+    .smart-table__header-cell[aria-sort="ascending"] .smart-table__sort-icon,
+    .smart-table__header-cell[aria-sort="descending"] .smart-table__sort-icon {
+      opacity: 1;
+      color: var(--color-primary-600);
+    }
+
+    /* Body & Rows */
+    .smart-table__row {
+      border-bottom: 1px solid var(--border-color);
+      transition: background-color 0.15s ease;
+    }
+
+    .smart-table__row:last-child {
+      border-bottom: none;
+    }
+
+    .smart-table__row:hover {
+      background-color: var(--table-row-hover);
+    }
+
+    .smart-table__row--selected {
+      background-color: var(--color-primary-50);
+    }
+
+    .smart-table__cell {
+      padding: var(--table-cell-padding);
+      color: var(--color-gray-600);
+      vertical-align: middle;
+    }
+
+    .smart-table__cell--primary {
+      font-weight: 500;
+      color: var(--color-gray-900);
+    }
+    
+    .smart-table__cell--checkbox {
+      width: 40px;
+      padding-right: 0;
+    }
+
+    /* Composite Cell Content */
+    .cell-user {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .cell-user__info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .cell-user__email {
+      font-size: var(--font-size-xs);
+      color: var(--color-gray-500);
+    }
+
+    /* 4c. Footer / Pagination */
+    .smart-table__footer {
+      padding: 12px 24px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--color-white);
+      flex-wrap: wrap;
+      gap: var(--spacing-md);
+    }
+
+    .pagination {
+      display: flex;
+      gap: -1px; /* Collapse borders */
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .pagination__btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 12px;
+      border: 1px solid var(--color-gray-300);
+      background: var(--color-white);
+      font-size: var(--font-size-sm);
+      color: var(--color-gray-500);
+      text-decoration: none;
+      margin-left: -1px;
+    }
+
+    .pagination__btn:first-child { border-top-left-radius: var(--radius-md); border-bottom-left-radius: var(--radius-md); margin-left: 0; }
+    .pagination__btn:last-child { border-top-right-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); }
+
+    .pagination__btn:hover { background-color: var(--color-gray-50); z-index: 1; }
+    .pagination__btn--active { background-color: var(--color-primary-50); border-color: var(--color-primary-600); color: var(--color-primary-600); z-index: 2; }
+    .pagination__btn--disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* =========================================
+       5. STATES (Loading, Empty, Error)
+       ========================================= */
+    /* Loading Skeleton */
+    .skeleton {
+      background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+      height: 16px;
+      display: inline-block;
+    }
+    
+    .skeleton--avatar { width: 32px; height: 32px; border-radius: 50%; }
+    .skeleton--text-short { width: 80px; }
+    .skeleton--text-long { width: 140px; }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Empty State */
+    .smart-table__empty {
+      padding: 48px;
+      text-align: center;
+      color: var(--color-gray-500);
+    }
+    
+    .smart-table__empty-icon {
+      width: 48px;
+      height: 48px;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-gray-400);
+    }
+
+    /* =========================================
+       6. RESPONSIVE ADAPTATIONS (Mobile Card View)
+       ========================================= */
+    @media (max-width: 768px) {
+      .smart-table-container--responsive {
+        border: none;
+        box-shadow: none;
+        background: transparent;
+      }
+      
+      .smart-table-container--responsive .smart-table__toolbar {
+        background: transparent;
+        border: none;
+        padding: 0 0 var(--spacing-md) 0;
+      }
+
+      .smart-table-container--responsive .smart-table__head {
+        display: none; /* Hide header on mobile */
+      }
+
+      .smart-table-container--responsive .smart-table__row {
+        display: block;
+        background: var(--color-white);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        margin-bottom: var(--spacing-md);
+        box-shadow: var(--shadow-sm);
+        padding: var(--spacing-md);
+      }
+
+      .smart-table-container--responsive .smart-table__cell {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: none;
+        padding: 8px 0;
+        text-align: right;
+        font-size: var(--font-size-sm);
+      }
+
+      .smart-table-container--responsive .smart-table__cell::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--color-gray-500);
+        font-size: var(--font-size-xs);
+        text-transform: uppercase;
+        margin-right: auto;
+        text-align: left;
+      }
+
+      /* Specific Tweaks for Card View Content */
+      .smart-table-container--responsive .smart-table__cell--checkbox {
+        display: none; /* Hide bulk select on mobile for simplicity */
+      }
+
+      .smart-table-container--responsive .cell-user {
+        flex-direction: row-reverse;
+      }
+      
+      .smart-table-container--responsive .cell-user__info {
+        text-align: right;
+      }
+
+      .smart-table-container--responsive .smart-table__footer {
+        flex-direction: column;
+        gap: var(--spacing-md);
+        border: none;
+        background: transparent;
+        padding: 0;
+      }
+      
+      .smart-table-container--responsive .pagination {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =========================================
+       SHOWCASE: Variant 1 - Admin CRUD Table
+       ========================================= -->
+  <section style="margin-bottom: 60px;">
+    <h2>Variant 1: Admin CRUD Table (Desktop View)</h2>
+    <p>Standard data table for managing users, products, or service centers. Features sorting, filtering, selection, and actions.</p>
+    
+    <div class="smart-table-container">
+      <!-- Toolbar -->
+      <div class="smart-table__toolbar">
+        <div class="input-group">
+          <svg class="icon input-icon" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          <input type="text" class="input input--with-icon" placeholder="Search technicians...">
+        </div>
+        <div class="smart-table__actions">
+          <button class="btn btn--secondary">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+            Filter
+          </button>
+          <button class="btn btn--primary">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
+            Add Technician
+          </button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="smart-table-wrapper">
+        <table class="smart-table">
+          <thead class="smart-table__head">
+            <tr>
+              <th class="smart-table__header-cell smart-table__cell--checkbox">
+                <input type="checkbox" class="checkbox" aria-label="Select all rows">
+              </th>
+              <th class="smart-table__header-cell smart-table__header-cell--sortable" aria-sort="ascending" tabindex="0" role="columnheader">
+                Technician
+                <svg class="icon smart-table__sort-icon" viewBox="0 0 24 24"><path d="M7 11l5-5m0 0l5 5m-5-5v12"></path></svg>
+              </th>
+              <th class="smart-table__header-cell">Status</th>
+              <th class="smart-table__header-cell">Role</th>
+              <th class="smart-table__header-cell smart-table__header-cell--sortable" tabindex="0" role="columnheader">
+                Last Active
+                <svg class="icon smart-table__sort-icon" viewBox="0 0 24 24"><path d="M7 11l5-5m0 0l5 5m-5-5v12"></path></svg>
+              </th>
+              <th class="smart-table__header-cell" style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Row 1 -->
+            <tr class="smart-table__row">
+              <td class="smart-table__cell smart-table__cell--checkbox">
+                <input type="checkbox" class="checkbox" aria-label="Select row">
+              </td>
+              <td class="smart-table__cell smart-table__cell--primary">
+                <div class="cell-user">
+                  <div class="avatar"><img src="https://i.pravatar.cc/150?u=1" alt="Avatar of Alex Johnson"></div>
+                  <div class="cell-user__info">
+                    <span>Alex Johnson</span>
+                    <span class="cell-user__email">alex.j@service.com</span>
+                  </div>
+                </div>
+              </td>
+              <td class="smart-table__cell">
+                <span class="badge badge--success">Active</span>
+              </td>
+              <td class="smart-table__cell">Field Tech</td>
+              <td class="smart-table__cell">2 mins ago</td>
+              <td class="smart-table__cell" style="text-align: right;">
+                <button class="btn btn--ghost btn--icon" aria-label="Edit">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                </button>
+                <button class="btn btn--ghost btn--icon" aria-label="Delete" style="color: var(--color-error-text);">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+              </td>
+            </tr>
+            <!-- Row 2 -->
+            <tr class="smart-table__row">
+              <td class="smart-table__cell smart-table__cell--checkbox">
+                <input type="checkbox" class="checkbox" aria-label="Select row">
+              </td>
+              <td class="smart-table__cell smart-table__cell--primary">
+                <div class="cell-user">
+                  <div class="avatar" style="background: var(--color-primary-100); color: var(--color-primary-700);">SM</div>
+                  <div class="cell-user__info">
+                    <span>Sarah Miller</span>
+                    <span class="cell-user__email">sarah.m@service.com</span>
+                  </div>
+                </div>
+              </td>
+              <td class="smart-table__cell">
+                <span class="badge badge--warning">On Job</span>
+              </td>
+              <td class="smart-table__cell">Senior Tech</td>
+              <td class="smart-table__cell">1 hour ago</td>
+              <td class="smart-table__cell" style="text-align: right;">
+                <button class="btn btn--ghost btn--icon" aria-label="Edit">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                </button>
+                <button class="btn btn--ghost btn--icon" aria-label="Delete" style="color: var(--color-error-text);">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer -->
+      <div class="smart-table__footer">
+        <span style="font-size: 14px; color: var(--color-gray-500);">Showing 1 to 2 of 24 results</span>
+        <nav class="pagination" aria-label="Table navigation">
+          <a href="#" class="pagination__btn pagination__btn--disabled">Previous</a>
+          <a href="#" class="pagination__btn pagination__btn--active">1</a>
+          <a href="#" class="pagination__btn">2</a>
+          <a href="#" class="pagination__btn">3</a>
+          <a href="#" class="pagination__btn">Next</a>
+        </nav>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================
+       SHOWCASE: Variant 2 - Audit Log (Dense Data)
+       ========================================= -->
+  <section style="margin-bottom: 60px;">
+    <h2>Variant 2: Audit Log (Dense Data)</h2>
+    <p>Optimized for high-density information display. Uses monospace fonts for IDs and code.</p>
+    
+    <div class="smart-table-container">
+      <div class="smart-table-wrapper">
+        <table class="smart-table">
+          <thead class="smart-table__head">
+            <tr>
+              <th class="smart-table__header-cell">Timestamp</th>
+              <th class="smart-table__header-cell">Event ID</th>
+              <th class="smart-table__header-cell">Actor</th>
+              <th class="smart-table__header-cell">Action</th>
+              <th class="smart-table__header-cell">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="smart-table__row">
+              <td class="smart-table__cell" style="font-family: monospace;">2023-10-25 14:30:22</td>
+              <td class="smart-table__cell" style="font-family: monospace;">evt_892j298s</td>
+              <td class="smart-table__cell">admin@platform.com</td>
+              <td class="smart-table__cell">update_service_center</td>
+              <td class="smart-table__cell"><span class="badge badge--success">Success</span></td>
+            </tr>
+            <tr class="smart-table__row">
+              <td class="smart-table__cell" style="font-family: monospace;">2023-10-25 14:28:10</td>
+              <td class="smart-table__cell" style="font-family: monospace;">evt_110k239a</td>
+              <td class="smart-table__cell">system</td>
+              <td class="smart-table__cell">daily_report_gen</td>
+              <td class="smart-table__cell"><span class="badge badge--error">Failed</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================
+       SHOWCASE: Variant 3 - Mobile Card View
+       ========================================= -->
+  <section style="margin-bottom: 60px;">
+    <h2>Variant 3: Responsive Card View (Mobile Simulation)</h2>
+    <p>Resize browser window or view on mobile to see transformation. Class <code>.smart-table-container--responsive</code> applied.</p>
+    
+    <!-- Using a wrapper to force mobile width for demo purposes on desktop -->
+    <div style="max-width: 375px; margin: 0 auto; border: 4px solid #333; border-radius: 20px; padding: 10px; background: #f0f0f0;">
+      
+      <div class="smart-table-container smart-table-container--responsive">
+        <!-- Toolbar (Simplified for mobile in CSS) -->
+        <div class="smart-table__toolbar">
+          <div class="input-group" style="width: 100%;">
+            <svg class="icon input-icon" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input type="text" class="input input--with-icon" placeholder="Search...">
+          </div>
+        </div>
+
+        <table class="smart-table smart-table--responsive">
+          <thead class="smart-table__head">
+            <tr>
+              <th>Name</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Card 1 -->
+            <tr class="smart-table__row">
+              <td class="smart-table__cell" data-label="Technician">
+                <div class="cell-user">
+                  <div class="avatar"><img src="https://i.pravatar.cc/150?u=3" alt=""></div>
+                  <div class="cell-user__info">
+                    <strong>Mike Chen</strong>
+                    <span class="cell-user__email">mike.c@service.com</span>
+                  </div>
+                </div>
+              </td>
+              <td class="smart-table__cell" data-label="Role">HVAC Specialist</td>
+              <td class="smart-table__cell" data-label="Status"><span class="badge badge--neutral">Offline</span></td>
+              <td class="smart-table__cell" data-label="Actions">
+                <button class="btn btn--secondary" style="width: 100%;">View Details</button>
+              </td>
+            </tr>
+            <!-- Card 2 -->
+            <tr class="smart-table__row">
+              <td class="smart-table__cell" data-label="Technician">
+                <div class="cell-user">
+                  <div class="avatar" style="background: var(--color-primary-100); color: var(--color-primary-700);">JL</div>
+                  <div class="cell-user__info">
+                    <strong>Jenny Lopez</strong>
+                    <span class="cell-user__email">jenny.l@service.com</span>
+                  </div>
+                </div>
+              </td>
+              <td class="smart-table__cell" data-label="Role">General Tech</td>
+              <td class="smart-table__cell" data-label="Status"><span class="badge badge--success">Available</span></td>
+              <td class="smart-table__cell" data-label="Actions">
+                <button class="btn btn--secondary" style="width: 100%;">View Details</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <!-- Footer -->
+        <div class="smart-table__footer">
+          <nav class="pagination">
+            <a href="#" class="pagination__btn pagination__btn--disabled">Prev</a>
+            <a href="#" class="pagination__btn pagination__btn--active">1</a>
+            <a href="#" class="pagination__btn">Next</a>
+          </nav>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =========================================
+       SHOWCASE: States
+       ========================================= -->
+  <section style="margin-bottom: 60px;">
+    <h2>Variant 4: States (Loading & Empty)</h2>
+    <div class="smart-table-container" style="margin-bottom: 24px;">
+      <div class="smart-table-wrapper">
+        <table class="smart-table">
+          <thead class="smart-table__head">
+            <tr>
+              <th class="smart-table__header-cell">Name</th>
+              <th class="smart-table__header-cell">Email</th>
+              <th class="smart-table__header-cell">Role</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="smart-table__row">
+              <td class="smart-table__cell"><div class="skeleton skeleton--avatar"></div> <div class="skeleton skeleton--text-short" style="vertical-align: top; margin-top: 8px;"></div></td>
+              <td class="smart-table__cell"><div class="skeleton skeleton--text-long"></div></td>
+              <td class="smart-table__cell"><div class="skeleton skeleton--text-short"></div></td>
+            </tr>
+            <tr class="smart-table__row">
+              <td class="smart-table__cell"><div class="skeleton skeleton--avatar"></div> <div class="skeleton skeleton--text-short" style="vertical-align: top; margin-top: 8px;"></div></td>
+              <td class="smart-table__cell"><div class="skeleton skeleton--text-long"></div></td>
+              <td class="smart-table__cell"><div class="skeleton skeleton--text-short"></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="smart-table-container">
+      <div class="smart-table-wrapper">
+        <div class="smart-table__empty">
+          <svg class="smart-table__empty-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <h3>No results found</h3>
+          <p>Try adjusting your search or filters to find what you're looking for.</p>
+          <button class="btn btn--secondary">Clear Filters</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</body>
+</html>

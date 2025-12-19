@@ -1,0 +1,736 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-FF-001
+
+## 1.2 Name
+
+Product Ownership Transfer Expiration via Scheduled Job
+
+## 1.3 Description
+
+When a user initiates an ownership transfer, a 72-hour timer begins. A periodic scheduled job checks for pending transfers that have exceeded this window and automatically marks them as expired.
+
+## 1.4 Type
+
+🔹 FeatureFlow
+
+## 1.5 Purpose
+
+To enforce the business rule (REQ-BR-002) that transfer requests are time-sensitive and prevent requests from remaining in a pending state indefinitely.
+
+## 1.6 Complexity
+
+Medium
+
+## 1.7 Priority
+
+🟡 Medium
+
+## 1.8 Frequency
+
+Hourly
+
+## 1.9 Participants
+
+- product-service-003
+- scheduler-worker-010
+
+## 1.10 Key Interactions
+
+- A user initiates a product transfer via the ProductService, creating a request record with a 'Pending' status and timestamp.
+- A Kubernetes CronJob invokes the ScheduledJobWorker every hour.
+- The ScheduledJobWorker calls an internal API endpoint on the ProductService to trigger the expiration check.
+- The ProductService queries its database for all pending transfer requests where `CURRENT_TIMESTAMP - created_at > 72 hours`.
+- For each expired request found, the ProductService updates its status to 'Expired'.
+- The ProductService may publish an event to notify the original owner of the expiration.
+
+## 1.11 Triggers
+
+- A periodic, time-based schedule (e.g., hourly cron job).
+
+## 1.12 Outcomes
+
+- Pending ownership transfer requests older than 72 hours are automatically moved to an 'Expired' state.
+- The product remains with the original owner.
+
+## 1.13 Business Rules
+
+- A transfer request expires if not accepted within 72 hours.
+- Any in-progress service requests are paused during a pending transfer and must be resumed or cancelled after expiration.
+
+## 1.14 Error Scenarios
+
+- The scheduled job fails to run, delaying the expiration.
+- The worker is unable to connect to the ProductService to update the records.
+
+## 1.15 Integration Points
+
+- Kubernetes CronJob
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-FF-001
+
+## 2.2 Name
+
+System-Triggered Expiration of Pending Product Ownership Transfers
+
+## 2.3 Description
+
+This sequence details the automated, time-based process for enforcing business rule REQ-BR-002. A scheduled background job, orchestrated by a Kubernetes CronJob, periodically triggers a process within the Product Service to identify and expire pending ownership transfer requests that have exceeded the 72-hour acceptance window. The implementation ensures atomicity of database updates and decouples post-expiration actions via event publishing.
+
+## 2.4 Participants
+
+### 2.4.1 Scheduler
+
+#### 2.4.1.1 Repository Id
+
+kubernetes-cronjob-scheduler
+
+#### 2.4.1.2 Display Name
+
+K8s CronJob Scheduler
+
+#### 2.4.1.3 Type
+
+🔹 Scheduler
+
+#### 2.4.1.4 Technology
+
+Kubernetes v1.29
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #C0C0C0 |
+| Stereotype | System |
+
+### 2.4.2.0 Worker
+
+#### 2.4.2.1 Repository Id
+
+scheduler-worker-010
+
+#### 2.4.2.2 Display Name
+
+ScheduledJobWorker
+
+#### 2.4.2.3 Type
+
+🔹 Worker
+
+#### 2.4.2.4 Technology
+
+.NET 8 Worker Service
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #8E44AD |
+| Stereotype | Worker |
+
+### 2.4.3.0 Service
+
+#### 2.4.3.1 Repository Id
+
+product-service-003
+
+#### 2.4.3.2 Display Name
+
+ProductService
+
+#### 2.4.3.3 Type
+
+🔹 Service
+
+#### 2.4.3.4 Technology
+
+.NET 8, ASP.NET Core 8
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #2980B9 |
+| Stereotype | Microservice |
+
+### 2.4.4.0 Database
+
+#### 2.4.4.1 Repository Id
+
+product-service-db
+
+#### 2.4.4.2 Display Name
+
+Product Database
+
+#### 2.4.4.3 Type
+
+🔹 Database
+
+#### 2.4.4.4 Technology
+
+Azure PostgreSQL 16
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #16A085 |
+| Stereotype | PostgreSQL |
+
+### 2.4.5.0 MessageBus
+
+#### 2.4.5.1 Repository Id
+
+messaging-infra-015
+
+#### 2.4.5.2 Display Name
+
+Messaging Infrastructure
+
+#### 2.4.5.3 Type
+
+🔹 MessageBus
+
+#### 2.4.5.4 Technology
+
+Azure Service Bus
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | queue |
+| Color | #F39C12 |
+| Stereotype | Azure Service Bus |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Scheduled Trigger
+
+#### 2.5.1.1 Source Id
+
+kubernetes-cronjob-scheduler
+
+#### 2.5.1.2 Target Id
+
+scheduler-worker-010
+
+#### 2.5.1.3 Message
+
+1. Trigger Job Execution (Schedule: '0 * * * *')
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Scheduled Trigger
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+
+
+#### 2.5.1.8 Has Return
+
+❌ No
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Kubernetes API |
+| Method | Create Pod from CronJob Template |
+| Parameters | N/A - The job is triggered based on the cron sched... |
+| Authentication | Managed by Kubernetes RBAC (Service Account). |
+| Error Handling | If the job fails (e.g., image pull error, crash lo... |
+| Performance | N/A |
+
+#### 2.5.1.11 Nested Interactions
+
+*No items available*
+
+### 2.5.2.0 API Call
+
+#### 2.5.2.1 Source Id
+
+scheduler-worker-010
+
+#### 2.5.2.2 Target Id
+
+product-service-003
+
+#### 2.5.2.3 Message
+
+2. POST /internal/v1/transfers/expire-pending
+
+#### 2.5.2.4 Sequence Number
+
+2
+
+#### 2.5.2.5 Type
+
+🔹 API Call
+
+#### 2.5.2.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7 Return Message
+
+3. 200 OK - {"expiredCount": N}
+
+#### 2.5.2.8 Has Return
+
+✅ Yes
+
+#### 2.5.2.9 Is Activation
+
+✅ Yes
+
+#### 2.5.2.10 Technical Details
+
+##### 2.5.2.10.1 Protocol
+
+HTTP/1.1
+
+##### 2.5.2.10.2 Method
+
+POST
+
+##### 2.5.2.10.3 Parameters
+
+Body: {} (No payload required, the action is idempotent). Headers: `Authorization: Bearer <S2S_JWT>`, `X-Correlation-ID: <GUID>`
+
+##### 2.5.2.10.4 Authentication
+
+Service-to-Service authentication using Client Credentials flow. The JWT must contain a specific scope/role for internal system tasks.
+
+##### 2.5.2.10.5 Error Handling
+
+The HTTP client within the worker must implement a retry policy (e.g., Polly with exponential backoff for 3 attempts) for transient errors (5xx, timeouts). A persistent failure (e.g., 4xx or post-retry 5xx) must be logged as a critical error, causing the job to exit with a non-zero status code.
+
+##### 2.5.2.10.6 Performance
+
+###### 2.5.2.10.6.1 Latency
+
+< 500ms
+
+###### 2.5.2.10.6.2 Throughput
+
+1 call/hour
+
+#### 2.5.2.11.0.0 Nested Interactions
+
+##### 2.5.2.11.1.0 Database Query
+
+###### 2.5.2.11.1.1 Source Id
+
+product-service-003
+
+###### 2.5.2.11.1.2 Target Id
+
+product-service-db
+
+###### 2.5.2.11.1.3 Message
+
+2.1 [DB] Find Expired Transfer Requests
+
+###### 2.5.2.11.1.4 Sequence Number
+
+2.1
+
+###### 2.5.2.11.1.5 Type
+
+🔹 Database Query
+
+###### 2.5.2.11.1.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.2.11.1.7 Return Message
+
+2.2 [DB] Return List<OwnershipTransferRequest>
+
+###### 2.5.2.11.1.8 Has Return
+
+✅ Yes
+
+###### 2.5.2.11.1.9 Is Activation
+
+❌ No
+
+###### 2.5.2.11.1.10 Technical Details
+
+####### 2.5.2.11.1.10.1 Protocol
+
+Npgsql
+
+####### 2.5.2.11.1.10.2 Method
+
+```sql
+SELECT * FROM "OwnershipTransferRequests" WHERE "Status" = 'Pending' AND "CreatedAt" < (NOW() - INTERVAL '72 hours') FOR UPDATE;
+```
+
+####### 2.5.2.11.1.10.3 Parameters
+
+N/A
+
+####### 2.5.2.11.1.10.4 Authentication
+
+Connection string with credentials from Azure Key Vault.
+
+####### 2.5.2.11.1.10.5 Error Handling
+
+If the database connection fails, the service should return HTTP 503. The query uses `FOR UPDATE` to lock the selected rows, preventing race conditions if another instance of the job runs concurrently.
+
+####### 2.5.2.11.1.10.6 Performance
+
+######## 2.5.2.11.1.10.6.1 Latency
+
+< 100ms
+
+######## 2.5.2.11.1.10.6.2 Notes
+
+Requires a composite index on `("Status", "CreatedAt")` for efficient querying.
+
+###### 2.5.2.11.1.11.0.0 Nested Interactions
+
+*No items available*
+
+##### 2.5.2.11.2.0.0.0 Loop
+
+###### 2.5.2.11.2.1.0.0 Source Id
+
+product-service-003
+
+###### 2.5.2.11.2.2.0.0 Target Id
+
+product-service-003
+
+###### 2.5.2.11.2.3.0.0 Message
+
+2.3 [Loop] For each expired request
+
+###### 2.5.2.11.2.4.0.0 Sequence Number
+
+2.3
+
+###### 2.5.2.11.2.5.0.0 Type
+
+🔹 Loop
+
+###### 2.5.2.11.2.6.0.0 Is Synchronous
+
+❌ No
+
+###### 2.5.2.11.2.7.0.0 Return Message
+
+
+
+###### 2.5.2.11.2.8.0.0 Has Return
+
+❌ No
+
+###### 2.5.2.11.2.9.0.0 Is Activation
+
+❌ No
+
+###### 2.5.2.11.2.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Internal Logic |
+| Method | N/A |
+| Parameters | The list of expired requests from step 2.2 |
+| Authentication | N/A |
+| Error Handling | The entire loop of updates should be wrapped in a ... |
+| Performance | N/A |
+
+###### 2.5.2.11.2.11.0.0 Nested Interactions
+
+####### 2.5.2.11.2.11.1.0 Database Write
+
+######## 2.5.2.11.2.11.1.1 Source Id
+
+product-service-003
+
+######## 2.5.2.11.2.11.1.2 Target Id
+
+product-service-db
+
+######## 2.5.2.11.2.11.1.3 Message
+
+2.4 [DB] Update Status to 'Expired'
+
+######## 2.5.2.11.2.11.1.4 Sequence Number
+
+2.4
+
+######## 2.5.2.11.2.11.1.5 Type
+
+🔹 Database Write
+
+######## 2.5.2.11.2.11.1.6 Is Synchronous
+
+✅ Yes
+
+######## 2.5.2.11.2.11.1.7 Return Message
+
+2.5 [DB] Acknowledge Update
+
+######## 2.5.2.11.2.11.1.8 Has Return
+
+✅ Yes
+
+######## 2.5.2.11.2.11.1.9 Is Activation
+
+❌ No
+
+######## 2.5.2.11.2.11.1.10 Technical Details
+
+######### 2.5.2.11.2.11.1.10.1 Protocol
+
+Npgsql
+
+######### 2.5.2.11.2.11.1.10.2 Method
+
+```sql
+UPDATE "OwnershipTransferRequests" SET "Status" = 'Expired', "UpdatedAt" = NOW() WHERE "Id" = @requestId;
+```
+
+######### 2.5.2.11.2.11.1.10.3 Parameters
+
+requestId: The ID of the current request in the loop.
+
+######### 2.5.2.11.2.11.1.10.4 Authentication
+
+N/A (uses existing transaction context).
+
+######### 2.5.2.11.2.11.1.10.5 Error Handling
+
+Failure will trigger a transaction rollback.
+
+######### 2.5.2.11.2.11.1.10.6 Performance
+
+########## 2.5.2.11.2.11.1.10.6.1 Latency
+
+< 10ms
+
+######## 2.5.2.11.2.11.1.11.0.0 Nested Interactions
+
+*No items available*
+
+####### 2.5.2.11.2.11.2.0.0.0 Message Publish
+
+######## 2.5.2.11.2.11.2.1.0.0 Source Id
+
+product-service-003
+
+######## 2.5.2.11.2.11.2.2.0.0 Target Id
+
+messaging-infra-015
+
+######## 2.5.2.11.2.11.2.3.0.0 Message
+
+2.6 [Event] Publish OwnershipTransferExpired
+
+######## 2.5.2.11.2.11.2.4.0.0 Sequence Number
+
+2.6
+
+######## 2.5.2.11.2.11.2.5.0.0 Type
+
+🔹 Message Publish
+
+######## 2.5.2.11.2.11.2.6.0.0 Is Synchronous
+
+❌ No
+
+######## 2.5.2.11.2.11.2.7.0.0 Return Message
+
+
+
+######## 2.5.2.11.2.11.2.8.0.0 Has Return
+
+❌ No
+
+######## 2.5.2.11.2.11.2.9.0.0 Is Activation
+
+❌ No
+
+######## 2.5.2.11.2.11.2.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | AMQP |
+| Method | Send to Topic 'product-events' |
+| Parameters | Message Body: `{"eventId": "<GUID>", "timestamp": ... |
+| Authentication | Managed Identity or connection string for Azure Se... |
+| Error Handling | Failure to publish the event will trigger a transa... |
+| Performance | N/A |
+
+######## 2.5.2.11.2.11.2.11.0.0 Nested Interactions
+
+*No items available*
+
+### 2.5.3.0.0.0.0.0.0.0 Internal Logic
+
+#### 2.5.3.1.0.0.0.0.0.0 Source Id
+
+scheduler-worker-010
+
+#### 2.5.3.2.0.0.0.0.0.0 Target Id
+
+scheduler-worker-010
+
+#### 2.5.3.3.0.0.0.0.0.0 Message
+
+4. Log summary and complete job
+
+#### 2.5.3.4.0.0.0.0.0.0 Sequence Number
+
+4
+
+#### 2.5.3.5.0.0.0.0.0.0 Type
+
+🔹 Internal Logic
+
+#### 2.5.3.6.0.0.0.0.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.3.7.0.0.0.0.0.0 Return Message
+
+
+
+#### 2.5.3.8.0.0.0.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.3.9.0.0.0.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.3.10.0.0.0.0.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Logging Framework (Serilog) |
+| Method | Log.Information("Successfully expired {ExpiredCoun... |
+| Parameters | The `expiredCount` from the API response. |
+| Authentication | N/A |
+| Error Handling | The job exits with status code 0, signaling succes... |
+| Performance | N/A |
+
+#### 2.5.3.11.0.0.0.0.0.0 Nested Interactions
+
+*No items available*
+
+## 2.6.0.0.0.0.0.0.0.0 Notes
+
+### 2.6.1.0.0.0.0.0.0.0 Content
+
+#### 2.6.1.1.0.0.0.0.0.0 Content
+
+Database Indexing: A composite index on `("Status", "CreatedAt")` on the `OwnershipTransferRequests` table is critical to ensure the query in step 2.1 is performant and does not cause database load as the table grows.
+
+#### 2.6.1.2.0.0.0.0.0.0 Position
+
+bottom
+
+#### 2.6.1.3.0.0.0.0.0.0 Participant Id
+
+product-service-db
+
+#### 2.6.1.4.0.0.0.0.0.0 Sequence Number
+
+2.1
+
+### 2.6.2.0.0.0.0.0.0.0 Content
+
+#### 2.6.2.1.0.0.0.0.0.0 Content
+
+Transactional Integrity: The entire process of finding, updating, and publishing events (steps 2.1 to 2.6) must be executed within a single, atomic database transaction to guarantee consistency. A failure at any step must result in a complete rollback.
+
+#### 2.6.2.2.0.0.0.0.0.0 Position
+
+right
+
+#### 2.6.2.3.0.0.0.0.0.0 Participant Id
+
+product-service-003
+
+#### 2.6.2.4.0.0.0.0.0.0 Sequence Number
+
+2.3
+
+### 2.6.3.0.0.0.0.0.0.0 Content
+
+#### 2.6.3.1.0.0.0.0.0.0 Content
+
+Idempotency: The API endpoint and the overall job are designed to be idempotent. If the job runs twice for the same time period, it will only find and process expired requests on the first run. The second run will find no records to process and complete successfully without side effects.
+
+#### 2.6.3.2.0.0.0.0.0.0 Position
+
+top
+
+#### 2.6.3.3.0.0.0.0.0.0 Participant Id
+
+scheduler-worker-010
+
+#### 2.6.3.4.0.0.0.0.0.0 Sequence Number
+
+2
+
+## 2.7.0.0.0.0.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | The internal API endpoint `/internal/v1/transfers/... |
+| Performance Targets | The entire job execution should complete in under ... |
+| Error Handling Strategy | The primary error scenario is the inability of the... |
+| Testing Considerations | Integration tests must validate the end-to-end flo... |
+| Monitoring Requirements | 1. An alert should be configured to fire if the Ku... |
+| Deployment Considerations | The Kubernetes CronJob manifest, including its sch... |
+

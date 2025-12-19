@@ -1,0 +1,57 @@
+sequenceDiagram
+    participant "API Gateway" as APIGateway
+    participant "K8s Service (Load Balancer)" as K8sServiceLoadBalancer
+    participant "ProductService Pod" as ProductServicePod
+    participant "K8s Metrics Server" as K8sMetricsServer
+    participant "K8s HPA Controller" as K8sHPAController
+    participant "K8s API Server" as K8sAPIServer
+    participant "K8s ReplicaSet Controller" as K8sReplicaSetController
+    participant "K8s Scheduler" as K8sScheduler
+    participant "AKS Node (Kubelet)" as AKSNodeKubelet
+
+    activate K8sServiceLoadBalancer
+    APIGateway->>K8sServiceLoadBalancer: 1. 1. Forwards high volume of API requests
+    K8sServiceLoadBalancer-->>APIGateway: HTTP Responses
+    activate ProductServicePod
+    K8sServiceLoadBalancer->>ProductServicePod: 2. 2. Distributes requests to existing pods (e.g., 3 replicas)
+    ProductServicePod-->>K8sServiceLoadBalancer: Responses
+    K8sMetricsServer->>ProductServicePod: 3. 3. Scrapes pod resource utilization metrics
+    ProductServicePod-->>K8sMetricsServer: CPU/Memory usage data
+    activate K8sMetricsServer
+    K8sHPAController->>K8sMetricsServer: 4. 4. Polls for aggregated metrics for ProductService deployment
+    K8sMetricsServer-->>K8sHPAController: Aggregated CPU Utilization (e.g., 85%)
+    K8sHPAController->>K8sHPAController: 5. 5. Calculates required replicas based on utilization (85%) vs target (75%)
+    K8sHPAController-->>K8sHPAController: Desired replicas = 5
+    K8sHPAController->>K8sAPIServer: 6. 6. Updates Deployment's replica count
+    K8sAPIServer-->>K8sHPAController: 200 OK
+    activate K8sAPIServer
+    K8sReplicaSetController->>K8sAPIServer: 7. 7. Detects change in desired replica count via WATCH
+    K8sAPIServer-->>K8sReplicaSetController: Deployment/ReplicaSet Updated Event
+    K8sReplicaSetController->>K8sAPIServer: 8. 8. Creates new Pod objects to satisfy new replica count (2 new pods)
+    K8sAPIServer-->>K8sReplicaSetController: 201 Created
+    K8sScheduler->>K8sAPIServer: 9. 9. Detects new unscheduled pods via WATCH
+    K8sAPIServer-->>K8sScheduler: Pod Created Event
+    K8sScheduler->>AKSNodeKubelet: 10. 10. Evaluates cluster nodes and selects best fit for new pods
+    AKSNodeKubelet-->>K8sScheduler: Selected Node Name
+    K8sScheduler->>K8sAPIServer: 11. 11. Binds pod to the selected node
+    K8sAPIServer-->>K8sScheduler: 201 Created (Binding)
+    AKSNodeKubelet->>K8sAPIServer: 12. 12. Kubelet detects pod assignment via WATCH
+    K8sAPIServer-->>AKSNodeKubelet: Pod Update Event
+    AKSNodeKubelet->>ProductServicePod: 13. 13. Starts container, runs readiness probe
+    ProductServicePod-->>AKSNodeKubelet: HTTP 200 OK
+    AKSNodeKubelet->>K8sAPIServer: 14. 14. Updates pod status to 'Ready' after probe succeeds
+    K8sAPIServer-->>AKSNodeKubelet: 200 OK
+    K8sServiceLoadBalancer->>K8sAPIServer: 15. 15. Endpoint controller detects 'Ready' pod and adds its IP to the Service's endpoint list
+    K8sAPIServer-->>K8sServiceLoadBalancer: Pod Ready Event
+    K8sServiceLoadBalancer->>ProductServicePod: 16. 16. Begins forwarding new traffic to the new pods
+    ProductServicePod-->>K8sServiceLoadBalancer: Responses
+    K8sHPAController->>K8sMetricsServer: 17. 17. [Later] Polls again and observes stabilized metrics
+    K8sMetricsServer-->>K8sHPAController: Aggregated CPU Utilization (e.g., 74%)
+
+    note over K8sScheduler: ERROR SCENARIO: If cluster nodes lack sufficient CPU/Memory, new pods will get stuck in 'Pending'...
+    note over AKSNodeKubelet: ERROR SCENARIO: If a new pod fails its readiness probe (e.g., due to a bad configuration or DB co...
+
+    deactivate K8sAPIServer
+    deactivate K8sMetricsServer
+    deactivate ProductServicePod
+    deactivate K8sServiceLoadBalancer

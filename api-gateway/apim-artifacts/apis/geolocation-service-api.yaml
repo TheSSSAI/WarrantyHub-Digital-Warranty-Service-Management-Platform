@@ -1,0 +1,73 @@
+openapi: 3.0.1
+info:
+  title: Geolocation Service API
+  description: Handles real-time location tracking for technicians. Supports both REST for history and WebSocket upgrading for live streaming.
+  version: '1.0'
+servers:
+  - url: https://api.warrantyhub.com/v1/geo
+paths:
+  /location/history/{jobId}:
+    get:
+      summary: Get Location History
+      operationId: GetLocationHistory
+      tags:
+        - Location
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of historical coordinates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GeoCoordinate'
+  /negotiate:
+    post:
+      summary: Negotiate WebSocket Connection
+      description: Returns connection token and endpoint for the SignalR/WebSocket connection used for real-time tracking.
+      operationId: NegotiateRealTime
+      tags:
+        - RealTime
+      responses:
+        '200':
+          description: Connection details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                  accessToken:
+                    type: string
+components:
+  schemas:
+    GeoCoordinate:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        timestamp:
+          type: string
+          format: date-time
+        jobId:
+          type: string
+          format: uuid
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - BearerAuth: []

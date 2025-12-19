@@ -1,0 +1,858 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-UJ-002
+
+## 1.2 Name
+
+User Registers Product via Barcode Scan
+
+## 1.3 Description
+
+A consumer uses their mobile device's camera to scan a product's barcode (UPC/EAN/QR). The system attempts to look up the product information to pre-fill the registration form, simplifying the process for the user.
+
+## 1.4 Type
+
+🔹 UserJourney
+
+## 1.5 Purpose
+
+To provide a faster, more convenient product registration method by leveraging device hardware and a product lookup database.
+
+## 1.6 Complexity
+
+Medium
+
+## 1.7 Priority
+
+🔴 High
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- mobile-client-013
+- api-gateway-001
+- product-service-003
+
+## 1.10 Key Interactions
+
+- User initiates 'Scan Product' action in the mobile app.
+- Mobile client accesses the device camera.
+- After a successful scan, the client sends the barcode value to the ProductService.
+- ProductService queries its internal database to map the barcode value to known Brand and Model information.
+- ProductService returns the pre-filled data or an empty response if not found.
+- Client UI displays the pre-filled form, requiring the user to manually enter the serial number and purchase date to complete registration.
+
+## 1.11 Triggers
+
+- User scans a product barcode.
+
+## 1.12 Outcomes
+
+- Product registration form is pre-filled with Brand and Model.
+- User completes the registration process faster.
+
+## 1.13 Business Rules
+
+- The system shall maintain a database to map known barcode values to product information.
+- User must always manually enter or verify the serial number after a scan.
+
+## 1.14 Error Scenarios
+
+- The barcode is not recognized or not found in the database.
+- The device camera fails to initialize.
+- User has poor lighting conditions preventing a successful scan.
+
+## 1.15 Integration Points
+
+- Device Camera Hardware
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-UJ-002
+
+## 2.2 Name
+
+User Journey: Product Registration via Barcode Scan
+
+## 2.3 Description
+
+Detailed sequence of a consumer using the mobile app to scan a product barcode. This covers device camera interaction, API lookup via the gateway to the Product Service, and pre-filling the registration form UI based on the lookup result. Emphasis is on client-side state management, UI responsiveness, and robust error handling for a seamless user experience.
+
+## 2.4 Participants
+
+### 2.4.1 Client Application
+
+#### 2.4.1.1 Repository Id
+
+mobile-client-013
+
+#### 2.4.1.2 Display Name
+
+MobileClient
+
+#### 2.4.1.3 Type
+
+🔹 Client Application
+
+#### 2.4.1.4 Technology
+
+Flutter 3.19+, Dart
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #3498DB |
+| Stereotype | «Flutter App» |
+
+### 2.4.2.0 Gateway
+
+#### 2.4.2.1 Repository Id
+
+api-gateway-001
+
+#### 2.4.2.2 Display Name
+
+APIGateway
+
+#### 2.4.2.3 Type
+
+🔹 Gateway
+
+#### 2.4.2.4 Technology
+
+YARP on .NET 8
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | rectangle |
+| Color | #2ECC71 |
+| Stereotype | «Gateway» |
+
+### 2.4.3.0 Service
+
+#### 2.4.3.1 Repository Id
+
+product-service-003
+
+#### 2.4.3.2 Display Name
+
+ProductService
+
+#### 2.4.3.3 Type
+
+🔹 Service
+
+#### 2.4.3.4 Technology
+
+.NET 8, ASP.NET Core 8
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | rectangle |
+| Color | #F39C12 |
+| Stereotype | «Microservice» |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 UI Event
+
+#### 2.5.1.1 Source Id
+
+mobile-client-013
+
+#### 2.5.1.2 Target Id
+
+mobile-client-013
+
+#### 2.5.1.3 Message
+
+User taps 'Scan Product'. UI state updates to 'initializing_camera'.
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 UI Event
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+
+
+#### 2.5.1.8 Has Return
+
+❌ No
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+##### 2.5.1.10.1 Protocol
+
+Internal Event
+
+##### 2.5.1.10.2 Method
+
+onPress('scanButton')
+
+##### 2.5.1.10.3 Parameters
+
+Event object
+
+##### 2.5.1.10.4 Authentication
+
+N/A
+
+##### 2.5.1.10.5 Error Handling
+
+N/A
+
+##### 2.5.1.10.6 Performance
+
+###### 2.5.1.10.6.1 Latency
+
+<50ms UI feedback
+
+### 2.5.2.0.0.0 Device Interaction
+
+#### 2.5.2.1.0.0 Source Id
+
+mobile-client-013
+
+#### 2.5.2.2.0.0 Target Id
+
+mobile-client-013
+
+#### 2.5.2.3.0.0 Message
+
+Request camera permissions and initialize camera controller.
+
+#### 2.5.2.4.0.0 Sequence Number
+
+2
+
+#### 2.5.2.5.0.0 Type
+
+🔹 Device Interaction
+
+#### 2.5.2.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7.0.0 Return Message
+
+Camera view displayed or error state.
+
+#### 2.5.2.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.2.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.2.10.0.0 Technical Details
+
+##### 2.5.2.10.1.0 Protocol
+
+OS API Call
+
+##### 2.5.2.10.2.0 Method
+
+CameraController.initialize()
+
+##### 2.5.2.10.3.0 Parameters
+
+N/A
+
+##### 2.5.2.10.4.0 Authentication
+
+N/A
+
+##### 2.5.2.10.5.0 Error Handling
+
+Handle 'PermissionDenied' or 'CameraFailed' exceptions. Update UI state to 'camera_error' and show user-friendly message.
+
+##### 2.5.2.10.6.0 Performance
+
+###### 2.5.2.10.6.1 Latency
+
+<1s camera initialization
+
+### 2.5.3.0.0.0 Device Input
+
+#### 2.5.3.1.0.0 Source Id
+
+mobile-client-013
+
+#### 2.5.3.2.0.0 Target Id
+
+mobile-client-013
+
+#### 2.5.3.3.0.0 Message
+
+Barcode detected by camera stream. UI state updates to 'processing_scan'.
+
+#### 2.5.3.4.0.0 Sequence Number
+
+3
+
+#### 2.5.3.5.0.0 Type
+
+🔹 Device Input
+
+#### 2.5.3.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7.0.0 Return Message
+
+
+
+#### 2.5.3.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.3.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.3.10.0.0 Technical Details
+
+##### 2.5.3.10.1.0 Protocol
+
+Hardware Event
+
+##### 2.5.3.10.2.0 Method
+
+onBarcodeScanned(barcodeValue, barcodeType)
+
+##### 2.5.3.10.3.0 Parameters
+
+String barcodeValue, Enum barcodeType
+
+##### 2.5.3.10.4.0 Authentication
+
+N/A
+
+##### 2.5.3.10.5.0 Error Handling
+
+N/A
+
+##### 2.5.3.10.6.0 Performance
+
+###### 2.5.3.10.6.1 Latency
+
+Real-time
+
+### 2.5.4.0.0.0 API Call
+
+#### 2.5.4.1.0.0 Source Id
+
+mobile-client-013
+
+#### 2.5.4.2.0.0 Target Id
+
+api-gateway-001
+
+#### 2.5.4.3.0.0 Message
+
+GET /api/v1/products/lookup-by-barcode
+
+#### 2.5.4.4.0.0 Sequence Number
+
+4
+
+#### 2.5.4.5.0.0 Type
+
+🔹 API Call
+
+#### 2.5.4.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7.0.0 Return Message
+
+200 OK with product data, 404 Not Found, or error status.
+
+#### 2.5.4.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.4.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.4.10.0.0 Technical Details
+
+##### 2.5.4.10.1.0 Protocol
+
+HTTPS/1.1
+
+##### 2.5.4.10.2.0 Method
+
+GET
+
+##### 2.5.4.10.3.0 Parameters
+
+Query Param: code={barcodeValue}
+
+##### 2.5.4.10.4.0 Authentication
+
+###### 2.5.4.10.4.1 Type
+
+🔹 JWT
+
+###### 2.5.4.10.4.2 Details
+
+Requires valid Bearer token in Authorization header.
+
+##### 2.5.4.10.5.0 Error Handling
+
+Client must handle network errors (timeout), and HTTP 4xx/5xx responses gracefully.
+
+##### 2.5.4.10.6.0 Performance
+
+###### 2.5.4.10.6.1 Latency
+
+Client-side timeout set to 15 seconds.
+
+### 2.5.5.0.0.0 Service Call
+
+#### 2.5.5.1.0.0 Source Id
+
+api-gateway-001
+
+#### 2.5.5.2.0.0 Target Id
+
+product-service-003
+
+#### 2.5.5.3.0.0 Message
+
+GET /products/lookup-by-barcode
+
+#### 2.5.5.4.0.0 Sequence Number
+
+5
+
+#### 2.5.5.5.0.0 Type
+
+🔹 Service Call
+
+#### 2.5.5.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7.0.0 Return Message
+
+Internal service response.
+
+#### 2.5.5.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.5.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.5.10.0.0 Technical Details
+
+##### 2.5.5.10.1.0 Protocol
+
+HTTP
+
+##### 2.5.5.10.2.0 Method
+
+GET
+
+##### 2.5.5.10.3.0 Parameters
+
+Query Param: code={barcodeValue}
+
+##### 2.5.5.10.4.0 Authentication
+
+###### 2.5.5.10.4.1 Type
+
+🔹 Internal
+
+###### 2.5.5.10.4.2 Details
+
+Request is trusted within the cluster. User claims are propagated in request headers.
+
+##### 2.5.5.10.5.0 Error Handling
+
+Standard centralized exception handling middleware.
+
+##### 2.5.5.10.6.0 Performance
+
+###### 2.5.5.10.6.1 Latency
+
+Internal timeout set to 5 seconds.
+
+### 2.5.6.0.0.0 Database Query
+
+#### 2.5.6.1.0.0 Source Id
+
+product-service-003
+
+#### 2.5.6.2.0.0 Target Id
+
+product-service-003
+
+#### 2.5.6.3.0.0 Message
+
+Query database for product model matching barcode.
+
+#### 2.5.6.4.0.0 Sequence Number
+
+6
+
+#### 2.5.6.5.0.0 Type
+
+🔹 Database Query
+
+#### 2.5.6.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7.0.0 Return Message
+
+ProductModel entity or null.
+
+#### 2.5.6.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.6.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.6.10.0.0 Technical Details
+
+##### 2.5.6.10.1.0 Protocol
+
+TCP/IP
+
+##### 2.5.6.10.2.0 Method
+
+productBarcodeRepository.FindByCodeAsync(barcodeValue)
+
+##### 2.5.6.10.3.0 Parameters
+
+String barcodeValue
+
+##### 2.5.6.10.4.0 Authentication
+
+Database credentials from Azure Key Vault.
+
+##### 2.5.6.10.5.0 Error Handling
+
+Handle database connection exceptions.
+
+##### 2.5.6.10.6.0 Performance
+
+###### 2.5.6.10.6.1 Latency
+
+<50ms. Requires index on the barcode value column.
+
+#### 2.5.6.11.0.0 Nested Interactions
+
+*No items available*
+
+### 2.5.7.0.0.0 Service Response
+
+#### 2.5.7.1.0.0 Source Id
+
+product-service-003
+
+#### 2.5.7.2.0.0 Target Id
+
+api-gateway-001
+
+#### 2.5.7.3.0.0 Message
+
+Return 200 OK with ProductLookupDto or 404 Not Found.
+
+#### 2.5.7.4.0.0 Sequence Number
+
+7
+
+#### 2.5.7.5.0.0 Type
+
+🔹 Service Response
+
+#### 2.5.7.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.7.7.0.0 Return Message
+
+
+
+#### 2.5.7.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.7.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.7.10.0.0 Technical Details
+
+##### 2.5.7.10.1.0 Protocol
+
+HTTP
+
+##### 2.5.7.10.2.0 Method
+
+HTTP Response
+
+##### 2.5.7.10.3.0 Parameters
+
+Body (if 200): {"brandName": "...", "modelName": "..."}
+
+##### 2.5.7.10.4.0 Authentication
+
+N/A
+
+##### 2.5.7.10.5.0 Error Handling
+
+N/A
+
+##### 2.5.7.10.6.0 Performance
+
+###### 2.5.7.10.6.1 Latency
+
+N/A
+
+### 2.5.8.0.0.0 API Response
+
+#### 2.5.8.1.0.0 Source Id
+
+api-gateway-001
+
+#### 2.5.8.2.0.0 Target Id
+
+mobile-client-013
+
+#### 2.5.8.3.0.0 Message
+
+Forward HTTP response.
+
+#### 2.5.8.4.0.0 Sequence Number
+
+8
+
+#### 2.5.8.5.0.0 Type
+
+🔹 API Response
+
+#### 2.5.8.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.8.7.0.0 Return Message
+
+
+
+#### 2.5.8.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.8.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.8.10.0.0 Technical Details
+
+##### 2.5.8.10.1.0 Protocol
+
+HTTPS/1.1
+
+##### 2.5.8.10.2.0 Method
+
+HTTP Response
+
+##### 2.5.8.10.3.0 Parameters
+
+Response body and status code from upstream service.
+
+##### 2.5.8.10.4.0 Authentication
+
+N/A
+
+##### 2.5.8.10.5.0 Error Handling
+
+Gateway may transform upstream errors into standardized error responses.
+
+##### 2.5.8.10.6.0 Performance
+
+###### 2.5.8.10.6.1 Latency
+
+N/A
+
+### 2.5.9.0.0.0 UI Logic
+
+#### 2.5.9.1.0.0 Source Id
+
+mobile-client-013
+
+#### 2.5.9.2.0.0 Target Id
+
+mobile-client-013
+
+#### 2.5.9.3.0.0 Message
+
+Process API response, navigate to registration form, and pre-fill data.
+
+#### 2.5.9.4.0.0 Sequence Number
+
+9
+
+#### 2.5.9.5.0.0 Type
+
+🔹 UI Logic
+
+#### 2.5.9.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.9.7.0.0 Return Message
+
+Registration form displayed to user.
+
+#### 2.5.9.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.9.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.9.10.0.0 Technical Details
+
+##### 2.5.9.10.1.0 Protocol
+
+Internal Event
+
+##### 2.5.9.10.2.0 Method
+
+handleApiResponse(response)
+
+##### 2.5.9.10.3.0 Parameters
+
+HttpResponse object
+
+##### 2.5.9.10.4.0 Authentication
+
+N/A
+
+##### 2.5.9.10.5.0 Error Handling
+
+If 200, parse body and populate form model. If 404, populate form with empty model and show 'Product not found' message. If error, update UI state to 'api_error' and show generic error message.
+
+##### 2.5.9.10.6.0 Performance
+
+###### 2.5.9.10.6.1 Latency
+
+<100ms to render form after API response.
+
+## 2.6.0.0.0.0 Notes
+
+### 2.6.1.0.0.0 Content
+
+#### 2.6.1.1.0.0 Content
+
+The ProductService must have a dedicated, indexed table mapping various barcode types (UPC, EAN, QR) to internal ProductModel IDs for efficient lookup. This data must be maintained by Brand Admins or a Super Admin.
+
+#### 2.6.1.2.0.0 Position
+
+bottom
+
+#### 2.6.1.3.0.0 Participant Id
+
+product-service-003
+
+#### 2.6.1.4.0.0 Sequence Number
+
+6
+
+### 2.6.2.0.0.0 Content
+
+#### 2.6.2.1.0.0 Content
+
+Client-side state management is critical. The UI must clearly reflect the current state: Idle, Initializing Camera, Scanning, Processing, Success (Form Loaded), or Error (Camera/API/Network).
+
+#### 2.6.2.2.0.0 Position
+
+top
+
+#### 2.6.2.3.0.0 Participant Id
+
+mobile-client-013
+
+#### 2.6.2.4.0.0 Sequence Number
+
+1
+
+### 2.6.3.0.0.0 Content
+
+#### 2.6.3.1.0.0 Content
+
+Per business rules, even after a successful lookup, the Serial Number field must remain blank and be a required manual input from the user to ensure data accuracy for warranty claims.
+
+#### 2.6.3.2.0.0 Position
+
+bottom
+
+#### 2.6.3.3.0.0 Participant Id
+
+mobile-client-013
+
+#### 2.6.3.4.0.0 Sequence Number
+
+9
+
+## 2.7.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | API Gateway must enforce JWT validation for the lo... |
+| Performance Targets | End-to-end lookup and form pre-fill (from scan to ... |
+| Error Handling Strategy | The mobile client must implement a comprehensive e... |
+| Testing Considerations | Test with various real-world barcodes (UPC-A, EAN-... |
+| Monitoring Requirements | Monitor the `/lookup-by-barcode` endpoint for late... |
+| Deployment Considerations | The mobile app release must include a clear descri... |
+

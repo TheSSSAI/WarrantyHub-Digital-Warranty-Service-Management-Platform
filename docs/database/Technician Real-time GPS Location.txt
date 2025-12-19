@@ -1,0 +1,25 @@
+-- Enable the TimescaleDB extension, which is required for hypertable functionality.
+CREATE EXTENSION IF NOT EXISTS timescaledb;
+
+-- Create the table to store real-time technician GPS coordinates.
+CREATE TABLE TechnicianLocation (
+    "timestamp" TIMESTAMPTZ NOT NULL,        -- High-precision timestamp of the location reading.
+    "technicianId" UUID NOT NULL,            -- Unique identifier for the technician.
+    "serviceRequestId" UUID NOT NULL,      -- Identifier for the associated service request or job.
+    latitude DOUBLE PRECISION NOT NULL,    -- GPS latitude coordinate.
+    longitude DOUBLE PRECISION NOT NULL,   -- GPS longitude coordinate.
+    PRIMARY KEY ("timestamp", "technicianId") -- Composite primary key for uniqueness.
+);
+
+-- Convert the standard table into a TimescaleDB hypertable.
+-- This partitions the data by time ('timestamp') and space ('technicianId') for performance.
+SELECT create_hypertable('TechnicianLocation', 'timestamp', 'technicianId', 4);
+
+-- Create an index to accelerate queries that filter by service request ID and timestamp.
+-- The descending order on the timestamp is optimized for fetching the most recent locations.
+CREATE INDEX "IX_TechnicianLocation_ServiceRequestId_Timestamp"
+ON TechnicianLocation ("serviceRequestId", "timestamp" DESC);
+
+-- Automatically drop data chunks that are older than 7 days.
+-- This enforces the transient nature of the data as per REQ-FUNC-009.
+SELECT add_retention_policy('TechnicianLocation', INTERVAL '7 days');

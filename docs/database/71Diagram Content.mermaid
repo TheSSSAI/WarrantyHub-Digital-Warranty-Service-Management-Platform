@@ -1,0 +1,111 @@
+erDiagram
+    User {
+        UUID userId PK
+    }
+    Device {
+        UUID deviceId PK
+    }
+    UserNotificationPreference {
+        UUID userId PK
+    }
+    Brand {
+        UUID brandId PK
+    }
+    ProductCategory {
+        UUID productCategoryId PK
+    }
+    ProductModel {
+        UUID productModelId PK
+    }
+    ProductBarcode {
+        VARCHAR barcodeValue PK
+    }
+    UserProduct {
+        UUID userProductId PK
+    }
+    WarrantyPolicy {
+        UUID warrantyPolicyId PK
+    }
+    Warranty {
+        UUID warrantyId PK
+    }
+    OwnershipTransferRequest {
+        UUID transferRequestId PK
+    }
+    Invoice {
+        UUID invoiceId PK
+    }
+    Address {
+        UUID addressId PK
+    }
+    ServiceCenter {
+        UUID serviceCenterId PK
+    }
+    ServiceAreaPolygon {
+        UUID serviceAreaPolygonId PK
+    }
+    ServiceAreaPostalCode {
+        UUID serviceAreaPostalCodeId PK
+    }
+    IssueType {
+        UUID issueTypeId PK
+    }
+    ServiceRequest {
+        UUID serviceRequestId PK
+    }
+    ServiceRequestMedia {
+        UUID serviceRequestMediaId PK
+    }
+    CustomerSignature {
+        UUID signatureId PK
+    }
+    ServiceRating {
+        UUID serviceRatingId PK
+    }
+    Skill {
+        UUID skillId PK
+    }
+    MaintenanceReminder {
+        UUID reminderId PK
+    }
+    AuditLog {
+        BIGSERIAL auditLogId PK
+        DateTime timestamp PK
+    }
+
+    User                                }o--|| ServiceCenter : "belongs to"
+    User                                }o--|| Brand : "administers"
+    User                                ||--|{ Device : "has"
+    User                                ||--|| UserNotificationPreference : "defines"
+    User                                ||--|{ UserProduct : "owns"
+    User                                ||--|{ OwnershipTransferRequest : "requests"
+    User                                }o--|{ ServiceRequest : "is assigned to"
+    User                                }o--|{ Skill : "possesses (via TechnicianSkill)"
+    User                                }o--|{ AuditLog : "performs"
+    Brand                               ||--|{ ProductModel : "produces"
+    Brand                               }o--|{ IssueType : "defines for"
+    Brand                               ||--|{ ServiceRequest : "is for"
+    Brand                               ||--|{ ServiceAreaPolygon : "defines area for"
+    Brand                               ||--|{ ServiceAreaPostalCode : "defines area for"
+    ProductCategory                     }o--o| ProductCategory : "is parent of"
+    ProductCategory                     ||--|{ ProductModel : "categorizes"
+    ProductCategory                     }o--|{ IssueType : "applies to"
+    ProductModel                        ||--|{ ProductBarcode : "identified by"
+    ProductModel                        ||--|{ UserProduct : "is instance of"
+    ProductModel                        ||--|| WarrantyPolicy : "has policy"
+    ProductModel                        ||--|{ ServiceRequest : "is for"
+    UserProduct                         ||--|{ Warranty : "is covered by"
+    UserProduct                         ||--|{ OwnershipTransferRequest : "is subject of"
+    UserProduct                         ||--|| Invoice : "is documented by"
+    UserProduct                         ||--|{ ServiceRequest : "requires service for"
+    UserProduct                         ||--|{ MaintenanceReminder : "has"
+    Address                             ||--|| ServiceCenter : "located at"
+    Address                             ||--|{ ServiceRequest : "contact at"
+    ServiceCenter                       }o--|{ Brand : "services (via ServiceCenterBrand)"
+    ServiceCenter                       ||--|{ ServiceAreaPolygon : "serves"
+    ServiceCenter                       ||--|{ ServiceAreaPostalCode : "serves"
+    ServiceCenter                       ||--|{ ServiceRequest : "handles"
+    IssueType                           ||--|{ ServiceRequest : "describes"
+    ServiceRequest                      ||--|{ ServiceRequestMedia : "has"
+    ServiceRequest                      ||--|| CustomerSignature : "is confirmed by"
+    ServiceRequest                      ||--|| ServiceRating : "is rated"

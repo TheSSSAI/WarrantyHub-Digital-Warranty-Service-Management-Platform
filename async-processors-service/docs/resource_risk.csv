@@ -1,0 +1,3 @@
+"risk_id","risk_category","description","impact","probability","mitigation_strategy","affected_tasks"
+"RES-001","Single Point of Failure","Mobile Developer is the sole resource for critical native features (Auth, Location, Sync).","Critical","High","Establish strict API contracts early so Backend team can mock all mobile endpoints. Defer non-essential UI polish.","[""TASK-MOB-001"",""TASK-SERV-005"",""TASK-SERV-009""]"
+"RES-002","Capacity Imbalance","DevOps utilization is <25% while Mobile is >85%.","Medium","Certain","Assign DevOps Lead to handle all CI/CD for mobile, including App Center setup and build scripts, relieving Mobile Dev of operational tasks.","[""TASK-MOB-001"",""TASK-SERV-004""]"

@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signature Canvas Component</title>
+  <style>
+    /* Signature Canvas CSS */
+
+    /* Design System Tokens */
+    :root {
+      /* Colors */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-900: #111827;
+      
+      --color-white: #ffffff;
+      --color-error-main: #dc3545;
+      
+      /* Spacing & Layout */
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --radius-md: 6px;
+      --radius-lg: 12px;
+      
+      /* Typography */
+      --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-size-sm: 12px;
+      --font-size-base: 14px;
+      --font-weight-medium: 500;
+      
+      /* Component Specific */
+      --sig-height-portrait: 200px;
+      --sig-height-landscape: 300px;
+      --sig-border-color: var(--color-gray-300);
+      --sig-bg: var(--color-gray-50);
+    }
+
+    /* Base Reset */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--color-gray-100);
+      padding: var(--spacing-lg);
+      display: flex;
+      flex-direction: column;
+      gap: 60px;
+      align-items: center;
+      color: var(--color-gray-900);
+    }
+
+    /* 
+     * COMPONENT: Signature Pad
+     * ------------------------
+     */
+    .signature-pad {
+      width: 100%;
+      max-width: 600px;
+      background: var(--color-white);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-md);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    /* Label */
+    .signature-pad__label {
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-medium);
+      color: var(--color-gray-900);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .signature-pad__required {
+      color: var(--color-error-main);
+      margin-left: 4px;
+    }
+
+    /* Canvas Area Wrapper */
+    .signature-pad__area {
+      position: relative;
+      width: 100%;
+      height: var(--sig-height-portrait);
+      background-color: var(--sig-bg);
+      border: 2px dashed var(--sig-border-color);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      transition: all 0.2s ease;
+      touch-action: none; /* Prevent scrolling while signing */
+    }
+
+    /* Focus state for keyboard accessibility */
+    .signature-pad__area:focus-within {
+      border-color: var(--color-primary-600);
+      background-color: var(--color-white);
+      border-style: solid;
+      box-shadow: 0 0 0 4px var(--color-primary-50);
+    }
+
+    /* The Actual Canvas Element */
+    .signature-pad__canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+    }
+
+    /* Simulated signature for 'Signed' state (SVG) */
+    .signature-pad__signature-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      display: none; /* Hidden by default */
+    }
+
+    /* Placeholder Text */
+    .signature-pad__placeholder {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: var(--color-gray-400);
+      font-size: var(--font-size-base);
+      pointer-events: none;
+      user-select: none;
+      transition: opacity 0.2s ease;
+    }
+
+    /* Actions Toolbar */
+    .signature-pad__actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--spacing-sm);
+      border-top: 1px solid var(--color-gray-200);
+      padding-top: var(--spacing-md);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-medium);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+      background: transparent;
+      min-height: 44px; /* Touch target size */
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid var(--color-primary-600);
+      outline-offset: 2px;
+    }
+
+    .btn--secondary {
+      color: var(--color-gray-500);
+      border-color: var(--color-gray-300);
+    }
+
+    .btn--secondary:hover:not(:disabled) {
+      color: var(--color-gray-900);
+      background-color: var(--color-gray-50);
+      border-color: var(--color-gray-400);
+    }
+
+    .btn--primary {
+      background-color: var(--color-primary-600);
+      color: var(--color-white);
+    }
+
+    .btn--primary:hover:not(:disabled) {
+      background-color: var(--color-primary-700);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* 
+     * VARIANTS & STATES
+     * -----------------
+     */
+
+    /* State: Signed */
+    .signature-pad--signed .signature-pad__placeholder {
+      opacity: 0;
+    }
+
+    .signature-pad--signed .signature-pad__area {
+      background-color: var(--color-white);
+      border-style: solid;
+      border-color: var(--color-gray-300);
+    }
+    
+    .signature-pad--signed .signature-pad__signature-img {
+      display: block;
+    }
+
+    /* State: Locked/Disabled */
+    .signature-pad--locked {
+      opacity: 0.8;
+      pointer-events: none;
+    }
+
+    .signature-pad--locked .signature-pad__area {
+      background-color: var(--color-gray-100);
+      border-style: solid;
+      border-color: var(--color-gray-200);
+      cursor: not-allowed;
+    }
+
+    .signature-pad--locked .signature-pad__actions {
+      display: none;
+    }
+
+    /* State: Error */
+    .signature-pad--error .signature-pad__area {
+      border-color: var(--color-error-main);
+      border-style: solid;
+      background-color: #fef2f2;
+    }
+
+    .error-message {
+      color: var(--color-error-main);
+      font-size: var(--font-size-sm);
+      margin-top: var(--spacing-xs);
+      display: none;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .error-message::before {
+      content: "!";
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--color-error-main);
+      color: white;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .signature-pad--error .error-message {
+      display: flex;
+    }
+
+    /* Responsive: Landscape Orientation */
+    @media (orientation: landscape) and (max-height: 500px) {
+      .signature-pad__area {
+        height: var(--sig-height-landscape);
+      }
+    }
+
+    /* Helper Styles for Presentation */
+    .showcase-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .showcase-header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--color-gray-900);
+    }
+    
+    .variant-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      color: var(--color-gray-500);
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      display: block;
+      font-weight: 600;
+    }
+    
+    .demo-wrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="showcase-header">
+    <h1>Signature Canvas Component</h1>
+    <p style="color: var(--color-gray-500);">Interactive input for digital signatures with multiple states.</p>
+  </div>
+
+  <div class="demo-wrapper">
+    
+    <!-- Variant 1: Default / Empty State -->
+    <div>
+      <span class="variant-label">State: Empty (Default)</span>
+      
+      <div class="signature-pad" role="application" aria-label="Signature Entry">
+        <div class="signature-pad__label">
+          <label for="sig-canvas-1">Customer Signature <span class="signature-pad__required" aria-hidden="true">*</span></label>
+        </div>
+        
+        <div class="signature-pad__area">
+          <canvas id="sig-canvas-1" class="signature-pad__canvas" aria-label="Drawing area for signature" tabindex="0"></canvas>
+          <div class="signature-pad__placeholder">Sign Here</div>
+        </div>
+        
+        <div class="signature-pad__actions">
+          <button class="btn btn--secondary" type="button">Clear</button>
+          <button class="btn btn--primary" type="button" disabled>Save Signature</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Variant 2: Signed State -->
+    <div>
+      <span class="variant-label">State: Signed (Content Present)</span>
+      
+      <div class="signature-pad signature-pad--signed">
+        <div class="signature-pad__label">
+          <label for="sig-canvas-2">Technician Signature</label>
+        </div>
+        
+        <div class="signature-pad__area">
+          <canvas id="sig-canvas-2" class="signature-pad__canvas" aria-label="Signature drawing area, signed" tabindex="0"></canvas>
+          <!-- Simulated SVG Signature for Demo -->
+          <svg class="signature-pad__signature-img" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50,100 Q100,50 150,100 T250,100 T350,100" fill="none" stroke="#111827" stroke-width="3" stroke-linecap="round" />
+            <path d="M60,110 Q90,130 120,110" fill="none" stroke="#111827" stroke-width="3" stroke-linecap="round" />
+          </svg>
+          <div class="signature-pad__placeholder">Sign Here</div>
+        </div>
+        
+        <div class="signature-pad__actions">
+          <button class="btn btn--secondary" type="button">Clear</button>
+          <button class="btn btn--primary" type="button">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Variant 3: Locked / Read-only State -->
+    <div>
+      <span class="variant-label">State: Locked (Read-Only)</span>
+      
+      <div class="signature-pad signature-pad--locked" aria-disabled="true">
+        <div class="signature-pad__label">
+          <span style="color: var(--color-gray-500)">Signature (Archived)</span>
+          <span style="font-size: 11px; text-transform: uppercase; color: var(--color-gray-400); border: 1px solid var(--color-gray-300); padding: 2px 6px; border-radius: 4px;">Locked</span>
+        </div>
+        
+        <div class="signature-pad__area">
+          <canvas class="signature-pad__canvas"></canvas>
+          <svg class="signature-pad__signature-img" style="display:block; opacity: 0.6;" viewBox="0 0 400 200">
+             <path d="M50,100 Q100,50 150,100 T250,100 T350,100" fill="none" stroke="#111827" stroke-width="3" />
+          </svg>
+          <div class="signature-pad__placeholder" style="display:none;">Sign Here</div>
+        </div>
+        
+        <div class="signature-pad__actions">
+          <!-- Actions hidden in locked state -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Variant 4: Error State -->
+    <div>
+      <span class="variant-label">State: Error (Validation Failed)</span>
+      
+      <div class="signature-pad signature-pad--error">
+        <div class="signature-pad__label">
+          <label for="sig-canvas-4">Verification <span class="signature-pad__required">*</span></label>
+        </div>
+        
+        <div class="signature-pad__area">
+          <canvas id="sig-canvas-4" class="signature-pad__canvas" tabindex="0"></canvas>
+          <div class="signature-pad__placeholder">Sign Here</div>
+        </div>
+        <div class="error-message" id="sig-error-4" role="alert">Signature is required to proceed</div>
+        
+        <div class="signature-pad__actions">
+          <button class="btn btn--secondary" type="button">Clear</button>
+          <button class="btn btn--primary" type="button">Save</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

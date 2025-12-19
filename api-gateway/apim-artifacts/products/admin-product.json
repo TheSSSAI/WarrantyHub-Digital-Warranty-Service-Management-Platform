@@ -1,0 +1,23 @@
+{
+  "name": "admin-portal",
+  "displayName": "Admin Portal",
+  "description": "Product configuration for the Brand and Service Center administration portals.",
+  "terms": "Internal use only.",
+  "subscriptionRequired": true,
+  "approvalRequired": true,
+  "subscriptionsLimit": 5,
+  "state": "published",
+  "policies": {
+    "rate-limit-by-key": {
+      "calls": 1000,
+      "renewal-period": 60,
+      "counter-key": "@(context.Request.Headers.GetValueOrDefault(\"Authorization\",\"\").AsJwt()?.Subject)"
+    }
+  },
+  "apis": [
+    "product-service-api",
+    "identity-service-api",
+    "service-request-api",
+    "geolocation-service-api"
+  ]
+}

@@ -1,0 +1,2 @@
+"total_stories","total_story_points","must_have_stories","should_have_stories","could_have_stories","epics_identified","estimated_sprints","key_dependencies"
+"7","66","4","3","0","[""Cloud Infrastructure & DevOps Foundation"",""Identity & Access Management"",""Product & Warranty Management"",""Service Request Management""]","3","[""US-INFRA-001 is a blocker for all backend functionality"",""US-SEC-001 is a blocker for all secure API interactions"",""US-MOB-001 is a blocker for all mobile-specific features""]"

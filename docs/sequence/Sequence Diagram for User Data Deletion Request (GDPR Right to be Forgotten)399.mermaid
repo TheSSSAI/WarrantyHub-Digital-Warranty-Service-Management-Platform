@@ -1,0 +1,43 @@
+sequenceDiagram
+    actor "Mobile Client" as MobileClient
+    participant "API Gateway" as APIGateway
+    participant "Identity Service" as IdentityService
+    participant "Azure Service Bus" as AzureServiceBus
+    participant "Product Service" as ProductService
+    participant "Service Request Service" as ServiceRequestService
+    participant "Audit Service" as AuditService
+
+    activate APIGateway
+    MobileClient->>APIGateway: 1. 1. DELETE /api/v1/users/me
+    APIGateway-->>MobileClient: 8. HTTP 202 Accepted
+    activate IdentityService
+    APIGateway->>IdentityService: 2. 2. DELETE /api/identity/users/me
+    IdentityService-->>APIGateway: 7. HTTP 202 Accepted
+    IdentityService->>IdentityService: 3. 3. Validate user token and initiate deletion saga
+    IdentityService->>AzureServiceBus: 4. 4. Publish(CriticalActionOccurred: UserDeletionInitiated)
+    IdentityService->>IdentityService: 5. 5. Soft-delete user and revoke tokens
+    IdentityService->>AzureServiceBus: 6. 6. Publish(UserDataDeletionRequested)
+    activate AuditService
+    AzureServiceBus->>AuditService: 9. 9. Deliver(CriticalActionOccurred)
+    AuditService->>AuditService: 10. 10. Persist immutable audit log entry
+    activate ProductService
+    AzureServiceBus->>ProductService: 11. 11. Deliver(UserDataDeletionRequested)
+    ProductService->>ProductService: 12. 12. Anonymize PII in owned data records
+    ProductService->>AzureServiceBus: 13. 13. Publish(UserDataAnonymizationCompleted)
+    activate ServiceRequestService
+    AzureServiceBus->>ServiceRequestService: 14. 14. Deliver(UserDataDeletionRequested)
+    ServiceRequestService->>ServiceRequestService: 15. 15. Anonymize PII in owned data records
+    ServiceRequestService->>AzureServiceBus: 16. 16. Publish(UserDataAnonymizationCompleted)
+    AzureServiceBus->>IdentityService: 17. 17. Deliver(UserDataAnonymizationCompleted) x2
+    IdentityService->>IdentityService: 18. 18. Correlate events and check saga completion
+    IdentityService->>IdentityService: 19. 19. [If Complete] Hard-delete user record
+    IdentityService->>AzureServiceBus: 20. 20. Publish(CriticalActionOccurred: UserDeletionCompleted)
+
+    note over AuditService: All PII-modifying actions publish an event to the Audit Service, creating an immutable log for co...
+    note over ProductService: If any participant service fails to process the deletion event, the message will be sent to a Dea...
+
+    deactivate ServiceRequestService
+    deactivate ProductService
+    deactivate AuditService
+    deactivate IdentityService
+    deactivate APIGateway

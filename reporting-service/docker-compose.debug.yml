@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  reporting-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    command: npm run start:debug
+    ports:
+      - "3007:3000"
+      - "9236:9229"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - READ_REPLICA_HOST=reporting-db-replica
+      - READ_REPLICA_PORT=5432
+      - READ_REPLICA_USERNAME=read_only_user
+      - READ_REPLICA_PASSWORD=secret_password
+      - READ_REPLICA_DATABASE=warranty_hub
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - warranty-hub-net
+    depends_on:
+      - reporting-db-replica
+
+  # Simulates the Read Replica for local development
+  reporting-db-replica:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=read_only_user
+      - POSTGRES_PASSWORD=secret_password
+      - POSTGRES_DB=warranty_hub
+    ports:
+      - "5438:5432"
+    networks:
+      - warranty-hub-net
+
+networks:
+  warranty-hub-net:
+    driver: bridge

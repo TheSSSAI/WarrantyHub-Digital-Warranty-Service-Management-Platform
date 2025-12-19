@@ -1,0 +1,2 @@
+"total_stories","total_story_points","must_have_stories","should_have_stories","could_have_stories","epics_identified","estimated_sprints","key_dependencies"
+"8","65","4","3","0","[""Cloud Infrastructure & DevOps Foundation"",""Identity & Access Management"",""Service Request Lifecycle"",""Performance & User Experience"",""Core Features"",""Analytics & Audit"",""Real-time Communication & Notifications"",""Product Management & Warranty""]","3","[""Infrastructure (US-201) blocks all other stories"",""Identity (US-202) blocks secure API access""]"

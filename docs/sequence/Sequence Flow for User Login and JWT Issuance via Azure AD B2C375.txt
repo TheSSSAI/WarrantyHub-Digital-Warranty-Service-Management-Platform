@@ -1,0 +1,957 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-AF-001
+
+## 1.2 Name
+
+User Login and JWT Issuance via Azure AD B2C
+
+## 1.3 Description
+
+A user provides credentials to log in. The system authenticates them against Azure AD B2C, generates a short-lived JWT access token and a long-lived refresh token for API access, and enforces OTP-based Multi-Factor Authentication (MFA) as required by the identity provider.
+
+## 1.4 Type
+
+🔹 AuthenticationFlow
+
+## 1.5 Purpose
+
+To securely authenticate a user and provide them with session tokens (JWT access token, refresh token) to access the system's APIs according to an OIDC flow.
+
+## 1.6 Complexity
+
+Medium
+
+## 1.7 Priority
+
+🚨 Critical
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- mobile-client-013
+- web-client-012
+- api-gateway-001
+- identity-service-002
+
+## 1.10 Key Interactions
+
+- Client sends login credentials (email/password) to the IdentityService via the API Gateway.
+- IdentityService validates credentials against the configured user store in Azure AD B2C.
+- IdentityService enforces OTP-based MFA via Azure Communication Services.
+- Upon successful authentication, IdentityService generates a signed, short-lived JWT access token containing user ID, roles, and claims, and a long-lived, securely stored refresh token.
+- Client receives and securely stores both tokens for subsequent API requests and session management.
+
+## 1.11 Triggers
+
+- User initiates a login action from a client application.
+
+## 1.12 Outcomes
+
+- User is successfully authenticated.
+- Client application receives a valid JWT access token and a refresh token.
+- User is denied access due to invalid credentials or failed MFA.
+
+## 1.13 Business Rules
+
+- Authentication must be performed via Azure Active Directory B2C.
+- MFA is mandatory for all users.
+- JWT access tokens are short-lived (e.g., 15 minutes); refresh tokens are long-lived (e.g., 90 days).
+
+## 1.14 Error Scenarios
+
+- Invalid username or password provided.
+- MFA code is incorrect or expires.
+- Identity service is unavailable.
+
+## 1.15 Integration Points
+
+- Azure Active Directory B2C
+- Azure Communication Services (for SMS OTP)
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-OPS-001
+
+## 2.2 Name
+
+Application Rollback Procedure via CI/CD Pipeline
+
+## 2.3 Description
+
+A detailed sequence for an Operations Team Member to execute a rollback of a failed application deployment on Azure Kubernetes Service (AKS). The procedure is initiated by a critical monitoring alert, involves redeploying the last known stable container image via a parameterized GitHub Actions workflow, and concludes with rigorous system health validation. This sequence directly implements the process described in user story US-132.
+
+## 2.4 Participants
+
+### 2.4.1 Human Actor
+
+#### 2.4.1.1 Repository Id
+
+operator-user
+
+#### 2.4.1.2 Display Name
+
+Operator (SRE)
+
+#### 2.4.1.3 Type
+
+🔹 Human Actor
+
+#### 2.4.1.4 Technology
+
+kubectl CLI, GitHub UI, Grafana UI
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #E67E22 |
+| Stereotype | <<Human>> |
+
+### 2.4.2.0 Observability Platform
+
+#### 2.4.2.1 Repository Id
+
+monitoring-system
+
+#### 2.4.2.2 Display Name
+
+Monitoring System
+
+#### 2.4.2.3 Type
+
+🔹 Observability Platform
+
+#### 2.4.2.4 Technology
+
+Grafana, Alertmanager
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #F1C40F |
+| Stereotype | <<Monitoring>> |
+
+### 2.4.3.0 Automation Server
+
+#### 2.4.3.1 Repository Id
+
+github-actions
+
+#### 2.4.3.2 Display Name
+
+CI/CD System
+
+#### 2.4.3.3 Type
+
+🔹 Automation Server
+
+#### 2.4.3.4 Technology
+
+GitHub Actions
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #3498DB |
+| Stereotype | <<CI/CD>> |
+
+### 2.4.4.0 Artifact Repository
+
+#### 2.4.4.1 Repository Id
+
+azure-container-registry
+
+#### 2.4.4.2 Display Name
+
+Container Registry
+
+#### 2.4.4.3 Type
+
+🔹 Artifact Repository
+
+#### 2.4.4.4 Technology
+
+Azure Container Registry (ACR)
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #9B59B6 |
+| Stereotype | <<Registry>> |
+
+### 2.4.5.0 Orchestration Engine
+
+#### 2.4.5.1 Repository Id
+
+azure-kubernetes-service
+
+#### 2.4.5.2 Display Name
+
+Container Orchestrator
+
+#### 2.4.5.3 Type
+
+🔹 Orchestration Engine
+
+#### 2.4.5.4 Technology
+
+Azure Kubernetes Service (AKS)
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | node |
+| Color | #2ECC71 |
+| Stereotype | <<Orchestrator>> |
+
+### 2.4.6.0 Microservice
+
+#### 2.4.6.1 Repository Id
+
+product-service-003
+
+#### 2.4.6.2 Display Name
+
+Application
+
+#### 2.4.6.3 Type
+
+🔹 Microservice
+
+#### 2.4.6.4 Technology
+
+.NET 8 on AKS
+
+#### 2.4.6.5 Order
+
+6
+
+#### 2.4.6.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #E74C3C |
+| Stereotype | <<Service>> |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Notification
+
+#### 2.5.1.1 Source Id
+
+monitoring-system
+
+#### 2.5.1.2 Target Id
+
+operator-user
+
+#### 2.5.1.3 Message
+
+1. Send Critical Alert: SLO Breach Detected (High Error Rate / Latency)
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Notification
+
+#### 2.5.1.6 Is Synchronous
+
+❌ No
+
+#### 2.5.1.7 Return Message
+
+
+
+#### 2.5.1.8 Has Return
+
+❌ No
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+##### 2.5.1.10.1 Protocol
+
+PagerDuty/Slack
+
+##### 2.5.1.10.2 Method
+
+Webhook POST
+
+##### 2.5.1.10.3 Parameters
+
+| Property | Value |
+|----------|-------|
+| Alert Name | Critical API Failure: product-service |
+| Severity | Critical |
+| Details | P95 Latency > 500ms for 5 mins |
+| Grafana Link | ... |
+
+##### 2.5.1.10.4 Authentication
+
+N/A
+
+##### 2.5.1.10.5 Error Handling
+
+Alertmanager retry policies.
+
+##### 2.5.1.10.6 Performance
+
+###### 2.5.1.10.6.1 Latency
+
+<5s
+
+### 2.5.2.0.0.0 Manual Query
+
+#### 2.5.2.1.0.0 Source Id
+
+operator-user
+
+#### 2.5.2.2.0.0 Target Id
+
+monitoring-system
+
+#### 2.5.2.3.0.0 Message
+
+2. Investigate Failure (Confirms new deployment is root cause)
+
+#### 2.5.2.4.0.0 Sequence Number
+
+2
+
+#### 2.5.2.5.0.0 Type
+
+🔹 Manual Query
+
+#### 2.5.2.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7.0.0 Return Message
+
+Dashboard data confirms SLO breach correlates with deployment time.
+
+#### 2.5.2.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.2.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.2.10.0.0 Technical Details
+
+##### 2.5.2.10.1.0 Protocol
+
+HTTPS
+
+##### 2.5.2.10.2.0 Method
+
+View Dashboard
+
+##### 2.5.2.10.3.0 Parameters
+
+| Property | Value |
+|----------|-------|
+| Dashboard | Service Health Dashboard |
+| Time Range | Last 30 minutes |
+
+##### 2.5.2.10.4.0 Authentication
+
+User Session (Azure AD)
+
+##### 2.5.2.10.5.0 Error Handling
+
+N/A
+
+##### 2.5.2.10.6.0 Performance
+
+###### 2.5.2.10.6.1 Latency
+
+UI dependent
+
+### 2.5.3.0.0.0 Manual Trigger
+
+#### 2.5.3.1.0.0 Source Id
+
+operator-user
+
+#### 2.5.3.2.0.0 Target Id
+
+github-actions
+
+#### 2.5.3.3.0.0 Message
+
+3. Trigger Rollback: 'Deploy Specific Version' Workflow
+
+#### 2.5.3.4.0.0 Sequence Number
+
+3
+
+#### 2.5.3.5.0.0 Type
+
+🔹 Manual Trigger
+
+#### 2.5.3.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7.0.0 Return Message
+
+Workflow run started successfully.
+
+#### 2.5.3.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.3.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.3.10.0.0 Technical Details
+
+##### 2.5.3.10.1.0 Protocol
+
+HTTPS (GitHub UI)
+
+##### 2.5.3.10.2.0 Method
+
+workflow_dispatch
+
+##### 2.5.3.10.3.0 Parameters
+
+| Property | Value |
+|----------|-------|
+| Workflow Id | deploy.yml |
+| Inputs | {'service': 'product-service', 'image_tag': 'v1.2.0'} |
+
+##### 2.5.3.10.4.0 Authentication
+
+User Session (GitHub RBAC)
+
+##### 2.5.3.10.5.0 Error Handling
+
+UI validation for required inputs.
+
+##### 2.5.3.10.6.0 Performance
+
+###### 2.5.3.10.6.1 Latency
+
+UI dependent
+
+### 2.5.4.0.0.0 API Call / CLI
+
+#### 2.5.4.1.0.0 Source Id
+
+github-actions
+
+#### 2.5.4.2.0.0 Target Id
+
+azure-kubernetes-service
+
+#### 2.5.4.3.0.0 Message
+
+4. Set New Image for Deployment
+
+#### 2.5.4.4.0.0 Sequence Number
+
+4
+
+#### 2.5.4.5.0.0 Type
+
+🔹 API Call / CLI
+
+#### 2.5.4.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7.0.0 Return Message
+
+Deployment 'product-service' image updated.
+
+#### 2.5.4.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.4.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.4.10.0.0 Technical Details
+
+##### 2.5.4.10.1.0 Protocol
+
+Kubernetes API
+
+##### 2.5.4.10.2.0 Method
+
+kubectl set image
+
+##### 2.5.4.10.3.0 Parameters
+
+| Property | Value |
+|----------|-------|
+| Command | kubectl set image deployment/product-service-dp pr... |
+
+##### 2.5.4.10.4.0 Authentication
+
+Azure Service Principal (from CI/CD secrets)
+
+##### 2.5.4.10.5.0 Error Handling
+
+Job fails if kubectl command returns non-zero exit code. Log stderr.
+
+##### 2.5.4.10.6.0 Performance
+
+###### 2.5.4.10.6.1 Latency
+
+<10s
+
+#### 2.5.4.11.0.0 Nested Interactions
+
+##### 2.5.4.11.1.0 Image Pull
+
+###### 2.5.4.11.1.1 Source Id
+
+azure-kubernetes-service
+
+###### 2.5.4.11.1.2 Target Id
+
+azure-container-registry
+
+###### 2.5.4.11.1.3 Message
+
+4a. Pull Image 'product-service:v1.2.0'
+
+###### 2.5.4.11.1.4 Sequence Number
+
+5
+
+###### 2.5.4.11.1.5 Type
+
+🔹 Image Pull
+
+###### 2.5.4.11.1.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.4.11.1.7 Return Message
+
+Image layers downloaded.
+
+###### 2.5.4.11.1.8 Has Return
+
+✅ Yes
+
+###### 2.5.4.11.1.9 Is Activation
+
+❌ No
+
+###### 2.5.4.11.1.10 Technical Details
+
+####### 2.5.4.11.1.10.1 Protocol
+
+Docker Registry API v2
+
+####### 2.5.4.11.1.10.2 Method
+
+GET /v2/product-service/manifests/v1.2.0
+
+####### 2.5.4.11.1.10.3 Parameters
+
+*No data available*
+
+####### 2.5.4.11.1.10.4 Authentication
+
+AKS Managed Identity with AcrPull role on ACR.
+
+####### 2.5.4.11.1.10.5 Error Handling
+
+Pod enters 'ImagePullBackOff' state on failure.
+
+####### 2.5.4.11.1.10.6 Performance
+
+######## 2.5.4.11.1.10.6.1 Latency
+
+Dependent on image size and network.
+
+##### 2.5.4.11.2.0.0.0 Internal Process
+
+###### 2.5.4.11.2.1.0.0 Source Id
+
+azure-kubernetes-service
+
+###### 2.5.4.11.2.2.0.0 Target Id
+
+azure-kubernetes-service
+
+###### 2.5.4.11.2.3.0.0 Message
+
+4b. Execute Rolling Update Strategy
+
+###### 2.5.4.11.2.4.0.0 Sequence Number
+
+6
+
+###### 2.5.4.11.2.5.0.0 Type
+
+🔹 Internal Process
+
+###### 2.5.4.11.2.6.0.0 Is Synchronous
+
+❌ No
+
+###### 2.5.4.11.2.7.0.0 Return Message
+
+
+
+###### 2.5.4.11.2.8.0.0 Has Return
+
+❌ No
+
+###### 2.5.4.11.2.9.0.0 Is Activation
+
+❌ No
+
+###### 2.5.4.11.2.10.0.0 Technical Details
+
+####### 2.5.4.11.2.10.1.0 Protocol
+
+N/A
+
+####### 2.5.4.11.2.10.2.0 Method
+
+RollingUpdate
+
+####### 2.5.4.11.2.10.3.0 Parameters
+
+| Property | Value |
+|----------|-------|
+| Strategy | maxUnavailable: 25%, maxSurge: 25% |
+
+####### 2.5.4.11.2.10.4.0 Authentication
+
+N/A
+
+####### 2.5.4.11.2.10.5.0 Error Handling
+
+Deployment is paused if new pods fail readiness probes.
+
+####### 2.5.4.11.2.10.6.0 Performance
+
+######## 2.5.4.11.2.10.6.1 Latency
+
+Dependent on pod start time and readiness checks.
+
+### 2.5.5.0.0.0.0.0 Notification
+
+#### 2.5.5.1.0.0.0.0 Source Id
+
+github-actions
+
+#### 2.5.5.2.0.0.0.0 Target Id
+
+operator-user
+
+#### 2.5.5.3.0.0.0.0 Message
+
+5. Notify: Rollback Deployment Complete
+
+#### 2.5.5.4.0.0.0.0 Sequence Number
+
+7
+
+#### 2.5.5.5.0.0.0.0 Type
+
+🔹 Notification
+
+#### 2.5.5.6.0.0.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.5.7.0.0.0.0 Return Message
+
+
+
+#### 2.5.5.8.0.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.5.9.0.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.5.10.0.0.0.0 Technical Details
+
+##### 2.5.5.10.1.0.0.0 Protocol
+
+GitHub Checks API / Slack
+
+##### 2.5.5.10.2.0.0.0 Method
+
+POST
+
+##### 2.5.5.10.3.0.0.0 Parameters
+
+| Property | Value |
+|----------|-------|
+| Status | Success |
+| Workflow Run Url | ... |
+
+##### 2.5.5.10.4.0.0.0 Authentication
+
+N/A
+
+##### 2.5.5.10.5.0.0.0 Error Handling
+
+N/A
+
+##### 2.5.5.10.6.0.0.0 Performance
+
+###### 2.5.5.10.6.1.0.0 Latency
+
+<2s
+
+### 2.5.6.0.0.0.0.0 Health Check
+
+#### 2.5.6.1.0.0.0.0 Source Id
+
+operator-user
+
+#### 2.5.6.2.0.0.0.0 Target Id
+
+product-service-003
+
+#### 2.5.6.3.0.0.0.0 Message
+
+6. Validate: Check Health Endpoint
+
+#### 2.5.6.4.0.0.0.0 Sequence Number
+
+8
+
+#### 2.5.6.5.0.0.0.0 Type
+
+🔹 Health Check
+
+#### 2.5.6.6.0.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7.0.0.0.0 Return Message
+
+HTTP 200 OK, Status: Healthy
+
+#### 2.5.6.8.0.0.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.6.9.0.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.6.10.0.0.0.0 Technical Details
+
+##### 2.5.6.10.1.0.0.0 Protocol
+
+HTTPS
+
+##### 2.5.6.10.2.0.0.0 Method
+
+GET /health/ready
+
+##### 2.5.6.10.3.0.0.0 Parameters
+
+*No data available*
+
+##### 2.5.6.10.4.0.0.0 Authentication
+
+N/A (public endpoint)
+
+##### 2.5.6.10.5.0.0.0 Error Handling
+
+Retry if initial checks fail. Escalate if still unhealthy.
+
+##### 2.5.6.10.6.0.0.0 Performance
+
+###### 2.5.6.10.6.1.0.0 Latency
+
+<100ms
+
+### 2.5.7.0.0.0.0.0 Manual Query
+
+#### 2.5.7.1.0.0.0.0 Source Id
+
+operator-user
+
+#### 2.5.7.2.0.0.0.0 Target Id
+
+monitoring-system
+
+#### 2.5.7.3.0.0.0.0 Message
+
+7. Validate: Confirm Metrics Returned to Normal
+
+#### 2.5.7.4.0.0.0.0 Sequence Number
+
+9
+
+#### 2.5.7.5.0.0.0.0 Type
+
+🔹 Manual Query
+
+#### 2.5.7.6.0.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.7.7.0.0.0.0 Return Message
+
+Error rate and latency metrics are within SLO.
+
+#### 2.5.7.8.0.0.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.7.9.0.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.7.10.0.0.0.0 Technical Details
+
+##### 2.5.7.10.1.0.0.0 Protocol
+
+HTTPS
+
+##### 2.5.7.10.2.0.0.0 Method
+
+View Dashboard
+
+##### 2.5.7.10.3.0.0.0 Parameters
+
+| Property | Value |
+|----------|-------|
+| Dashboard | Service Health Dashboard |
+
+##### 2.5.7.10.4.0.0.0 Authentication
+
+User Session (Azure AD)
+
+##### 2.5.7.10.5.0.0.0 Error Handling
+
+If metrics are not normal, continue investigation.
+
+##### 2.5.7.10.6.0.0.0 Performance
+
+###### 2.5.7.10.6.1.0.0 Latency
+
+UI dependent
+
+## 2.6.0.0.0.0.0.0 Notes
+
+### 2.6.1.0.0.0.0.0 Content
+
+#### 2.6.1.1.0.0.0.0 Content
+
+Decision Point: Operator consults the runbook to confirm that the observed SLO breach warrants a full rollback versus a hotfix or other mitigation.
+
+#### 2.6.1.2.0.0.0.0 Position
+
+top
+
+#### 2.6.1.3.0.0.0.0 Participant Id
+
+operator-user
+
+#### 2.6.1.4.0.0.0.0 Sequence Number
+
+2
+
+### 2.6.2.0.0.0.0.0 Content
+
+#### 2.6.2.1.0.0.0.0 Content
+
+The 'Deploy Specific Version' workflow must be distinct from the main branch CI/CD pipeline and require explicit, protected manual invocation.
+
+#### 2.6.2.2.0.0.0.0 Position
+
+right
+
+#### 2.6.2.3.0.0.0.0 Participant Id
+
+github-actions
+
+#### 2.6.2.4.0.0.0.0 Sequence Number
+
+3
+
+### 2.6.3.0.0.0.0.0 Content
+
+#### 2.6.3.1.0.0.0.0 Content
+
+This entire procedure must be documented as a runbook and tested quarterly in the Staging environment to ensure its effectiveness and familiarity for the on-call team, as per US-132 AC-006.
+
+#### 2.6.3.2.0.0.0.0 Position
+
+bottom
+
+#### 2.6.3.3.0.0.0.0 Participant Id
+
+*Not specified*
+
+#### 2.6.3.4.0.0.0.0 Sequence Number
+
+9
+
+## 2.7.0.0.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | Role-Based Access Control (RBAC) must restrict the... |
+| Performance Targets | The end-to-end rollback time (from trigger to vali... |
+| Error Handling Strategy | If the `kubectl set image` command fails, the GitH... |
+| Testing Considerations | A 'Disaster Recovery Drill' must be conducted quar... |
+| Monitoring Requirements | A dedicated Grafana dashboard is required to monit... |
+| Deployment Considerations | Container images in ACR must be tagged immutably (... |
+

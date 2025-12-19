@@ -1,0 +1,68 @@
+stateDiagram-v2
+    direction TB
+    
+    %% Styles
+    classDef terminal fill:#f9f9f9,stroke:#333,stroke-width:2px;
+    classDef active fill:#e1f5fe,stroke:#0277bd,stroke-width:2px;
+    classDef alert fill:#fff3e0,stroke:#ef6c00,stroke-width:2px;
+
+    [*] --> Requested : User submits request
+
+    state "Active Service Phase" as ActivePhase {
+        state "Triage & Assignment" as Triage {
+            Requested --> Acknowledged : Service Center Admin<br/>[Action: Acknowledge]
+            Acknowledged --> TechnicianAssigned : Service Center Admin<br/>[Action: Assign Technician]
+            TechnicianAssigned --> TechnicianAssigned : Service Center Admin<br/>[Action: Re-assign]
+        }
+
+        state "Field Execution" as Execution {
+            TechnicianAssigned --> TechnicianOnTheWay : Technician<br/>[Action: Start Travel]
+            TechnicianOnTheWay --> WorkInProgress : Technician<br/>[Action: Start Work]
+            WorkInProgress --> Resolved : Technician<br/>[Action: Mark Resolved]
+        }
+        
+        %% Cancellation Paths
+        Requested --> Cancelled : User<br/>[Action: Cancel Request]
+        Acknowledged --> Cancelled : User<br/>[Action: Cancel Request]
+        TechnicianAssigned --> Cancelled : User<br/>[Action: Cancel Request]
+    }
+
+    state "Post-Service & Resolution" as ResolutionPhase {
+        Resolved --> Closed : Service Center Admin<br/>[Action: Finalize & Close]
+        
+        state "Dispute Handling" as DisputeLogic {
+            Resolved --> Disputed : User<br/>[Action: Dispute within 7 days]
+            Disputed --> Acknowledged : Brand Admin<br/>[Action: Re-open Ticket]
+            Disputed --> Closed : Brand Admin<br/>[Action: Uphold Resolution]
+        }
+    }
+
+    Cancelled --> [*]
+    Closed --> [*]
+
+    %% Notes
+    note right of Requested
+        Initial state.
+        Visible to SC Admin.
+    end note
+
+    note right of TechnicianAssigned
+        Technician receives notification.
+        User sees Tech Profile.
+    end note
+
+    note left of TechnicianOnTheWay
+        Live location sharing active.
+        User tracks ETA.
+    end note
+
+    note right of Resolved
+        Service complete.
+        Waiting for Admin Closure
+        or User Dispute.
+    end note
+
+    %% Applying styles
+    class Requested,Acknowledged,TechnicianAssigned,TechnicianOnTheWay,WorkInProgress active
+    class Resolved,Disputed alert
+    class Cancelled,Closed terminal

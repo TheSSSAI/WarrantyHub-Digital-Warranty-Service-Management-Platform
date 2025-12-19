@@ -1,0 +1,3 @@
+"optimization_area","current_state","recommended_action","expected_benefit","implementation_cost","timeline","success_metrics","roi_calculation"
+"DevOps Utilization","DevOps Engineer has ~50% utilization","Assign DevOps Eng to assist Backend with load testing scripts (k6) earlier in Sprint 2","Accelerate feedback loop on WebSocket performance","","Sprint 2 start","Load tests ready 1 week early","Zero cost, high risk reduction"
+"Mobile Team Balance","Lead overloaded (101%), Dev underutilized in Sprint 1-2","Move Camera Component task (TASK-MOB-002-01) preparation to Sprint 2 for Mobile Dev","Balance workload, reduce Lead bottleneck","","Sprint 1 planning","Lead utilization < 85%","Prevents burnout and delay"

@@ -1,0 +1,82 @@
+flowchart TD
+    %% Nodes
+    Start([User Accesses Application])
+    
+    subgraph Authentication_Layer [Authentication Layer]
+        CheckAuth{Is User<br/>Authenticated?}
+        RedirectLogin[Redirect to Login / Azure AD B2C]
+        VerifyCreds{Credentials &<br/>MFA Valid?}
+        IssueToken[Issue JWT with<br/><b>Role Claims</b>]
+        LoginError[Display Auth Error]
+    end
+
+    subgraph Route_Guard [Authorization & Routing Guard]
+        ParseToken[Parse JWT & Extract Role]
+        DetermineRoute{Target Route<br/>Namespace}
+    end
+
+    subgraph Admin_Portal [Super Admin Portal]
+        GuardSuper{Role ==<br/><b>Super Admin</b>?}
+        DashSuper[<b>Super Admin Dashboard</b><br/>/admin/dashboard]
+    end
+
+    subgraph Brand_Portal [Brand Portal]
+        GuardBrand{Role ==<br/><b>Brand Admin</b>?}
+        DashBrand[<b>Brand Dashboard</b><br/>/brand/dashboard]
+    end
+
+    subgraph SC_Panel [Service Center Panel]
+        GuardSC{Role ==<br/><b>Service Center Admin</b>?}
+        DashSC[<b>Service Center Dashboard</b><br/>/sc/dashboard]
+    end
+
+    subgraph Mobile_App [Mobile Application]
+        GuardApp{Role Check}
+        DashTech[<b>Technician Home</b><br/>Assigned Jobs List]
+        DashConsumer[<b>Consumer Home</b><br/>My Products List]
+    end
+
+    Error403[<b>403 Forbidden</b><br/>Access Denied Page]
+
+    %% Relationships
+    Start --> CheckAuth
+    CheckAuth -- No --> RedirectLogin
+    RedirectLogin --> VerifyCreds
+    VerifyCreds -- No --> LoginError
+    VerifyCreds -- Yes --> IssueToken
+    IssueToken --> ParseToken
+    
+    CheckAuth -- Yes --> ParseToken
+    ParseToken --> DetermineRoute
+
+    %% Routing Logic
+    DetermineRoute -- "/admin/*" --> GuardSuper
+    GuardSuper -- Yes --> DashSuper
+    GuardSuper -- No --> Error403
+
+    DetermineRoute -- "/brand/*" --> GuardBrand
+    GuardBrand -- Yes --> DashBrand
+    GuardBrand -- No --> Error403
+
+    DetermineRoute -- "/sc/*" --> GuardSC
+    GuardSC -- Yes --> DashSC
+    GuardSC -- No --> Error403
+
+    DetermineRoute -- "/app/*" --> GuardApp
+    GuardApp -- "Role: Technician" --> DashTech
+    GuardApp -- "Role: Consumer" --> DashConsumer
+    GuardApp -- "Other" --> Error403
+
+    %% Styling
+    classDef default fill:#fff,stroke:#333,stroke-width:1px;
+    classDef auth fill:#e3f2fd,stroke:#1565c0,stroke-width:2px;
+    classDef guard fill:#fff3e0,stroke:#ef6c00,stroke-width:2px;
+    classDef success fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
+    classDef error fill:#ffebee,stroke:#c62828,stroke-width:2px;
+    classDef portal fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
+
+    class CheckAuth,RedirectLogin,VerifyCreds,IssueToken auth
+    class ParseToken,DetermineRoute,GuardSuper,GuardBrand,GuardSC,GuardApp guard
+    class DashSuper,DashBrand,DashSC,DashTech,DashConsumer success
+    class LoginError,Error403 error
+    class Admin_Portal,Brand_Portal,SC_Panel,Mobile_App portal

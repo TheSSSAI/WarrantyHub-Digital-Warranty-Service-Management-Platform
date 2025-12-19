@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant "K8s CronJob Scheduler" as K8sCronJobScheduler
+    participant "ScheduledJobWorker" as ScheduledJobWorker
+    participant "ProductService" as ProductService
+    participant "Product Database" as ProductDatabase
+    participant "Messaging Infrastructure" as MessagingInfrastructure
+
+    activate ScheduledJobWorker
+    K8sCronJobScheduler->>ScheduledJobWorker: 1. 1. Trigger Job Execution (Schedule: '0 * * * *')
+    activate ProductService
+    ScheduledJobWorker->>ProductService: 2. 2. POST /internal/v1/transfers/expire-pending
+    ProductService-->>ScheduledJobWorker: 3. 200 OK - {"expiredCount": N}
+    ProductService->>ProductDatabase: 2.1. 2.1 [DB] Find Expired Transfer Requests
+    ProductDatabase-->>ProductService: 2.2 [DB] Return List<OwnershipTransferRequest>
+    ProductService->>ProductService: 2.3. 2.3 [Loop] For each expired request
+    ScheduledJobWorker->>ScheduledJobWorker: 4. 4. Log summary and complete job
+
+    note over ProductDatabase: Database Indexing: A composite index on ("Status", "CreatedAt") on the OwnershipTransferRequests ...
+    note over ProductService: Transactional Integrity: The entire process of finding, updating, and publishing events (steps 2....
+    note over ScheduledJobWorker: Idempotency: The API endpoint and the overall job are designed to be idempotent. If the job runs ...
+
+    deactivate ProductService
+    deactivate ScheduledJobWorker

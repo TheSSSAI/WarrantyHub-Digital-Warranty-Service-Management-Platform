@@ -1,0 +1,37 @@
+sequenceDiagram
+    participant "Kubelet (AKS Node Agent)" as KubeletAKSNodeAgent
+    participant "ProductService Pod" as ProductServicePod
+    participant "Kubernetes API Server" as KubernetesAPIServer
+    participant "Kubernetes Endpoint Controller" as KubernetesEndpointController
+
+    activate ProductServicePod
+    KubeletAKSNodeAgent->>ProductServicePod: 1. 1. [Readiness Probe] Sends probe to determine service readiness after initial startup delay.
+    ProductServicePod-->>KubeletAKSNodeAgent: Returns HTTP 200 OK or HTTP 503 Service Unavailable.
+    ProductServicePod->>ProductServicePod: 2. 1a. Executes ASP.NET Core Health Checks. Verifies critical dependencies (e.g., database connectivity, cache availability).
+    ProductServicePod-->>ProductServicePod: Aggregates health status of dependencies.
+    ProductServicePod->>KubeletAKSNodeAgent: 3. 2. [ALT: Success Path] Returns HTTP 200 OK, indicating all dependencies are healthy.
+    activate KubernetesAPIServer
+    KubeletAKSNodeAgent->>KubernetesAPIServer: 4. 3. Reports successful probe to API Server, updating Pod's condition to 'Ready'.
+    KubernetesAPIServer-->>KubeletAKSNodeAgent: API Server acknowledges status update.
+    activate KubernetesEndpointController
+    KubernetesAPIServer->>KubernetesEndpointController: 5. 4. Watches Pod status change and adds the Pod's IP address to the Service's Endpoints object.
+    ProductServicePod->>KubeletAKSNodeAgent: 6. 2. [ALT: Failure Path] Returns HTTP 503 Service Unavailable, indicating a dependency is unhealthy.
+    KubeletAKSNodeAgent->>KubernetesAPIServer: 7. 3a. Reports failed probe. Pod remains in/enters 'Not Ready' state and is not added to service endpoints.
+    KubernetesAPIServer-->>KubeletAKSNodeAgent: API Server acknowledges status update.
+    KubeletAKSNodeAgent->>ProductServicePod: 8. 5. [Liveness Probe] Periodically sends probe to check if the running application is still healthy.
+    ProductServicePod-->>KubeletAKSNodeAgent: Returns HTTP 200 OK on success, or fails on timeout/non-200 response.
+    ProductServicePod->>ProductServicePod: 9. 5a. Executes a lightweight self-check (e.g., checks for thread pool starvation, internal state consistency).
+    ProductServicePod-->>ProductServicePod: Returns healthy or unhealthy status.
+    ProductServicePod->>KubeletAKSNodeAgent: 10. 6. [ALT: Success Path] Returns HTTP 200 OK. No action is taken.
+    ProductServicePod->>KubeletAKSNodeAgent: 11. 6. [ALT: Failure Path] Fails to respond or returns non-200 code.
+    KubeletAKSNodeAgent->>KubeletAKSNodeAgent: 12. 7. Increments internal failure counter. If counter exceeds 'failureThreshold' (e.g., 3), initiates container restart.
+    KubeletAKSNodeAgent-->>KubeletAKSNodeAgent: Decision to restart container.
+    KubeletAKSNodeAgent->>KubernetesAPIServer: 13. 8. Posts a Kubernetes Event indicating Liveness probe failed and container will be restarted.
+    KubeletAKSNodeAgent->>ProductServicePod: 14. 9. Sends SIGTERM to the container, initiating a graceful shutdown.
+
+    note over ProductServicePod: Readiness Probe: MUST check external dependencies. Its failure should not cause a restart, only t...
+    note over ProductServicePod: Liveness Probe: MUST NOT check external dependencies. It should be a lightweight, fast check to c...
+
+    deactivate KubernetesEndpointController
+    deactivate KubernetesAPIServer
+    deactivate ProductServicePod

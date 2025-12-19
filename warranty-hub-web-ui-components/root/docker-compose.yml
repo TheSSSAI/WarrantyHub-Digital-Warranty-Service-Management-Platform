@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  storybook:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "6006:6006"
+    volumes:
+      - ./src:/app/src
+    environment:
+      - NODE_ENV=development
+    command: npm run storybook -- --ci
+
+  test:
+    image: node:20.11.0-alpine
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: npm run test:watch

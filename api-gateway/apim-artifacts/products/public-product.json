@@ -1,0 +1,23 @@
+{
+  "name": "public-app",
+  "displayName": "Public Consumer App",
+  "description": "Product configuration for the consumer-facing mobile and web applications.",
+  "terms": "Use of this API is subject to the Terms of Service.",
+  "subscriptionRequired": true,
+  "approvalRequired": false,
+  "subscriptionsLimit": 1,
+  "state": "published",
+  "policies": {
+    "rate-limit-by-key": {
+      "calls": 100,
+      "renewal-period": 60,
+      "counter-key": "@(context.Request.IpAddress)"
+    }
+  },
+  "apis": [
+    "product-service-api",
+    "identity-service-api",
+    "service-request-api",
+    "geolocation-service-api"
+  ]
+}

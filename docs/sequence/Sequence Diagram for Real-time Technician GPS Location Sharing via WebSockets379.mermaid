@@ -1,0 +1,28 @@
+sequenceDiagram
+    actor "Mobile Client (Technician/Customer)" as MobileClientTechnicianCustomer
+    participant "Geolocation Service" as GeolocationService
+
+    activate MobileClientTechnicianCustomer
+    MobileClientTechnicianCustomer->>MobileClientTechnicianCustomer: 1. Technician activates 'Travel Mode' for an assigned job.
+    MobileClientTechnicianCustomer->>GeolocationService: 2. Initiate SignalR connection (Negotiation).
+    GeolocationService-->>MobileClientTechnicianCustomer: 200 OK with connection details (connectionId, availableTransports).
+    activate GeolocationService
+    MobileClientTechnicianCustomer->>GeolocationService: 3. Establish persistent WebSocket connection.
+    GeolocationService-->>MobileClientTechnicianCustomer: Connection established.
+    MobileClientTechnicianCustomer->>GeolocationService: 4. Invoke Hub Method: StartSharingLocation(jobId)
+    GeolocationService-->>MobileClientTechnicianCustomer: Hub method completes (or throws RpcException).
+    MobileClientTechnicianCustomer->>MobileClientTechnicianCustomer: 5. Customer views the active service request details page.
+    MobileClientTechnicianCustomer->>GeolocationService: 6. Establish WebSocket connection for customer (Steps 2 & 3 repeated).
+    GeolocationService-->>MobileClientTechnicianCustomer: Connection established.
+    MobileClientTechnicianCustomer->>GeolocationService: 7. Invoke Hub Method: SubscribeToJobUpdates(jobId)
+    GeolocationService-->>MobileClientTechnicianCustomer: Hub method completes (or throws RpcException).
+    MobileClientTechnicianCustomer->>GeolocationService: 8. Periodically invoke Hub Method: SendLocationUpdate(locationData)
+    GeolocationService->>GeolocationService: 9. Broadcast 'OnLocationUpdated' to all clients in the job-specific SignalR group via Redis backplane.
+    GeolocationService->>MobileClientTechnicianCustomer: 10. Push 'OnLocationUpdated' message to Customer's client.
+    MobileClientTechnicianCustomer->>MobileClientTechnicianCustomer: 11. Customer's app UI updates technician's position on the map.
+
+    note over MobileClientTechnicianCustomer: The Flutter client must use a robust SignalR client library that supports automatic reconnection ...
+    note over GeolocationService: Authorization logic within the SignalR Hub is critical. It must prevent a user from subscribing t...
+
+    deactivate GeolocationService
+    deactivate MobileClientTechnicianCustomer

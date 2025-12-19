@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* 
+         * DESIGN SYSTEM TOKENS & RESET
+         */
+        :root {
+            /* Colors - Primary */
+            --color-primary-50: #eef2ff;
+            --color-primary-100: #e0e7ff;
+            --color-primary-600: #4f46e5;
+            --color-primary-700: #4338ca;
+            
+            /* Colors - Neutrals */
+            --color-white: #ffffff;
+            --color-gray-50: #f9fafb;
+            --color-gray-100: #f3f4f6;
+            --color-gray-200: #e5e7eb;
+            --color-gray-300: #d1d5db;
+            --color-gray-400: #9ca3af;
+            --color-gray-500: #6b7280;
+            --color-gray-600: #4b5563;
+            --color-gray-700: #374151;
+            --color-gray-800: #1f2937;
+            --color-gray-900: #111827;
+
+            /* Colors - Semantic */
+            --color-success-bg: #d1e7dd;
+            --color-success-text: #0f5132;
+            --color-warning-bg: #fff3cd;
+            --color-warning-text: #664d03;
+            --color-error-bg: #f8d7da;
+            --color-error-text: #842029;
+            --color-info-main: #0dcaf0;
+
+            /* Typography */
+            --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            
+            /* Spacing */
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+
+            /* UI Components */
+            --radius-md: 12px;
+            --radius-full: 9999px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            
+            /* Layout */
+            --max-width-mobile: 100%;
+            --max-width-desktop: 640px; /* Constrained for list readability */
+            --header-height: 64px;
+        }
+
+        /* Reset */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family-base);
+            background-color: var(--color-gray-50);
+            color: var(--color-gray-900);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        button {
+            cursor: pointer;
+            font-family: inherit;
+            border: none;
+            background: none;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* 
+         * LAYOUT ARCHITECTURE 
+         */
+        .screen-container {
+            max-width: var(--max-width-desktop);
+            margin: 0 auto;
+            background-color: var(--color-white);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        }
+
+        /* 
+         * HEADER COMPONENT 
+         */
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: var(--color-white);
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 var(--spacing-md);
+            border-bottom: 1px solid var(--color-gray-200);
+            backdrop-filter: blur(8px);
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+
+        .app-header__title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--color-gray-900);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .app-header__badge {
+            background-color: var(--color-error-text);
+            color: var(--color-white);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+            line-height: 1.2;
+        }
+
+        .app-header__action {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--color-primary-600);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-md);
+            transition: background 0.2s;
+        }
+
+        .app-header__action:hover {
+            background-color: var(--color-primary-50);
+        }
+
+        /* 
+         * FILTER TABS 
+         */
+        .filter-bar {
+            padding: var(--spacing-md) var(--spacing-md) var(--spacing-xs);
+            background-color: var(--color-white);
+            overflow-x: auto;
+            white-space: nowrap;
+            -ms-overflow-style: none; /* Hide scrollbar IE/Edge */
+            scrollbar-width: none; /* Hide scrollbar Firefox */
+            border-bottom: 1px solid var(--color-gray-100);
+        }
+
+        .filter-bar::-webkit-scrollbar {
+            display: none; /* Hide scrollbar Chrome/Safari */
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        .filter-tab {
+            padding: 8px 16px;
+            border-radius: var(--radius-full);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--color-gray-600);
+            background-color: var(--color-gray-100);
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .filter-tab[aria-selected="true"] {
+            background-color: var(--color-gray-900);
+            color: var(--color-white);
+        }
+
+        .filter-tab:hover:not([aria-selected="true"]) {
+            background-color: var(--color-gray-200);
+        }
+
+        .filter-tab:focus-visible {
+            outline: 2px solid var(--color-primary-600);
+            outline-offset: 2px;
+        }
+
+        /* 
+         * NOTIFICATION LIST 
+         */
+        .notification-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notification-item {
+            position: relative;
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--color-gray-100);
+            display: grid;
+            grid-template-columns: 48px 1fr;
+            gap: var(--spacing-md);
+            transition: background-color 0.2s ease;
+            background-color: var(--color-white);
+        }
+
+        .notification-item--unread {
+            background-color: var(--color-primary-50);
+        }
+        
+        /* Left border indicator for unread */
+        .notification-item--unread::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background-color: var(--color-primary-600);
+        }
+
+        .notification-item:hover {
+            background-color: var(--color-gray-50);
+        }
+
+        .notification-item:active {
+            background-color: var(--color-gray-100);
+        }
+
+        /* Icon Container */
+        .notification-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .notification-icon--service {
+            background-color: var(--color-info-main); /* Fallback */
+            background-color: #e0f2fe;
+            color: #0284c7;
+        }
+
+        .notification-icon--warranty {
+            background-color: var(--color-warning-bg);
+            color: var(--color-warning-text);
+        }
+
+        .notification-icon--security {
+            background-color: var(--color-gray-200);
+            color: var(--color-gray-700);
+        }
+        
+        .notification-icon--chat {
+            background-color: var(--color-primary-100);
+            color: var(--color-primary-700);
+        }
+
+        /* Content Area */
+        .notification-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: var(--spacing-sm);
+        }
+
+        .notification-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--color-gray-900);
+            line-height: 1.4;
+        }
+
+        .notification-time {
+            font-size: 12px;
+            color: var(--color-gray-500);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .notification-body {
+            font-size: 14px;
+            color: var(--color-gray-600);
+            line-height: 1.5;
+            /* Text truncation for max 2 lines */
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .notification-meta {
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-pill {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .status-pill--resolved {
+            background-color: var(--color-success-bg);
+            color: var(--color-success-text);
+        }
+
+        .status-pill--pending {
+            background-color: var(--color-warning-bg);
+            color: var(--color-warning-text);
+        }
+
+        /* 
+         * EMPTY STATE
+         */
+        .empty-state {
+            display: none; /* Toggled via JS for demo */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 64px var(--spacing-lg);
+            text-align: center;
+            color: var(--color-gray-500);
+            height: 60vh;
+        }
+
+        .empty-state__icon {
+            width: 80px;
+            height: 80px;
+            margin-bottom: var(--spacing-lg);
+            background-color: var(--color-gray-100);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-gray-400);
+        }
+
+        .empty-state__title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--color-gray-900);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        /* 
+         * SKELETON LOADING 
+         */
+        .loading-state {
+            display: none; /* Toggled via JS for demo */
+            padding: 0;
+        }
+
+        .skeleton-item {
+            padding: var(--spacing-md);
+            display: grid;
+            grid-template-columns: 48px 1fr;
+            gap: var(--spacing-md);
+            border-bottom: 1px solid var(--color-gray-50);
+        }
+
+        .skeleton-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: var(--color-gray-200);
+            animation: pulse 1.5s infinite;
+        }
+
+        .skeleton-text-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .skeleton-line {
+            height: 14px;
+            background-color: var(--color-gray-200);
+            border-radius: 4px;
+            animation: pulse 1.5s infinite;
+        }
+
+        .skeleton-line--short { width: 40%; }
+        .skeleton-line--long { width: 90%; }
+        .skeleton-line--medium { width: 70%; }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        /* 
+         * UTILITY & DEMO CONTROLS 
+         */
+        .demo-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--color-gray-900);
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            gap: 10px;
+            z-index: 999;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .demo-btn {
+            color: white;
+            font-size: 12px;
+            padding: 4px 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+        }
+
+        /* Focus Styles for Accessibility */
+        :focus-visible {
+            outline: 2px solid var(--color-primary-600);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="screen-container">
+        
+        <!-- Header -->
+        <header class="app-header">
+            <div class="app-header__title">
+                Notifications
+                <span id="unread-badge" class="app-header__badge">3</span>
+            </div>
+            <button class="app-header__action" aria-label="Mark all notifications as read" onclick="markAllRead()">
+                Mark all read
+            </button>
+        </header>
+
+        <!-- Filter Tabs -->
+        <nav class="filter-bar" aria-label="Notification filters">
+            <div class="filter-tabs" role="tablist">
+                <button class="filter-tab" role="tab" aria-selected="true" aria-controls="all-panel" id="tab-all" onclick="switchFilter('all')">All</button>
+                <button class="filter-tab" role="tab" aria-selected="false" aria-controls="unread-panel" id="tab-unread" onclick="switchFilter('unread')">Unread</button>
+                <button class="filter-tab" role="tab" aria-selected="false" aria-controls="service-panel" id="tab-service" onclick="switchFilter('service')">Service</button>
+                <button class="filter-tab" role="tab" aria-selected="false" aria-controls="account-panel" id="tab-account" onclick="switchFilter('account')">Account</button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main id="main-content" role="region" aria-live="polite">
+            
+            <!-- POPULATED STATE -->
+            <ul id="notification-list" class="notification-list">
+                
+                <!-- Item 1: Unread Service Update -->
+                <li class="notification-item notification-item--unread">
+                    <div class="notification-icon notification-icon--service">
+                        <!-- Simple SVG Icon: Wrench/Tool -->
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <span class="notification-title">Technician Assigned</span>
+                            <span class="notification-time">2m ago</span>
+                        </div>
+                        <p class="notification-body">Michael D. has been assigned to your request #SR-9821. He will arrive between 2:00 PM and 4:00 PM today.</p>
+                        <div class="notification-meta">
+                            <span class="status-pill status-pill--pending">In Progress</span>
+                        </div>
+                    </div>
+                    <!-- Full card link simulation -->
+                    <a href="#" class="stretched-link" aria-label="View details for Service Request #SR-9821" style="position:absolute; inset:0;" onclick="handleDeepLink(event)"></a>
+                </li>
+
+                <!-- Item 2: Unread Chat -->
+                <li class="notification-item notification-item--unread">
+                    <div class="notification-icon notification-icon--chat">
+                        <!-- Simple SVG Icon: Message -->
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <span class="notification-title">New Message</span>
+                            <span class="notification-time">15m ago</span>
+                        </div>
+                        <p class="notification-body"><strong>Service Center:</strong> "Could you please upload a photo of the serial number label?"</p>
+                    </div>
+                    <a href="#" aria-label="Open chat for ticket #SR-9821" style="position:absolute; inset:0;" onclick="handleDeepLink(event)"></a>
+                </li>
+
+                <!-- Item 3: Unread Warranty -->
+                <li class="notification-item notification-item--unread">
+                    <div class="notification-icon notification-icon--warranty">
+                        <!-- Simple SVG Icon: Alert -->
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <span class="notification-title">Warranty Expiring Soon</span>
+                            <span class="notification-time">1h ago</span>
+                        </div>
+                        <p class="notification-body">Your warranty for <strong>Samsung Smart TV</strong> expires in 30 days. Consider extending your coverage.</p>
+                    </div>
+                    <a href="#" aria-label="View warranty options for Samsung Smart TV" style="position:absolute; inset:0;" onclick="handleDeepLink(event)"></a>
+                </li>
+
+                <!-- Item 4: Read Service Update -->
+                <li class="notification-item">
+                    <div class="notification-icon notification-icon--service">
+                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <span class="notification-title">Service Request Resolved</span>
+                            <span class="notification-time">Yesterday</span>
+                        </div>
+                        <p class="notification-body">Ticket #SR-8842 has been marked as resolved. Please rate your technician.</p>
+                        <div class="notification-meta">
+                            <span class="status-pill status-pill--resolved">Resolved</span>
+                        </div>
+                    </div>
+                    <a href="#" aria-label="Rate service for ticket #SR-8842" style="position:absolute; inset:0;" onclick="handleDeepLink(event)"></a>
+                </li>
+
+                <!-- Item 5: Read Account -->
+                <li class="notification-item">
+                    <div class="notification-icon notification-icon--security">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <span class="notification-title">New Login Detected</span>
+                            <span class="notification-time">2 days ago</span>
+                        </div>
+                        <p class="notification-body">New login from Chrome on Windows 10. If this wasn't you, change your password immediately.</p>
+                    </div>
+                    <a href="#" aria-label="Review account security" style="position:absolute; inset:0;" onclick="handleDeepLink(event)"></a>
+                </li>
+            </ul>
+
+            <!-- LOADING STATE (Hidden by default) -->
+            <div id="loading-state" class="loading-state">
+                <div class="skeleton-item">
+                    <div class="skeleton-icon"></div>
+                    <div class="skeleton-text-group">
+                        <div class="skeleton-line skeleton-line--short"></div>
+                        <div class="skeleton-line skeleton-line--long"></div>
+                        <div class="skeleton-line skeleton-line--medium"></div>
+                    </div>
+                </div>
+                <div class="skeleton-item">
+                    <div class="skeleton-icon"></div>
+                    <div class="skeleton-text-group">
+                        <div class="skeleton-line skeleton-line--short"></div>
+                        <div class="skeleton-line skeleton-line--long"></div>
+                    </div>
+                </div>
+                 <div class="skeleton-item">
+                    <div class="skeleton-icon"></div>
+                    <div class="skeleton-text-group">
+                        <div class="skeleton-line skeleton-line--short"></div>
+                        <div class="skeleton-line skeleton-line--long"></div>
+                         <div class="skeleton-line skeleton-line--medium"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EMPTY STATE (Hidden by default) -->
+            <div id="empty-state" class="empty-state">
+                <div class="empty-state__icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path><line x1="2" y1="2" x2="22" y2="22"></line></svg>
+                </div>
+                <h3 class="empty-state__title">No Notifications</h3>
+                <p>You're all caught up! Updates about your products and services will appear here.</p>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Demo Controls (For simulation only) -->
+    <div class="demo-controls">
+        <button class="demo-btn" onclick="setViewState('populated')">Populated</button>
+        <button class="demo-btn" onclick="setViewState('loading')">Loading</button>
+        <button class="demo-btn" onclick="setViewState('empty')">Empty</button>
+    </div>
+
+    <script>
+        // Simple Interaction Logic for Demo
+        function handleDeepLink(e) {
+            e.preventDefault();
+            // In a real app, this would route to a detail screen
+            const item = e.target.closest('.notification-item');
+            
+            // Mark as read visually
+            if (item.classList.contains('notification-item--unread')) {
+                item.classList.remove('notification-item--unread');
+                updateBadgeCount(-1);
+            }
+            
+            // Flash effect to simulate tap
+            item.style.backgroundColor = 'var(--color-gray-100)';
+            setTimeout(() => {
+                item.style.backgroundColor = '';
+            }, 200);
+            
+            console.log('Navigating to detail view...');
+        }
+
+        function markAllRead() {
+            const unreadItems = document.querySelectorAll('.notification-item--unread');
+            unreadItems.forEach(item => {
+                item.classList.remove('notification-item--unread');
+            });
+            updateBadgeCount(0, true);
+        }
+
+        function updateBadgeCount(change, reset = false) {
+            const badge = document.getElementById('unread-badge');
+            if (reset) {
+                badge.style.display = 'none';
+                return;
+            }
+            
+            let count = parseInt(badge.innerText);
+            count += change;
+            
+            if (count <= 0) {
+                badge.style.display = 'none';
+            } else {
+                badge.innerText = count;
+                badge.style.display = 'inline-block';
+            }
+        }
+
+        function switchFilter(filterType) {
+            // Visual tab selection
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.setAttribute('aria-selected', 'false');
+            });
+            document.getElementById(`tab-${filterType}`).setAttribute('aria-selected', 'true');
+
+            // Simulate filtering logic (just visual)
+            if (filterType === 'unread') {
+                // In a real app, this would filter the list. 
+                // For demo, we just show a toast or log
+                console.log('Filtering by Unread');
+            }
+        }
+
+        function setViewState(state) {
+            const list = document.getElementById('notification-list');
+            const loading = document.getElementById('loading-state');
+            const empty = document.getElementById('empty-state');
+
+            list.style.display = 'none';
+            loading.style.display = 'none';
+            empty.style.display = 'none';
+
+            if (state === 'populated') {
+                list.style.display = 'flex';
+            } else if (state === 'loading') {
+                loading.style.display = 'block';
+            } else if (state === 'empty') {
+                empty.style.display = 'flex';
+            }
+        }
+    </script>
+</body>
+</html>

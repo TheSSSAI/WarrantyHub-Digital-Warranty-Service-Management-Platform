@@ -1,0 +1,93 @@
+erDiagram
+
+    User {
+        Guid userId PK
+    }
+    Device {
+        Guid deviceId PK
+    }
+    Brand {
+        Guid brandId PK
+    }
+    ProductModel {
+        Guid productModelId PK
+    }
+    UserProduct {
+        Guid userProductId PK
+    }
+    OwnershipTransferRequest {
+        Guid transferRequestId PK
+    }
+    Invoice {
+        Guid invoiceId PK
+    }
+    Address {
+        Guid addressId PK
+    }
+    ServiceCenter {
+        Guid serviceCenterId PK
+    }
+    ServiceCenterBrand {
+        Guid serviceCenterId PK
+        Guid brandId PK
+    }
+    ServiceAreaPolygon {
+        Guid serviceAreaPolygonId PK
+    }
+    ServiceAreaPostalCode {
+        Guid serviceAreaPostalCodeId PK
+    }
+    IssueType {
+        Guid issueTypeId PK
+    }
+    ServiceRequest {
+        Guid serviceRequestId PK
+    }
+    ChatMessage {
+        Guid chatMessageId PK
+        DateTime sentAt PK
+    }
+    GpsLocationHistory {
+        BIGSERIAL locationId PK
+        DateTime timestamp PK
+    }
+    CustomerSignature {
+        Guid signatureId PK
+    }
+    AuditLog {
+        BIGSERIAL auditLogId PK
+        DateTime timestamp PK
+    }
+
+    User ||--o{ Device : UserDevices
+    User ||--o{ UserProduct : UserOwnedProducts
+    User ||--o{ OwnershipTransferRequest : UserInitiatedTransfers
+    User ||--o{ ServiceRequest : TechnicianAssignments
+    User ||--o{ ChatMessage : UserSentMessages
+    User ||--o{ GpsLocationHistory : TechnicianLocationHistory
+    User ||--o{ AuditLog : UserAuditLogs
+
+    Brand ||--o{ ProductModel : BrandProductModels
+    Brand ||--o{ User : BrandAdministrators
+    Brand ||--o{ ServiceCenterBrand : ""
+    Brand ||--o{ ServiceRequest : BrandDenormalizedServiceRequests
+
+    ProductModel ||--o{ UserProduct : ProductModelInstances
+    ProductModel ||--o{ ServiceRequest : ProductModelDenormalizedServiceRequests
+
+    UserProduct ||--o{ OwnershipTransferRequest : ProductOwnershipTransfers
+    UserProduct ||--o| Invoice : UserProductInvoice
+    UserProduct ||--o{ ServiceRequest : ProductServiceRequests
+
+    ServiceCenter ||--o{ User : ServiceCenterStaff
+    ServiceCenter ||--o{ ServiceAreaPolygon : ServiceCenterPolygons
+    ServiceCenter ||--o{ ServiceAreaPostalCode : ServiceCenterPostalCodes
+    ServiceCenter ||--o{ ServiceRequest : ServiceCenterRequests
+    ServiceCenter ||--o{ ServiceCenterBrand : ""
+    ServiceCenter ||--|| Address : "has location"
+
+    IssueType ||--o{ ServiceRequest : IssueTypeServiceRequests
+
+    ServiceRequest ||--o{ ChatMessage : ServiceRequestChat
+    ServiceRequest ||--o{ GpsLocationHistory : ServiceRequestLocationHistory
+    ServiceRequest ||--o| CustomerSignature : ServiceRequestSignature

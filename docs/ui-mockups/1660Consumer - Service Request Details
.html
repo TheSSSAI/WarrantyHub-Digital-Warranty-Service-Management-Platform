@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service Request Details - Tracking Mode</title>
+  <meta name="description" content="Track your service request in real-time, view technician details, and manage your appointment.">
+  
+  <style>
+    /* 
+     * DESIGN SYSTEM TOKENS 
+     * Based on specified Visual Foundation 
+     */
+    :root {
+      /* Colors */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      --color-primary-900: #312e81;
+      
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-700: #374151;
+      --color-gray-800: #1f2937;
+      --color-gray-900: #111827;
+      --color-white: #ffffff;
+      
+      --color-success-bg: #d1e7dd;
+      --color-success-text: #0f5132;
+      --color-success-main: #28a745;
+      
+      --color-warning-bg: #fff3cd;
+      --color-warning-text: #664d03;
+      
+      /* Typography */
+      --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-size-h1: clamp(28px, 4vw, 32px);
+      --font-size-h2: clamp(22px, 3vw, 24px);
+      --font-size-h3: 18px;
+      --font-size-body: 16px;
+      --font-size-sm: 14px;
+      --font-size-xs: 12px;
+      
+      /* Spacing */
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+      
+      /* Layout */
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-full: 9999px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      
+      /* Animation */
+      --transition-fast: 150ms ease;
+      --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* 
+     * GLOBAL RESET & BASE STYLES 
+     */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-900);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      height: 100vh;
+      overflow-x: hidden;
+    }
+
+    button {
+      font-family: inherit;
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* Screen Reader Only Utility */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* 
+     * LAYOUT ARCHITECTURE 
+     */
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      max-width: 100%;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    /* Sticky Header */
+    .app-header {
+      height: 64px;
+      background: var(--color-white);
+      border-bottom: 1px solid var(--color-gray-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--space-md);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .back-button {
+      padding: var(--space-sm);
+      border-radius: var(--radius-sm);
+      color: var(--color-gray-500);
+      transition: background-color var(--transition-fast);
+    }
+
+    .back-button:hover {
+      background-color: var(--color-gray-100);
+      color: var(--color-gray-900);
+    }
+
+    .screen-title {
+      font-size: var(--font-size-h3);
+      font-weight: 600;
+      color: var(--color-gray-900);
+    }
+
+    .header-status {
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      background-color: var(--color-primary-100);
+      color: var(--color-primary-700);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--color-primary-600);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(79, 70, 229, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
+    }
+
+    /* 
+     * MAIN CONTENT LAYOUT 
+     * Mobile: Stacked (Map top, Content bottom)
+     * Desktop: Split (Content left, Map right)
+     */
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 64px);
+      margin-top: 64px;
+      overflow: hidden; /* Prevent body scroll */
+    }
+
+    @media (min-width: 1024px) {
+      .main-content {
+        flex-direction: row;
+      }
+    }
+
+    /* 
+     * MAP COMPONENT 
+     */
+    .map-section {
+      flex: 1; /* Desktop: takes remaining width */
+      height: 35vh; /* Mobile: fixed height */
+      min-height: 300px;
+      background-color: #e5e7eb; /* Placeholder map color */
+      position: relative;
+      overflow: hidden;
+      order: 1; /* Mobile: Map first */
+    }
+
+    @media (min-width: 1024px) {
+      .map-section {
+        height: auto;
+        order: 2; /* Desktop: Map second */
+      }
+    }
+
+    /* Simulated Map Styles */
+    .map-container {
+      width: 100%;
+      height: 100%;
+      background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSJub25lIiBzdHJva2U9IiNkMWQ1ZGIiIHN0cm9rZS13aWR0aD0iMSI+PHBhdGggZD0iTTAgMGwxMDAgMTAwTTEwMCAwbC0xMDAgMTAwIi8+PC9zdmc+');
+      background-size: 200px 200px;
+      background-color: #f3f4f6;
+      position: relative;
+    }
+
+    .map-overlay-eta {
+      position: absolute;
+      top: var(--space-md);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--color-white);
+      padding: var(--space-sm) var(--space-md);
+      border-radius: var(--radius-full);
+      box-shadow: var(--shadow-md);
+      font-weight: 600;
+      color: var(--color-gray-900);
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .eta-time {
+      color: var(--color-primary-600);
+    }
+
+    .marker-technician {
+      position: absolute;
+      top: 40%;
+      left: 45%;
+      width: 48px;
+      height: 48px;
+      background: var(--color-white);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-md);
+      border: 3px solid var(--color-primary-600);
+      transform: translate(-50%, -50%);
+      transition: all 1s ease;
+      z-index: 5;
+    }
+
+    .marker-technician svg {
+      width: 24px;
+      height: 24px;
+      fill: var(--color-primary-600);
+    }
+
+    .marker-home {
+      position: absolute;
+      top: 60%;
+      left: 65%;
+      transform: translate(-50%, -50%);
+    }
+
+    .marker-home svg {
+      width: 40px;
+      height: 40px;
+      fill: var(--color-gray-700);
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    }
+
+    /* 
+     * DETAILS PANEL 
+     */
+    .details-panel {
+      flex-shrink: 0;
+      width: 100%;
+      background: var(--color-white);
+      overflow-y: auto;
+      order: 2; /* Mobile: Details second */
+      border-top: 1px solid var(--color-gray-200);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @media (min-width: 1024px) {
+      .details-panel {
+        width: 420px;
+        height: 100%;
+        border-top: none;
+        border-right: 1px solid var(--color-gray-200);
+        order: 1; /* Desktop: Details first */
+      }
+    }
+
+    .panel-content {
+      padding: var(--space-lg);
+      padding-bottom: 100px; /* Space for FAB */
+    }
+
+    /* 
+     * COMPONENT: Technician Card 
+     */
+    .technician-card {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-md);
+      background: var(--color-gray-50);
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-lg);
+    }
+
+    .tech-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--color-white);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tech-info {
+      flex: 1;
+    }
+
+    .tech-name {
+      font-weight: 600;
+      font-size: var(--font-size-body);
+      color: var(--color-gray-900);
+      display: block;
+    }
+
+    .tech-rating {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: var(--font-size-sm);
+      color: var(--color-gray-600);
+      margin-top: 2px;
+    }
+
+    .star-icon {
+      color: #fbbf24; /* Amber-400 */
+      width: 14px;
+      height: 14px;
+      fill: currentColor;
+    }
+
+    .call-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--color-white);
+      border: 1px solid var(--color-gray-300);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-primary-600);
+      transition: all var(--transition-fast);
+    }
+
+    .call-btn:hover {
+      background: var(--color-primary-50);
+      border-color: var(--color-primary-200);
+    }
+
+    /* 
+     * COMPONENT: Timeline 
+     */
+    .timeline {
+      margin-bottom: var(--space-xl);
+      padding-left: 8px; /* Alignment adjustment */
+    }
+
+    .section-title {
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-gray-500);
+      margin-bottom: var(--space-md);
+    }
+
+    .timeline-item {
+      position: relative;
+      padding-left: 32px;
+      padding-bottom: var(--space-lg);
+    }
+
+    .timeline-item:last-child {
+      padding-bottom: 0;
+    }
+
+    /* Line */
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 24px;
+      bottom: -4px;
+      width: 2px;
+      background: var(--color-gray-200);
+    }
+
+    .timeline-item:last-child::before {
+      display: none;
+    }
+
+    /* Dot */
+    .timeline-dot {
+      position: absolute;
+      left: 0;
+      top: 4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--color-gray-200);
+      border: 2px solid var(--color-white);
+      box-shadow: 0 0 0 2px var(--color-white);
+      z-index: 1;
+    }
+
+    .timeline-item.completed .timeline-dot {
+      background: var(--color-primary-600);
+    }
+
+    .timeline-item.completed::before {
+      background: var(--color-primary-600);
+    }
+
+    .timeline-item.active .timeline-dot {
+      background: var(--color-primary-600);
+      box-shadow: 0 0 0 4px var(--color-primary-100);
+    }
+
+    .timeline-content h4 {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--color-gray-900);
+    }
+
+    .timeline-content p {
+      font-size: var(--font-size-xs);
+      color: var(--color-gray-500);
+      margin-top: 2px;
+    }
+
+    /* 
+     * COMPONENT: Service Details 
+     */
+    .details-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .detail-label {
+      font-size: var(--font-size-xs);
+      color: var(--color-gray-500);
+    }
+
+    .detail-value {
+      font-size: var(--font-size-sm);
+      color: var(--color-gray-900);
+      font-weight: 500;
+    }
+
+    /* 
+     * COMPONENT: Floating Chat Button 
+     */
+    .chat-fab {
+      position: fixed;
+      bottom: var(--space-lg);
+      right: var(--space-lg);
+      background: var(--color-primary-600);
+      color: var(--color-white);
+      border-radius: 50px;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow-lg);
+      font-weight: 600;
+      z-index: 100;
+      transition: transform var(--transition-fast), background-color var(--transition-fast);
+    }
+
+    @media (min-width: 1024px) {
+      .chat-fab {
+        position: absolute; /* Relative to details panel */
+        width: calc(100% - 48px); /* Full width minus padding */
+        left: var(--space-lg);
+        bottom: var(--space-lg);
+        right: auto;
+        justify-content: center;
+        border-radius: var(--radius-sm);
+      }
+    }
+
+    .chat-fab:hover {
+      background: var(--color-primary-700);
+      transform: translateY(-2px);
+    }
+
+    .chat-fab:active {
+      transform: translateY(0);
+    }
+
+    /* 
+     * UTILITIES & STATES
+     */
+    .hidden { display: none !important; }
+    
+    /* Control Panel for Demo Purposes */
+    .demo-controls {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      z-index: 1000;
+      font-size: 12px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Demo Controls: To simulate different states -->
+  <div class="demo-controls">
+    <label for="state-select">Screen State:</label>
+    <select id="state-select" onchange="updateScreenState(this.value)">
+      <option value="tracking">Technician En Route</option>
+      <option value="assigned">Assigned (Standard)</option>
+      <option value="resolved">Resolved</option>
+    </select>
+  </div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <button class="back-button" aria-label="Go back">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <h1 class="screen-title">Request #SR-4829</h1>
+      </div>
+      
+      <div class="header-status" id="header-status-badge">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span id="status-text">En Route</span>
+      </div>
+    </header>
+
+    <main class="main-content">
+      
+      <!-- Left Panel: Details & Timeline -->
+      <article class="details-panel">
+        <div class="panel-content">
+          
+          <!-- Technician Card -->
+          <section class="technician-card" aria-label="Technician Information">
+            <img src="https://i.pravatar.cc/150?u=tech" alt="Profile photo of David Miller" class="tech-avatar">
+            <div class="tech-info">
+              <span class="tech-name">David Miller</span>
+              <div class="tech-rating" aria-label="Rating: 4.8 out of 5">
+                <span class="star-text">4.8</span>
+                <svg class="star-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                <span>(124 jobs)</span>
+              </div>
+            </div>
+            <button class="call-btn" aria-label="Call Technician">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </button>
+          </section>
+
+          <!-- Timeline -->
+          <section class="timeline" aria-label="Service Progress">
+            <div class="section-title">Timeline</div>
+            
+            <div class="timeline-item completed">
+              <div class="timeline-dot"></div>
+              <div class="timeline-content">
+                <h4>Request Received</h4>
+                <p>Oct 24, 09:30 AM</p>
+              </div>
+            </div>
+
+            <div class="timeline-item completed">
+              <div class="timeline-dot"></div>
+              <div class="timeline-content">
+                <h4>Technician Assigned</h4>
+                <p>Oct 24, 10:15 AM</p>
+              </div>
+            </div>
+
+            <div class="timeline-item active" id="timeline-step-route">
+              <div class="timeline-dot"></div>
+              <div class="timeline-content">
+                <h4>Technician En Route</h4>
+                <p>Oct 25, 01:45 PM</p>
+              </div>
+            </div>
+
+            <div class="timeline-item" id="timeline-step-progress">
+              <div class="timeline-dot"></div>
+              <div class="timeline-content">
+                <h4>Service in Progress</h4>
+                <p>Pending</p>
+              </div>
+            </div>
+            
+             <div class="timeline-item" id="timeline-step-resolved">
+              <div class="timeline-dot"></div>
+              <div class="timeline-content">
+                <h4>Resolved</h4>
+                <p>Pending</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- Service Details -->
+          <section class="service-details" aria-label="Service Details">
+            <div class="section-title">Details</div>
+            <div class="details-list">
+              <div class="detail-item">
+                <span class="detail-label">Product</span>
+                <span class="detail-value">Samsung Refrigerator RF28</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Serial Number</span>
+                <span class="detail-value">S/N: 8293-1928-3921</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Issue Reported</span>
+                <span class="detail-value">Cooling not working, strange noise from back panel.</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Address</span>
+                <span class="detail-value">123 Maple Street, Springfield, IL 62704</span>
+              </div>
+            </div>
+          </section>
+
+        </div>
+        
+        <!-- Chat Button -->
+        <button class="chat-fab" aria-label="Open chat with technician">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span>Message Technician</span>
+        </button>
+      </article>
+
+      <!-- Right/Top Panel: Map -->
+      <aside class="map-section" role="application" aria-label="Technician live location map">
+        <div class="map-container" id="map-container">
+          
+          <!-- Live ETA Overlay -->
+          <div class="map-overlay-eta" id="eta-overlay">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-gray-500)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>Arriving in <span class="eta-time">12 mins</span></span>
+          </div>
+
+          <!-- Markers -->
+          <div class="marker-technician" aria-label="Technician Location">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+          </div>
+          
+          <div class="marker-home" aria-label="Service Location">
+            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+          </div>
+
+        </div>
+        
+        <!-- Alternate Content for Non-Tracking States (e.g., Resolved) -->
+        <div class="map-placeholder hidden" id="map-placeholder" style="display:none; width:100%; height:100%; align-items:center; justify-content:center; background:#f3f4f6; flex-direction:column; color:var(--color-gray-500);">
+           <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+           <p style="margin-top:16px;">Map view unavailable in this state</p>
+        </div>
+      </aside>
+
+    </main>
+  </div>
+
+  <script>
+    // Simple state management for demonstration purposes
+    function updateScreenState(state) {
+      const headerBadge = document.getElementById('header-status-badge');
+      const statusText = document.getElementById('status-text');
+      const liveDot = document.querySelector('.live-dot');
+      const mapContainer = document.getElementById('map-container');
+      const mapPlaceholder = document.getElementById('map-placeholder');
+      const etaOverlay = document.getElementById('eta-overlay');
+      
+      // Timeline Steps
+      const stepRoute = document.getElementById('timeline-step-route');
+      const stepResolved = document.getElementById('timeline-step-resolved');
+
+      if (state === 'tracking') {
+        // Update Header
+        headerBadge.style.backgroundColor = 'var(--color-primary-100)';
+        headerBadge.style.color = 'var(--color-primary-700)';
+        statusText.textContent = 'En Route';
+        liveDot.style.display = 'block';
+
+        // Update Map
+        mapContainer.style.display = 'block';
+        mapPlaceholder.style.display = 'none';
+        etaOverlay.style.display = 'flex';
+
+        // Update Timeline
+        stepRoute.classList.add('active');
+        stepRoute.classList.remove('completed');
+        stepResolved.classList.remove('active', 'completed');
+        
+      } else if (state === 'assigned') {
+        // Update Header
+        headerBadge.style.backgroundColor = 'var(--color-gray-200)';
+        headerBadge.style.color = 'var(--color-gray-800)';
+        statusText.textContent = 'Assigned';
+        liveDot.style.display = 'none';
+
+        // Update Map - Standard map without live tracking elements
+        mapContainer.style.display = 'block'; 
+        etaOverlay.style.display = 'none';
+        
+        // Update Timeline
+        stepRoute.classList.remove('active', 'completed');
+        
+      } else if (state === 'resolved') {
+        // Update Header
+        headerBadge.style.backgroundColor = 'var(--color-success-bg)';
+        headerBadge.style.color = 'var(--color-success-text)';
+        statusText.textContent = 'Resolved';
+        liveDot.style.display = 'none';
+
+        // Update Map - Hide map, show placeholder or summary
+        mapContainer.style.display = 'none';
+        mapPlaceholder.style.display = 'flex';
+        
+        // Update Timeline
+        stepRoute.classList.add('completed');
+        stepRoute.classList.remove('active');
+        stepResolved.classList.add('completed');
+      }
+    }
+
+    // Initialize with tracking state
+    updateScreenState('tracking');
+  </script>
+</body>
+</html>

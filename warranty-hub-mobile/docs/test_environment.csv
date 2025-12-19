@@ -1,0 +1,3 @@
+"environment_name","environment_type","deployment_frequency","data_refresh_frequency","infrastructure_stack","service_dependencies","monitoring_tools","access_control","backup_strategy","disaster_recovery","cost_optimization","maintenance_window"
+"Development (Local)","Ephemeral","On Demand","N/A","Docker Compose (Postgres, Redis, Mock Auth)","Local Mocks","Console; Docker Logs","Developer","None","N/A","Runs on dev machine","N/A"
+"Staging (Azure)","Persistent","Continuous (CD)","Weekly (Sanitized)","AKS; Azure Postgres; Redis; Service Bus","Full Azure Integration","Azure Monitor; Application Insights","Team + QA","Daily","Tested Monthly","Spot instances; Auto-shutdown at night","Weekends"

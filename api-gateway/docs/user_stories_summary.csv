@@ -1,0 +1,2 @@
+"total_stories","total_story_points","must_have_stories","should_have_stories","could_have_stories","epics_identified","estimated_sprints","key_dependencies"
+"5","52","4","1","0","[""Cloud Infrastructure & DevOps Foundation"",""Core Backend Services"",""Mobile Apps"",""Web Portals"",""Security, Identity & Compliance""]","3","[""Infrastructure (AKS/DB) must be ready before Backend Services"",""Backend API must be ready before Mobile Sync"",""Service Bus must be ready before Audit Service""]"

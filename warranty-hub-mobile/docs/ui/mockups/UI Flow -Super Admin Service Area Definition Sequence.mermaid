@@ -1,0 +1,54 @@
+sequenceDiagram
+    autonumber
+    actor Admin as Super Admin
+    participant Client as Admin Portal
+    participant Gateway as API Gateway
+    participant Service as Service Center Service
+    participant DB as PostGIS Database
+
+    Note over Admin, Client: User interactions: Map Drawing & Form Entry
+
+    Admin->>Client: Draws polygon on map & enters postal codes
+    Admin->>Client: Clicks "Save Service Area"
+    
+    activate Client
+    Client->>Client: Validate shape closure
+    Client->>Client: Convert map shape to GeoJSON
+    
+    Client->>Gateway: POST /api/service-centers/{id}/service-area
+    activate Gateway
+    Note right of Client: Payload: { geoJson: {...}, postalCodes: [...] }
+    
+    Gateway->>Gateway: Validate JWT Signature
+    Gateway->>Service: Proxy Request
+    activate Service
+    
+    Service->>Service: Authorize (Role == 'Super Admin')
+    
+    alt Authorization Failed
+        Service-->>Gateway: 403 Forbidden
+        Gateway-->>Client: 403 Forbidden
+        Client-->>Admin: Display "Access Denied" error
+    else Authorization Successful
+        Service->>Service: Validate DTO & GeoJSON Structure
+        
+        alt Validation Failed (e.g. self-intersecting polygon)
+            Service-->>Gateway: 400 Bad Request
+            Gateway-->>Client: 400 Bad Request
+            Client-->>Admin: Display "Invalid Area" error
+        else Validation Passed
+            Service->>DB: UPDATE ServiceCenters SET geometry = @geom...
+            activate DB
+            Note right of Service: Persists GEOMETRY(Polygon, 4326)
+            DB-->>Service: Update Successful
+            deactivate DB
+            
+            Service-->>Gateway: 200 OK
+            Gateway-->>Client: 200 OK
+            Client-->>Admin: Display "Service Area Saved" success
+        end
+    end
+    
+    deactivate Service
+    deactivate Gateway
+    deactivate Client

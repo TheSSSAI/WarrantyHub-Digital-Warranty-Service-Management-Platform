@@ -1,0 +1,110 @@
+flowchart TD
+    %% Nodes
+    Start([Start: 'Add Product' Screen])
+    
+    subgraph InputMethod [Input Method Selection]
+        DecisionScan{Scan Barcode?}
+        ReqPermission[Request Camera Permission]
+        PermissionCheck{Permission Granted?}
+        ShowCamera[Open Camera View]
+        ScanCode[Scan Barcode/QR]
+        LookupProduct[API: Lookup Product Code]
+        FoundCheck{Product Found?}
+        ShowErrorScan[Show 'Product Not Found'<br/>Switch to Manual]
+        PrefillForm[Pre-fill Brand & Model]
+        ManualInit[Initialize Empty Form]
+    end
+
+    subgraph FormEntry [Details & Documentation]
+        FormView[Display Registration Form]
+        UserEdit[User Edits/Enters Details]
+        
+        DecisionInvoice{Upload Invoice?}
+        SelectFile[Select File / Take Photo]
+        ValFile{Valid Type/Size?}
+        UploadBlob[Upload to Azure Blob Storage]
+        TriggerOCR[Trigger OCR Process]
+        OCRCheck{OCR Success?}
+        PopulateOCR[Auto-populate Purchase Date, Serial]
+        OCRFailMsg[Show 'Manual Entry Required' Toast]
+        
+        UserVerify[User Verifies/Corrects Data]
+    end
+
+    subgraph Submission [Validation & Commit]
+        ClickSubmit(User Clicks 'Register')
+        Validate{Client-side Validation?}
+        ShowValErrors[Display Inline Errors]
+        APIRequest[POST /api/v1/products]
+        NetworkCheck{Network Available?}
+        OfflineQueue[Queue for Sync (Offline Mode)]
+        APISuccess{API 201 Created?}
+        ShowAPIFail[Show Error Toast]
+        SuccessState([Success: Navigate to Product Details])
+    end
+
+    %% Flow Connections
+    Start --> DecisionScan
+    
+    %% Scanning Branch
+    DecisionScan -- Yes --> ReqPermission
+    ReqPermission --> PermissionCheck
+    PermissionCheck -- No --> ManualInit
+    PermissionCheck -- Yes --> ShowCamera
+    ShowCamera --> ScanCode
+    ScanCode --> LookupProduct
+    LookupProduct --> FoundCheck
+    FoundCheck -- Yes --> PrefillForm
+    FoundCheck -- No --> ShowErrorScan
+    ShowErrorScan --> ManualInit
+    
+    %% Manual Branch
+    DecisionScan -- No --> ManualInit
+    
+    %% Converge on Form
+    PrefillForm --> FormView
+    ManualInit --> FormView
+    
+    %% Invoice Logic
+    FormView --> UserEdit
+    UserEdit --> DecisionInvoice
+    DecisionInvoice -- No --> ClickSubmit
+    DecisionInvoice -- Yes --> SelectFile
+    SelectFile --> ValFile
+    ValFile -- No --> SelectFile
+    ValFile -- Yes --> UploadBlob
+    UploadBlob --> TriggerOCR
+    TriggerOCR --> OCRCheck
+    OCRCheck -- Yes --> PopulateOCR
+    OCRCheck -- No --> OCRFailMsg
+    PopulateOCR --> UserVerify
+    OCRFailMsg --> UserVerify
+    UserVerify --> ClickSubmit
+    
+    %% Submission Logic
+    ClickSubmit --> Validate
+    Validate -- Fail --> ShowValErrors
+    ShowValErrors --> UserEdit
+    Validate -- Pass --> NetworkCheck
+    NetworkCheck -- No --> OfflineQueue
+    NetworkCheck -- Yes --> APIRequest
+    APIRequest --> APISuccess
+    APISuccess -- No --> ShowAPIFail
+    ShowAPIFail --> UserEdit
+    APISuccess -- Yes --> SuccessState
+    OfflineQueue --> SuccessState
+
+    %% Styles
+    classDef primary fill:#eef2ff,stroke:#4f46e5,stroke-width:2px,color:#1e1b4b
+    classDef action fill:#fff,stroke:#64748b,stroke-width:1px,color:#0f172a
+    classDef decision fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f
+    classDef error fill:#fef2f2,stroke:#ef4444,stroke-width:2px,color:#991b1b
+    classDef success fill:#f0fdf4,stroke:#22c55e,stroke-width:2px,color:#14532d
+    classDef system fill:#f8fafc,stroke:#94a3b8,stroke-width:1px,stroke-dasharray: 5 5,color:#334155
+
+    class Start,SuccessState success
+    class DecisionScan,PermissionCheck,FoundCheck,ValFile,OCRCheck,DecisionInvoice,Validate,NetworkCheck,APISuccess decision
+    class ShowErrorScan,OCRFailMsg,ShowValErrors,ShowAPIFail error
+    class ReqPermission,ShowCamera,ScanCode,SelectFile,UploadBlob,UserEdit,UserVerify,ClickSubmit action
+    class LookupProduct,TriggerOCR,PopulateOCR,APIRequest,OfflineQueue system
+    class PrefillForm,ManualInit,FormView primary

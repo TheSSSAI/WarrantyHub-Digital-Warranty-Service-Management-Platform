@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant "Super Admin" as SuperAdmin
+    participant "ServiceCenterService" as ServiceCenterService
+    participant "Persistence Layer" as PersistenceLayer
+    participant "Messaging Infrastructure" as MessagingInfrastructure
+    participant "AuditService" as AuditService
+    participant "Audit Store" as AuditStore
+
+    activate ServiceCenterService
+    SuperAdmin->>ServiceCenterService: 1. 1. Approve Service Center
+    ServiceCenterService-->>SuperAdmin: 8. HTTP 200 OK
+    ServiceCenterService->>ServiceCenterService: 2. 2. Begin Transaction
+    ServiceCenterService->>PersistenceLayer: 3. 3. Update Service Center Status
+    PersistenceLayer-->>ServiceCenterService: 4. Rows Affected: 1
+    ServiceCenterService->>ServiceCenterService: 5. 5. Construct 'CriticalActionOccurred' Event
+    ServiceCenterService->>MessagingInfrastructure: 6. 6. Publish Audit Event
+    MessagingInfrastructure-->>ServiceCenterService: 7. Acknowledgment
+    activate AuditService
+    MessagingInfrastructure->>AuditService: 9. 9. Deliver Audit Event (Async)
+    AuditService->>AuditService: 10. 10. Transform Event to AuditRecord Document
+    AuditService->>AuditStore: 11. 11. Index Audit Record
+    AuditStore-->>AuditService: 12. Indexing Successful
+    AuditService->>MessagingInfrastructure: 13. 13. Complete Message
+
+    note over ServiceCenterService: Transactional Integrity: The database update (Step 3) and message publication (Step 6) MUST be an...
+    note over AuditStore: Immutability: The 'AuditDB' (OpenSearch) index should be configured with append-only permissions ...
+    note over AuditService: Dead-Letter Queue (DLQ): If the AuditService repeatedly fails to process a message (e.g., due to ...
+
+    deactivate AuditService
+    deactivate ServiceCenterService

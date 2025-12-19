@@ -1,0 +1,4 @@
+"gate_id","gate_name","sprint","criteria","responsible_team","gate_date"
+"QG-001","Infrastructure Security Gate","Sprint 2","Zero critical vulnerabilities in tfsec scan; Successful apply in Dev","DevOps","2024-01-24"
+"QG-002","Mobile Offline Sync Validation","Sprint 3","Sync successfully recovers from 100% packet loss simulation; No data corruption","Mobile Team","2024-02-16"
+"QG-003","WebSocket Performance Gate","Sprint 3","1000 concurrent connections maintained with <200ms latency","Backend Team","2024-02-15"

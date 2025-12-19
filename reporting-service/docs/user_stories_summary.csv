@@ -1,0 +1,2 @@
+"total_stories","total_story_points","must_have_stories","should_have_stories","could_have_stories","epics_identified","estimated_sprints","key_dependencies"
+"9","78","6","3","0","[""Cloud Infrastructure & Operations"",""Core Backend Microservices"",""Mobile Applications (Consumer & Technician)"",""Web Administration Portals"",""Background Processing & Integration""]","4","[""Infrastructure setup (US-INFRA-001) blocks all deployment"",""Auth setup (US-SEC-001) blocks all secure features"",""Real-time Gateway (US-RT-001/Tech Task) blocks Location Tracking""]"

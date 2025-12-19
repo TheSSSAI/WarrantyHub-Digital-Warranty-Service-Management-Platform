@@ -1,0 +1,4 @@
+"gate_id","gate_name","sprint","gate_type","criteria","responsible_team","gate_date","approval_required","approver","bypass_criteria","automation_level","tools_used","success_metrics"
+"QG-001","Infrastructure Readiness","Sprint 1","Infrastructure","Terraform apply successful in Staging; Security scan pass","DevOps","2024-06-07","true","CTO","None","Fully Automated","Terraform, TFSec","Zero critical vulnerabilities"
+"QG-002","Core Logic Validation","Sprint 2","Testing","Sync logic unit tests pass; Geofence export valid","Development","2024-06-21","true","Tech Lead","None","Partially Automated","Jest, Manual Review","Offline sync works with conflict"
+"QG-003","Performance & Security Baseline","Sprint 3","Performance","Load test 10k users < 2s latency; DR drill < 4h RTO","QA & Ops","2024-07-05","true","CTO","None","Fully Automated","k6, Azure Monitor","P95 latency targets met"

@@ -1,0 +1,4 @@
+"sprint_number","story_ids","total_points","sprint_goal","dependencies_resolved"
+"1","[""US-INFRA-001"",""US-BE-001"",""US-WEB-001""]","15","Establish core infrastructure and security foundation while starting frontend component library.","true"
+"2","[""US-BE-002"",""US-BE-003""]","13","Implement core backend business logic for routing and compliance auditing.","true"
+"3","[""US-MOB-001"",""US-MOB-002""]","21","Focus on Technician mobile app capabilities including offline mode and location tracking.","true"

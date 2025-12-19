@@ -1,0 +1,2 @@
+"total_risks_identified","critical_risks","high_priority_risks","average_risk_score","key_risk_themes","immediate_actions_required"
+"6","2","2","16.3","[""Mobile Offline Data Integrity"",""Regulatory & Store Compliance"",""Real-time Performance Scalability""]","[""Finalize offline sync architecture design (WatermelonDB strategy) immediately."",""Submit 'dummy' mobile app shell to App Stores early to validate location permission descriptions."",""Conduct load test on WebSocket Gateway to benchmark Redis adapter limits.""]"

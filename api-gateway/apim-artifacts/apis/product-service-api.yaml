@@ -1,0 +1,148 @@
+openapi: 3.0.1
+info:
+  title: Product Service API
+  description: Manages product catalog, user product registrations, and warranty information.
+  version: '1.0'
+servers:
+  - url: https://api.warrantyhub.com/v1/products
+paths:
+  /catalog:
+    get:
+      summary: Search Product Catalog
+      operationId: SearchProductCatalog
+      tags:
+        - Catalog
+      parameters:
+        - name: query
+          in: query
+          schema:
+            type: string
+        - name: brandId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of products matching the query
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductModel'
+  /registrations:
+    post:
+      summary: Register a new product
+      operationId: RegisterProduct
+      tags:
+        - Registrations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRegistrationRequest'
+      responses:
+        '201':
+          description: Product Registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProduct'
+    get:
+      summary: List User Registrations
+      operationId: GetUserRegistrations
+      tags:
+        - Registrations
+      responses:
+        '200':
+          description: List of user's registered products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserProduct'
+  /registrations/{id}:
+    get:
+      summary: Get Registration Details
+      operationId: GetRegistrationDetails
+      tags:
+        - Registrations
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Registration Details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProduct'
+        '404':
+          description: Not Found
+components:
+  schemas:
+    ProductModel:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        brand:
+          type: string
+        category:
+          type: string
+        warrantyPeriodMonths:
+          type: integer
+    ProductRegistrationRequest:
+      type: object
+      required:
+        - modelId
+        - serialNumber
+        - purchaseDate
+      properties:
+        modelId:
+          type: string
+          format: uuid
+        serialNumber:
+          type: string
+        purchaseDate:
+          type: string
+          format: date
+        invoiceImageId:
+          type: string
+          format: uuid
+    UserProduct:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        model:
+          $ref: '#/components/schemas/ProductModel'
+        serialNumber:
+          type: string
+        purchaseDate:
+          type: string
+          format: date
+        warrantyExpiryDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [Active, Expired, Void]
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - BearerAuth: []

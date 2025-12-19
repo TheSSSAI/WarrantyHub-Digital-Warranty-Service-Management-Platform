@@ -1,0 +1,23 @@
+{
+  "name": "technician-app",
+  "displayName": "Technician Mobile App",
+  "description": "Product configuration for the field technician mobile application.",
+  "terms": "Restricted to authorized technicians only.",
+  "subscriptionRequired": true,
+  "approvalRequired": true,
+  "subscriptionsLimit": 1,
+  "state": "published",
+  "policies": {
+    "rate-limit-by-key": {
+      "calls": 300,
+      "renewal-period": 60,
+      "counter-key": "@(context.Request.Headers.GetValueOrDefault(\"Authorization\",\"\").AsJwt()?.Subject)"
+    }
+  },
+  "apis": [
+    "product-service-api",
+    "identity-service-api",
+    "service-request-api",
+    "geolocation-service-api"
+  ]
+}

@@ -1,0 +1,4 @@
+"dependency_id","from_task","to_task","dependency_type","description","critical_path","lead_time_days","responsible_team","coordination_required","risk_level","mitigation_plan","status","resolution_date","impact_if_delayed","escalation_required"
+"DEP-001","TASK-INFRA-001.1","TASK-INFRA-001.2","Technical","Cluster design required before Terraform implementation","true","1","DevOps","","Low","Design review scheduled Day 1","Active","2024-06-04","Cluster creation delayed",""
+"DEP-002","TASK-AUTH-001.1","TASK-REALTIME-001.2","Code","WS Auth Guard relies on JWT Strategy","true","5","Backend","true","Medium","Define shared interface early","Active","2024-07-05","Realtime security blocked",""
+"DEP-003","TASK-MOBILE-003.1","TASK-MOBILE-003.2","Technical","DB Schema required before implementation","true","3","Mobile","true","High","Start with draft schema","Active","2024-06-18","Mobile offline work blocked",""

@@ -1,0 +1,31 @@
+sequenceDiagram
+    actor "Mobile Client" as MobileClient
+    participant "API Gateway" as APIGateway
+    participant "Identity Service" as IdentityService
+
+    activate APIGateway
+    MobileClient->>APIGateway: 1. 1. Request Protected Resource with Expired JWT
+    APIGateway-->>MobileClient: 2. Respond with 401 Unauthorized
+    APIGateway->>APIGateway: 1.1. 1a. Validate JWT Signature and Claims
+    APIGateway-->>APIGateway: JWT expired
+    MobileClient->>MobileClient: 3. 3. Intercept 401 Response
+    activate IdentityService
+    MobileClient->>IdentityService: 4. 4. Request New Token with Refresh Token
+    IdentityService-->>MobileClient: 9. Respond with New JWT and Refresh Token
+    IdentityService->>IdentityService: 5. 5. Validate Refresh Token
+    IdentityService-->>IdentityService: Token is valid and active
+    IdentityService->>IdentityService: 6. 6. Revoke Old Refresh Token (Single-Use)
+    IdentityService-->>IdentityService: Token marked as revoked
+    IdentityService->>IdentityService: 7. 7. Generate and Persist New Tokens
+    IdentityService-->>IdentityService: New tokens generated
+    IdentityService->>IdentityService: 8. 8. Log Security Event
+    MobileClient->>MobileClient: 10. 10. Securely Store New Tokens
+    MobileClient->>APIGateway: 11. 11. Retry Original Request with New JWT
+    APIGateway-->>MobileClient: 12. Respond with 200 OK and Resource Data
+
+    note over MobileClient: Client-side authentication logic must be encapsulated in an HTTP interceptor or middleware to han...
+    note over IdentityService: The use of ROTATING refresh tokens is a critical security measure. Each time a refresh token is u...
+    note over IdentityService: The /api/identity/token/refresh endpoint must NOT be protected by the standard JWT validation mid...
+
+    deactivate IdentityService
+    deactivate APIGateway

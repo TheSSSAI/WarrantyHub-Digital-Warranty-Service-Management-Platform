@@ -1,0 +1,4 @@
+"gate_id","gate_name","sprint","gate_type","criteria","responsible_team","gate_date","approval_required","approver","bypass_criteria","automation_level","tools_used","success_metrics"
+"QG-001","Security & Auth Gate","Sprint 1","Security","B2C Token validation verified; Audit logs writing to secure storage","Security Lead","2025-02-14","true","security.architect@company.com","None","Partially Automated","Postman, OWASP ZAP","Zero high-severity auth vulnerabilities"
+"QG-002","Routing Performance Gate","Sprint 2","Performance","Point-in-polygon queries < 200ms at load","Backend Team","2025-02-28","true","tech.lead@company.com","None","Fully Automated","k6, JMeter","P95 latency < 200ms"
+"QG-003","Mobile Battery Gate","Sprint 4","Performance","Background location tracking does not exceed 5% battery drain per hour","QA Team","2025-03-28","true","mobile.lead@company.com","None","Manual","Battery Historian, XCode Instruments","Battery impact within limits"

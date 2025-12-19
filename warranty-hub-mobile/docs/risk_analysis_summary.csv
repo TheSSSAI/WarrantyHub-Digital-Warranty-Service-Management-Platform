@@ -1,0 +1,2 @@
+"total_risks_identified","critical_risks","high_priority_risks","average_risk_score","key_risk_themes","immediate_actions_required"
+"7","1","3","14.7","[""Authentication Complexity"",""Mobile Offline Data Integrity"",""Real-time Geolocation Reliability""]","[""Allocate Senior Resource to Azure AD B2C configuration immediately"",""Select and prototype Mobile Offline Sync library"",""Finalize decision on WebSocket scaling strategy (Redis Adapter vs. Azure SignalR)""]"

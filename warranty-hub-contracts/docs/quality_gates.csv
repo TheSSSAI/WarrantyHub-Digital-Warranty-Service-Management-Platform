@@ -1,0 +1,3 @@
+"gate_id","gate_name","sprint","gate_type","criteria","responsible_team","gate_date","approval_required","approver","bypass_criteria","automation_level","tools_used","success_metrics"
+"QG-001","Infrastructure Readiness","Sprint 1","Infrastructure","Terraform apply clean; PostGIS verified; VNet connectivity confirmed","DevOps","2024-06-03","true","tech.lead@company.com","None - Critical Foundation","Fully Automated","Terraform,Azure CLI","Zero drift in state; Endpoints reachable"
+"QG-002","Mobile Sync Reliability","Sprint 2","Testing","Sync unit tests pass; Conflict resolution verified; Offline CRUD works","Mobile Team","2024-06-17","true","mobile.lead@company.com","None","Partially Automated","Jest,Detox","100% data integrity after sync"

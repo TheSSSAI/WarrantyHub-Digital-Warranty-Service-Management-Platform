@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant "Monitoring System" as MonitoringSystem
+    participant "Operations Team Member" as OperationsTeamMember
+    participant "CI/CD Pipeline" as CICDPipeline
+    participant "Container Registry" as ContainerRegistry
+    participant "Production Application" as ProductionApplication
+    participant "Azure Management Interface" as AzureManagementInterface
+    participant "Production Database" as ProductionDatabase
+    participant "Infrastructure Repo" as InfrastructureRepo
+    participant "Terraform CLI" as TerraformCLI
+
+    activate OperationsTeamMember
+    MonitoringSystem->>OperationsTeamMember: 1. 1. Fire Critical Alert (e.g., SLO Breach: P95 > 500ms)
+    OperationsTeamMember->>MonitoringSystem: 2. 2. Triage Incident & Decide on Rollback Strategy
+    MonitoringSystem-->>OperationsTeamMember: Decision: Application Rollback / DB Rollback / Infra Rollback
+    OperationsTeamMember->>MonitoringSystem: 16. 15. Post-Rollback Validation
+    MonitoringSystem-->>OperationsTeamMember: System is confirmed stable
+
+    note over ProductionDatabase: AC-003, AC-007: Database PITR is the only approved method for DB rollback. This accepts potential...
+    note over TerraformCLI: AC-004: The Terraform plan MUST be reviewed carefully before applying to prevent unintended destr...
+    note over OperationsTeamMember: AC-005: Successful post-rollback validation is mandatory before an incident can be resolved.
+
+    deactivate OperationsTeamMember

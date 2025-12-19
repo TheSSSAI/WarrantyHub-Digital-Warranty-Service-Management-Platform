@@ -1,0 +1,2 @@
+"total_risks_identified","critical_risks","high_priority_risks","average_risk_score","key_risk_themes","immediate_actions_required"
+"6","0","4","15.3","[""Real-time Performance Scalability"",""Offline Data Integrity"",""External Identity Integration Complexity""]","[""Prototype Azure AD B2C custom policies to validate RBAC feasibility"",""Conduct load testing on PostGIS routing queries with synthetic data"",""Define conflict resolution strategy for offline mobile sync""]"

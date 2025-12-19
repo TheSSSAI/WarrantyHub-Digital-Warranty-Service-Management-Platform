@@ -1,0 +1,275 @@
+
+{
+  "component_inventory": {
+    "atomic_components": [
+      {
+        "component_name": "Status Badge",
+        "category": "data_display",
+        "variants": ["success", "warning", "error", "info", "neutral"],
+        "states": ["active", "expired", "pending", "resolved", "disputed"],
+        "responsive_needs": "scale text size on mobile viewports",
+        "dependencies": ["theme_tokens"],
+        "complexity_level": "low",
+        "implementation_priority": 1,
+        "estimated_effort": "2 hours"
+      },
+      {
+        "component_name": "Action Icon Button",
+        "category": "actions",
+        "variants": ["edit", "delete", "view", "download", "export"],
+        "states": ["default", "hover", "active", "disabled", "loading"],
+        "responsive_needs": "increased touch target area (44px) on mobile",
+        "dependencies": ["react-icons", "Tooltip"],
+        "complexity_level": "low",
+        "implementation_priority": 1,
+        "estimated_effort": "3 hours"
+      },
+      {
+        "component_name": "DragDrop Zone",
+        "category": "form_elements",
+        "variants": ["compact", "full-width"],
+        "states": ["idle", "dragging", "processing", "error", "success"],
+        "responsive_needs": "convert to tap-to-upload on mobile",
+        "dependencies": ["theme_tokens"],
+        "complexity_level": "medium",
+        "implementation_priority": 2,
+        "estimated_effort": "6 hours"
+      }
+    ],
+    "molecular_components": [
+      {
+        "component_name": "KPI Widget",
+        "category": "data_display",
+        "variants": ["simple_count", "trend_indicator", "comparison"],
+        "states": ["loading", "error", "populated"],
+        "responsive_needs": "stack vertically on mobile, grid on desktop",
+        "dependencies": ["Card", "Icon", "Typography"],
+        "complexity_level": "low",
+        "implementation_priority": 2,
+        "estimated_effort": "4 hours"
+      },
+      {
+        "component_name": "Search & Filter Bar",
+        "category": "navigation",
+        "variants": ["admin_list", "consumer_products"],
+        "states": ["default", "active_filters", "loading"],
+        "responsive_needs": "collapsible filters drawer on mobile",
+        "dependencies": ["Input", "Select", "Button", "DateRangePicker"],
+        "complexity_level": "medium",
+        "implementation_priority": 2,
+        "estimated_effort": "8 hours"
+      },
+      {
+        "component_name": "Notification Item",
+        "category": "feedback",
+        "variants": ["unread", "read", "actionable"],
+        "states": ["default", "hover", "pressed"],
+        "responsive_needs": "full width, simplified timestamp",
+        "dependencies": ["Avatar", "Badge", "Typography"],
+        "complexity_level": "low",
+        "implementation_priority": 3,
+        "estimated_effort": "4 hours"
+      },
+      {
+        "component_name": "Document Preview Card",
+        "category": "media",
+        "variants": ["invoice", "warranty_doc"],
+        "states": ["thumbnail", "loading", "error"],
+        "responsive_needs": "grid layout adjustment",
+        "dependencies": ["Card", "Image", "Action Icon Button"],
+        "complexity_level": "medium",
+        "implementation_priority": 3,
+        "estimated_effort": "6 hours"
+      }
+    ],
+    "organism_components": [
+      {
+        "component_name": "Smart Data Table",
+        "category": "data_display",
+        "variants": ["admin_crud", "audit_log", "technician_roster"],
+        "states": ["loading", "empty", "populated", "error"],
+        "responsive_needs": "horizontal scroll with sticky columns or card view transformation",
+        "dependencies": ["Pagination", "Search & Filter Bar", "Status Badge", "Action Icon Button"],
+        "complexity_level": "high",
+        "implementation_priority": 2,
+        "estimated_effort": "24 hours"
+      },
+      {
+        "component_name": "Service Area Map Editor",
+        "category": "specialized",
+        "variants": ["polygon_draw", "postal_code_view"],
+        "states": ["view", "editing", "drawing", "saving"],
+        "responsive_needs": "simplified controls for touch",
+        "dependencies": ["mapbox-gl", "Button", "Alert"],
+        "complexity_level": "high",
+        "implementation_priority": 3,
+        "estimated_effort": "32 hours"
+      },
+      {
+        "component_name": "Analytics Chart Group",
+        "category": "data_display",
+        "variants": ["brand_dashboard", "super_admin_overview"],
+        "states": ["loading", "no_data", "interactive"],
+        "responsive_needs": "reflow charts to single column, hide tooltips on scroll",
+        "dependencies": ["recharts", "DateRangePicker", "KPI Widget"],
+        "complexity_level": "high",
+        "implementation_priority": 3,
+        "estimated_effort": "20 hours"
+      },
+      {
+        "component_name": "Chat Console",
+        "category": "communication",
+        "variants": ["admin_support", "consumer_ticket"],
+        "states": ["connecting", "active", "typing", "error"],
+        "responsive_needs": "fullscreen on mobile, widget/sidebar on desktop",
+        "dependencies": ["Input", "Message Bubble", "WebSocket Provider"],
+        "complexity_level": "high",
+        "implementation_priority": 4,
+        "estimated_effort": "24 hours"
+      },
+      {
+        "component_name": "Product Registration Wizard",
+        "category": "forms",
+        "variants": ["manual", "ocr_assisted"],
+        "states": ["step_1", "step_2", "uploading", "verifying", "success"],
+        "responsive_needs": "stepper converts to progress bar",
+        "dependencies": ["DragDrop Zone", "Form Fields", "Button", "Loader"],
+        "complexity_level": "high",
+        "implementation_priority": 2,
+        "estimated_effort": "16 hours"
+      }
+    ]
+  },
+  "screen_inventory": [
+    {
+      "screen_name": "Public Landing & Login",
+      "screen_type": "marketing_auth",
+      "variants": ["desktop", "mobile"],
+      "states": ["default", "login_modal", "mfa_verification"],
+      "required_components": ["Hero Section", "Auth Forms", "Footer"],
+      "platform_optimizations": "responsive hero images",
+      "implementation_priority": 1,
+      "estimated_effort": "8 hours",
+      "user_flow_criticality": "critical"
+    },
+    {
+      "screen_name": "Super Admin Dashboard",
+      "screen_type": "admin_dashboard",
+      "variants": ["desktop", "tablet"],
+      "states": ["loading", "data_view"],
+      "required_components": ["Sidebar", "KPI Widget", "Analytics Chart Group", "Recent Activity Table"],
+      "platform_optimizations": "collapsible sidebar",
+      "implementation_priority": 2,
+      "estimated_effort": "16 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Service Center Configurator",
+      "screen_type": "admin_form",
+      "variants": ["desktop"],
+      "states": ["details_view", "map_edit_mode", "postal_code_mode"],
+      "required_components": ["Form Layout", "Service Area Map Editor", "Brand MultiSelect"],
+      "platform_optimizations": "map editor optimized for mouse interaction",
+      "implementation_priority": 2,
+      "estimated_effort": "24 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Brand Analytics Portal",
+      "screen_type": "admin_dashboard",
+      "variants": ["desktop"],
+      "states": ["overview", "filtered_view", "exporting"],
+      "required_components": ["DateRangePicker", "Analytics Chart Group", "Geographic Heatmap"],
+      "platform_optimizations": "high density data visualization",
+      "implementation_priority": 3,
+      "estimated_effort": "20 hours",
+      "user_flow_criticality": "medium"
+    },
+    {
+      "screen_name": "Consumer Product Hub",
+      "screen_type": "consumer_dashboard",
+      "variants": ["mobile", "desktop"],
+      "states": ["grid_view", "list_view", "empty_state"],
+      "required_components": ["Product Card", "Status Badge", "Search Bar"],
+      "platform_optimizations": "cards expand to full width on mobile",
+      "implementation_priority": 2,
+      "estimated_effort": "12 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Service Request Management",
+      "screen_type": "workflow_view",
+      "variants": ["admin_view", "consumer_view"],
+      "states": ["list", "detail", "chat_active", "dispute_mode"],
+      "required_components": ["Smart Data Table", "Status Timeline", "Chat Console", "Action Panel"],
+      "platform_optimizations": "admin view prioritized for desktop, consumer for mobile",
+      "implementation_priority": 3,
+      "estimated_effort": "28 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Invoice Vault",
+      "screen_type": "gallery",
+      "variants": ["mobile", "desktop"],
+      "states": ["gallery", "preview", "uploading"],
+      "required_components": ["Document Preview Card", "DragDrop Zone", "Search Bar"],
+      "platform_optimizations": "native file picker trigger on mobile web",
+      "implementation_priority": 4,
+      "estimated_effort": "10 hours",
+      "user_flow_criticality": "medium"
+    },
+    {
+      "screen_name": "Audit Log Viewer",
+      "screen_type": "data_grid",
+      "variants": ["desktop"],
+      "states": ["default", "filtered"],
+      "required_components": ["Smart Data Table", "Advanced Filters", "DateRangePicker"],
+      "platform_optimizations": "optimized for wide screens",
+      "implementation_priority": 4,
+      "estimated_effort": "8 hours",
+      "user_flow_criticality": "low"
+    }
+  ],
+  "implementation_plan": {
+    "phase_1_foundations_and_auth": {
+      "components": ["App Shell (Layouts)", "Status Badge", "Action Icon Button", "Auth Forms"],
+      "rationale": "Establish the application structure and enable user access.",
+      "estimated_duration": "3-4 days"
+    },
+    "phase_2_super_admin_core": {
+      "components": ["Smart Data Table", "Service Area Map Editor", "Forms (Brand/SC Creation)"],
+      "rationale": "Enable the creation of entities (Brands, Service Centers) required for the rest of the system.",
+      "estimated_duration": "7-9 days"
+    },
+    "phase_3_consumer_product_lifecycle": {
+      "components": ["Product Registration Wizard", "DragDrop Zone", "Product Cards", "Invoice Vault"],
+      "rationale": "Allow consumers to register products and populate the system with data.",
+      "estimated_duration": "6-8 days"
+    },
+    "phase_4_service_operations": {
+      "components": ["Service Request Detail View", "Chat Console", "Status Timeline", "Technician Assignment Modal"],
+      "rationale": "Enable the core business transaction: service request processing.",
+      "estimated_duration": "8-10 days"
+    },
+    "phase_5_analytics_and_reporting": {
+      "components": ["Analytics Chart Group", "KPI Widget", "Geographic Heatmap", "Audit Log Viewer"],
+      "rationale": "Provide visibility and reporting capabilities once data is flowing.",
+      "estimated_duration": "6-8 days"
+    }
+  },
+  "platform_implementation_strategy": {
+    "target_platform": "Responsive Web (Next.js)",
+    "implementation_approach": "Hybrid Strategy",
+    "responsive_strategy": "Desktop-first for Admin portals (complex data density), Mobile-first for Consumer portal (accessibility and ease of use). Shared component library handles breakpoint logic.",
+    "progressive_enhancement": "Map editors and interactive charts load as non-critical bundles. Core CRUD features work without advanced JS features.",
+    "browser_support": "Latest 2 versions of Chrome, Firefox, Safari, Edge.",
+    "accessibility_integration": "Radix UI primitives for accessible interactive components (Dialogs, Dropdowns). Semantic HTML5 structure."
+  },
+  "quality_assurance_plan": {
+    "component_testing": "Storybook stories for every component variant (Empty, Loading, Data, Error).",
+    "integration_testing": "Cypress tests for critical flows: 'Register Product', 'Assign Technician', 'Update Service Area'.",
+    "responsive_testing": "Visual regression testing on 3 breakpoints: Mobile (375px), Tablet (768px), Desktop (1440px).",
+    "accessibility_testing": "Automated Axe-core scans in CI/CD + Manual keyboard navigation audit for Map Editor and Chat.",
+    "performance_testing": "Lighthouse CI checks for Consumer Portal (LCP < 2.5s)."
+  }
+}

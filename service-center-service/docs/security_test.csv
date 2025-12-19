@@ -1,0 +1,5 @@
+"test_type","tool","schedule","scope","focus"
+"Static Application Security Testing (SAST)","SonarQube","Continuous (CI Pipeline)","All Backend and Frontend Code","OWASP Top 10, Injection Flaws, Secrets in Code"
+"Infrastructure as Code Scanning","tfsec / Checkov","Continuous (CI Pipeline)","Terraform Modules","Misconfigurations, Public Access, Encryption at Rest"
+"Dynamic Application Security Testing (DAST)","OWASP ZAP","Weekly / Pre-Release","Staging API Endpoints","Runtime vulnerabilities, Auth bypass, Broken Access Control (RBAC)"
+"Data Privacy Audit","Manual / Scripted","Per Release","Database & Logs","Verify PII masking (US-123), Audit Log Immutability (US-124)"

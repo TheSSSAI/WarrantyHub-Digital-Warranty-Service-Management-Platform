@@ -1,0 +1,32 @@
+sequenceDiagram
+    participant "Operator (SRE/DevOps)" as OperatorSREDevOps
+    participant "Monitoring Dashboard" as MonitoringDashboard
+    participant "GitHub Actions CI/CD" as GitHubActionsCICD
+    participant "Azure Kubernetes Service (AKS)" as AzureKubernetesServiceAKS
+    participant "Azure Container Registry (ACR)" as AzureContainerRegistryACR
+
+    activate OperatorSREDevOps
+    MonitoringDashboard->>OperatorSREDevOps: 1. 1. [Alert] Critical SLO Breach Detected
+    OperatorSREDevOps->>MonitoringDashboard: 2. 2. [Investigate] Analyze dashboard to confirm deployment failure
+    MonitoringDashboard-->>OperatorSREDevOps: Correlate high error rate with recent deployment annotation
+    OperatorSREDevOps->>OperatorSREDevOps: 3. 3. [Decision] Consult runbook and decide to execute rollback
+    activate GitHubActionsCICD
+    OperatorSREDevOps->>GitHubActionsCICD: 4. 4. [Identify & Trigger] Initiate 'Deploy' workflow with previous stable image tag
+    GitHubActionsCICD-->>OperatorSREDevOps: Workflow run started successfully (HTTP 204)
+    activate AzureKubernetesServiceAKS
+    GitHubActionsCICD->>AzureKubernetesServiceAKS: 5. 5. [Execute Deployment] Apply new deployment state
+    AzureKubernetesServiceAKS-->>GitHubActionsCICD: Deployment update acknowledged
+    activate AzureContainerRegistryACR
+    AzureKubernetesServiceAKS->>AzureContainerRegistryACR: 6. 6. [Pull Image] Request stable image 'v1.2.3'
+    AzureContainerRegistryACR-->>AzureKubernetesServiceAKS: Image layers data
+    AzureKubernetesServiceAKS->>AzureKubernetesServiceAKS: 7. 7. [Internal] Perform rolling update of pods
+    OperatorSREDevOps->>MonitoringDashboard: 8. 8. [Validate] Monitor system health and deployment status
+    MonitoringDashboard-->>OperatorSREDevOps: Observe metrics returning to baseline (error rate drops)
+    OperatorSREDevOps->>OperatorSREDevOps: 9. 9. [Confirm & Communicate] Declare incident resolved
+
+    note over AzureContainerRegistryACR: Assumption: Immutable container image tags (e.g., SemVer, Git SHA) are used. Mutable tags like 'l...
+
+    deactivate AzureContainerRegistryACR
+    deactivate AzureKubernetesServiceAKS
+    deactivate GitHubActionsCICD
+    deactivate OperatorSREDevOps

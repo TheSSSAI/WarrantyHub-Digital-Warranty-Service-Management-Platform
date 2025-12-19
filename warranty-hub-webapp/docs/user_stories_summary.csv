@@ -1,0 +1,2 @@
+"total_stories","total_story_points","must_have_stories","should_have_stories","could_have_stories","critical_stories","epics_identified","estimated_sprints","key_dependencies"
+"6","49","3","2","0","1","[""Real-Time Communication & Tracking"",""Integration & Data Processing"",""Mobile Application Development"",""Core Backend Microservices"",""Identity & Access Management""]","4","[""Azure Infrastructure (Service Bus, PostGIS)"",""Azure AD B2C Tenant Configuration""]"

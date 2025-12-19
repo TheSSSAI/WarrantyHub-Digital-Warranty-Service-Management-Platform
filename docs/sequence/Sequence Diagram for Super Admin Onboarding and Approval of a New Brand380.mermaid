@@ -1,0 +1,28 @@
+sequenceDiagram
+    actor "Admin Web Client" as AdminWebClient
+    participant "API Gateway" as APIGateway
+    participant "Product Service" as ProductService
+    participant "Messaging Infrastructure" as MessagingInfrastructure
+    participant "Audit Service" as AuditService
+
+    activate APIGateway
+    AdminWebClient->>APIGateway: 1. 1. GET /api/v1/brands?status=pending
+    APIGateway-->>AdminWebClient: 2. Returns 200 OK with a list of Brand DTOs
+    activate ProductService
+    APIGateway->>ProductService: 1.1. 1a. Forwards GET /api/brands?status=pending
+    ProductService-->>APIGateway: 1b. Returns list of Brand entities
+    AdminWebClient->>APIGateway: 2. 3. PATCH /api/v1/brands/{brandId}/approve
+    APIGateway-->>AdminWebClient: 6. Returns 200 OK with updated Brand DTO
+    APIGateway->>ProductService: 3. 4. Forwards PATCH /api/brands/{brandId}/approve
+    ProductService-->>APIGateway: 5. Returns 200 OK with updated Brand DTO
+    activate MessagingInfrastructure
+    ProductService->>MessagingInfrastructure: 4. 4a. Publish 'CriticalActionOccurred' Event
+    activate AuditService
+    MessagingInfrastructure->>AuditService: 5. 7. Delivers 'CriticalActionOccurred' Event
+    AuditService->>AuditService: 6. 8. Persists Audit Log
+
+
+    deactivate AuditService
+    deactivate MessagingInfrastructure
+    deactivate ProductService
+    deactivate APIGateway

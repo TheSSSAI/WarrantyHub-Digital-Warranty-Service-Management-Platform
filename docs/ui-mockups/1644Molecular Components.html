@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Molecular Component Library</title>
+  <style>
+    /* 
+      ========================================
+      1. DESIGN TOKENS (From Design System)
+      ========================================
+    */
+    :root {
+      /* Colors */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-500: #6366f1;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      
+      --color-white: #ffffff;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-600: #4b5563;
+      --color-gray-700: #374151;
+      --color-gray-800: #1f2937;
+      --color-gray-900: #111827;
+
+      --color-success-bg: #d1e7dd;
+      --color-success-text: #0f5132;
+      --color-warning-bg: #fff3cd;
+      --color-warning-text: #664d03;
+      --color-error-bg: #f8d7da;
+      --color-error-text: #842029;
+      --color-error-main: #dc3545;
+      --color-urgent-border: #ef4444;
+      --color-urgent-bg: #fef2f2;
+
+      /* Typography */
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-size-sm: 12px;
+      --font-size-base: 14px;
+      --font-size-lg: 16px;
+      --font-size-xl: 18px;
+      --font-weight-regular: 400;
+      --font-weight-medium: 500;
+      --font-weight-bold: 600;
+
+      /* Spacing */
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+
+      /* Radii */
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 12px; /* Card radius from specs */
+      --radius-full: 9999px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --shadow-focus: 0 0 0 3px var(--color-primary-100);
+    }
+
+    /* 
+      ========================================
+      2. GLOBAL RESET & UTILITIES
+      ========================================
+    */
+    *, *::before, *::after { box-sizing: border-box; }
+    
+    body {
+      font-family: var(--font-family);
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-900);
+      margin: 0;
+      line-height: 1.5;
+      padding: var(--spacing-lg);
+    }
+
+    .showcase-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .showcase-section {
+      background: var(--color-white);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      margin-bottom: 48px;
+      border: 1px solid var(--color-gray-200);
+    }
+
+    .showcase-header {
+      margin-bottom: var(--spacing-lg);
+      padding-bottom: var(--spacing-sm);
+      border-bottom: 1px solid var(--color-gray-200);
+    }
+
+    .showcase-title {
+      font-size: 20px;
+      font-weight: var(--font-weight-bold);
+      color: var(--color-gray-900);
+      margin: 0;
+    }
+
+    .showcase-desc {
+      font-size: 14px;
+      color: var(--color-gray-500);
+      margin-top: 4px;
+    }
+
+    .variant-group {
+      margin-bottom: 32px;
+    }
+
+    .variant-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-gray-500);
+      margin-bottom: var(--spacing-md);
+      font-weight: var(--font-weight-bold);
+    }
+
+    /* Helper for icons */
+    .icon {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* 
+      ========================================
+      3. ATOMIC DEPENDENCIES (Embed for Context)
+      ========================================
+    */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    .badge--success { background: var(--color-success-bg); color: var(--color-success-text); border: 1px solid var(--color-success-text); }
+    .badge--warning { background: var(--color-warning-bg); color: var(--color-warning-text); border: 1px solid var(--color-warning-text); }
+    .badge--neutral { background: var(--color-gray-100); color: var(--color-gray-700); border: 1px solid var(--color-gray-300); }
+    .badge--error { background: var(--color-error-bg); color: var(--color-error-text); border: 1px solid var(--color-error-text); }
+
+    .btn-icon {
+      background: transparent;
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-md);
+      color: var(--color-gray-600);
+      padding: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      transition: all 0.2s;
+    }
+    .btn-icon:hover { background: var(--color-gray-50); color: var(--color-gray-900); }
+
+    /* 
+      ========================================
+      4. MOLECULAR COMPONENT: PRODUCT CARD
+      ========================================
+    */
+    .prod-card {
+      display: flex;
+      background: var(--color-white);
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+    }
+
+    .prod-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--color-gray-300);
+    }
+
+    .prod-card:focus-visible {
+      outline: none;
+      box-shadow: var(--shadow-focus);
+      border-color: var(--color-primary-600);
+    }
+
+    /* Variant: List View (Default) */
+    .prod-card--list {
+      flex-direction: row;
+      padding: var(--spacing-md);
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+
+    .prod-card__thumb {
+      width: 64px;
+      height: 64px;
+      background: var(--color-gray-100);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-gray-400);
+      flex-shrink: 0;
+    }
+
+    .prod-card__content {
+      flex: 1;
+      min-width: 0; /* Text truncation fix */
+    }
+
+    .prod-card__brand {
+      font-size: 12px;
+      color: var(--color-gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      font-weight: var(--font-weight-bold);
+      margin-bottom: 2px;
+    }
+
+    .prod-card__title {
+      font-size: 16px;
+      font-weight: var(--font-weight-bold);
+      color: var(--color-gray-900);
+      margin: 0 0 4px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .prod-card__meta {
+      font-size: 13px;
+      color: var(--color-gray-600);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .prod-card__actions {
+      margin-left: auto;
+    }
+
+    /* Variant: Compact */
+    .prod-card--compact {
+      flex-direction: column;
+      width: 200px; /* Fixed width for demo */
+    }
+    
+    .prod-card--compact .prod-card__thumb {
+      width: 100%;
+      height: 120px;
+      border-radius: 0;
+    }
+
+    .prod-card--compact .prod-card__content {
+      padding: var(--spacing-md);
+    }
+
+    /* State: Loading Skeleton */
+    .prod-card--skeleton {
+      pointer-events: none;
+      border-color: transparent;
+    }
+    .skeleton-box {
+      background: var(--color-gray-200);
+      border-radius: var(--radius-sm);
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+
+    /* 
+      ========================================
+      5. MOLECULAR COMPONENT: TECHNICIAN JOB CARD
+      ========================================
+    */
+    .job-card {
+      display: block;
+      background: var(--color-white);
+      border: 1px solid var(--color-gray-200);
+      border-left: 4px solid var(--color-primary-600);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-md);
+      margin-bottom: var(--spacing-md);
+      position: relative;
+      cursor: pointer;
+    }
+
+    .job-card:hover {
+      background-color: var(--color-gray-50);
+    }
+
+    /* Variant: Urgent */
+    .job-card--urgent {
+      border-left-color: var(--color-error-main);
+      background-color: var(--color-urgent-bg);
+    }
+
+    /* Variant: Completed */
+    .job-card--completed {
+      border-left-color: var(--color-success-main);
+      opacity: 0.8;
+      background-color: var(--color-gray-50);
+    }
+
+    .job-card__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .job-card__time {
+      font-size: 16px;
+      font-weight: var(--font-weight-bold);
+      color: var(--color-gray-900);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .job-card__details {
+      display: grid;
+      gap: 4px;
+    }
+
+    .job-card__customer {
+      font-weight: var(--font-weight-medium);
+      color: var(--color-gray-800);
+    }
+
+    .job-card__address {
+      font-size: 13px;
+      color: var(--color-gray-600);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .job-card__footer {
+      margin-top: var(--spacing-md);
+      padding-top: var(--spacing-sm);
+      border-top: 1px solid rgba(0,0,0,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+
+    /* 
+      ========================================
+      6. MOLECULAR COMPONENT: UPLOAD ATTACHMENT
+      ========================================
+    */
+    .upload-zone {
+      border: 2px dashed var(--color-gray-300);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      text-align: center;
+      background: var(--color-gray-50);
+      transition: all 0.2s;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .upload-zone:hover, .upload-zone:focus-within {
+      border-color: var(--color-primary-500);
+      background: var(--color-primary-50);
+    }
+
+    .upload-zone__input {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .upload-zone__content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--spacing-xs);
+    }
+
+    .upload-zone__icon {
+      color: var(--color-gray-400);
+      width: 32px;
+      height: 32px;
+    }
+
+    .upload-zone__text {
+      font-size: 14px;
+      font-weight: var(--font-weight-medium);
+      color: var(--color-primary-600);
+    }
+
+    .upload-zone__sub {
+      font-size: 12px;
+      color: var(--color-gray-500);
+    }
+
+    /* State: Uploading */
+    .upload-item {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      padding: var(--spacing-md);
+      background: var(--color-white);
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-md);
+      margin-top: var(--spacing-sm);
+    }
+
+    .upload-item__preview {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      background: var(--color-gray-100);
+    }
+
+    .upload-item__info {
+      flex: 1;
+    }
+
+    .upload-item__name {
+      font-size: 14px;
+      font-weight: var(--font-weight-medium);
+      color: var(--color-gray-900);
+      display: block;
+    }
+
+    .upload-item__status {
+      font-size: 12px;
+      color: var(--color-gray-500);
+    }
+
+    .progress-bar {
+      height: 4px;
+      background: var(--color-gray-200);
+      border-radius: var(--radius-full);
+      margin-top: 6px;
+      overflow: hidden;
+    }
+
+    .progress-bar__fill {
+      height: 100%;
+      background: var(--color-primary-600);
+      width: 60%; /* Demo value */
+      transition: width 0.3s ease;
+    }
+
+    /* State: Error */
+    .upload-item--error {
+      border-color: var(--color-error-bg);
+      background: #fff5f5;
+    }
+    .upload-item--error .upload-item__status {
+      color: var(--color-error-text);
+    }
+
+
+    /* 
+      ========================================
+      7. MOLECULAR COMPONENT: OTP INPUT GROUP
+      ========================================
+    */
+    .otp-group {
+      display: flex;
+      gap: var(--spacing-sm);
+      justify-content: center;
+    }
+
+    .otp-input {
+      width: 48px;
+      height: 56px;
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--radius-md);
+      font-size: 24px;
+      text-align: center;
+      font-weight: var(--font-weight-bold);
+      color: var(--color-gray-900);
+      background: var(--color-white);
+      transition: all 0.2s;
+    }
+
+    .otp-input:focus {
+      border-color: var(--color-primary-600);
+      box-shadow: 0 0 0 2px var(--color-primary-100);
+      outline: none;
+      transform: translateY(-2px);
+    }
+
+    /* State: Filled */
+    .otp-input:not(:placeholder-shown) {
+      background-color: var(--color-gray-50);
+      border-color: var(--color-gray-400);
+    }
+
+    /* State: Error */
+    .otp-group--error .otp-input {
+      border-color: var(--color-error-main);
+      color: var(--color-error-main);
+      background-color: var(--color-error-bg);
+    }
+
+
+    /* 
+      ========================================
+      8. MOLECULAR COMPONENT: CHAT BUBBLE
+      ========================================
+    */
+    .chat-bubble {
+      max-width: 85%;
+      padding: 12px 16px;
+      border-radius: 16px;
+      position: relative;
+      margin-bottom: var(--spacing-sm);
+      font-size: 14px;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-bubble__text {
+      word-wrap: break-word;
+    }
+
+    .chat-bubble__meta {
+      font-size: 11px;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      opacity: 0.8;
+    }
+
+    /* Variant: Sender (Me) */
+    .chat-bubble--sender {
+      background-color: var(--color-primary-600);
+      color: var(--color-white);
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+      margin-left: auto;
+    }
+    .chat-bubble--sender .chat-bubble__meta {
+      color: rgba(255,255,255,0.9);
+      justify-content: flex-end;
+    }
+
+    /* Variant: Receiver (Technician/Support) */
+    .chat-bubble--receiver {
+      background-color: var(--color-gray-200);
+      color: var(--color-gray-900);
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+      margin-right: auto;
+    }
+    .chat-bubble--receiver .chat-bubble__meta {
+      color: var(--color-gray-600);
+    }
+
+    /* Variant: System Message */
+    .chat-bubble--system {
+      background-color: var(--color-gray-100);
+      color: var(--color-gray-600);
+      font-size: 12px;
+      text-align: center;
+      align-self: center;
+      width: 100%;
+      border-radius: var(--radius-md);
+      padding: 8px;
+    }
+
+    /* Chat Container for Demo */
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--color-gray-200);
+      padding: var(--spacing-md);
+      border-radius: var(--radius-lg);
+      background: var(--color-white);
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="showcase-container">
+    
+    <!-- 1. Product Card -->
+    <section class="showcase-section">
+      <header class="showcase-header">
+        <h2 class="showcase-title">1. Product Card</h2>
+        <p class="showcase-desc">Displays product summary. Used in lists and dashboards.</p>
+      </header>
+
+      <div class="variant-group">
+        <h3 class="variant-title">Variant: List View (Default)</h3>
+        <!-- Product Card: List View -->
+        <article class="prod-card prod-card--list" tabindex="0">
+          <div class="prod-card__thumb">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+          <div class="prod-card__content">
+            <div class="prod-card__brand">Samsung</div>
+            <h4 class="prod-card__title">Galaxy S23 Ultra</h4>
+            <div class="prod-card__meta">
+              <span>S/N: 882930192</span>
+              <span class="badge badge--success">Active Warranty</span>
+            </div>
+          </div>
+          <div class="prod-card__actions">
+             <button class="btn-icon" aria-label="View Details">
+               <svg class="icon" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+             </button>
+          </div>
+        </article>
+      </div>
+
+      <div class="variant-group">
+        <h3 class="variant-title">Variant: Loading Skeleton</h3>
+        <article class="prod-card prod-card--list prod-card--skeleton">
+          <div class="prod-card__thumb skeleton-box"></div>
+          <div class="prod-card__content">
+            <div class="skeleton-box" style="width: 60px; height: 12px; margin-bottom: 8px;"></div>
+            <div class="skeleton-box" style="width: 140px; height: 20px; margin-bottom: 8px;"></div>
+            <div class="skeleton-box" style="width: 100px; height: 16px;"></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- 2. Technician Job Card -->
+    <section class="showcase-section">
+      <header class="showcase-header">
+        <h2 class="showcase-title">2. Technician Job Card</h2>
+        <p class="showcase-desc">Provides technicians with job context at a glance.</p>
+      </header>
+
+      <div class="variant-group">
+        <h3 class="variant-title">Variant: Default (Assigned)</h3>
+        <article class="job-card" tabindex="0">
+          <div class="job-card__header">
+            <div class="job-card__time">
+              <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              09:30 AM - 10:30 AM
+            </div>
+            <span class="badge badge--neutral">Assigned</span>
+          </div>
+          <div class="job-card__details">
+            <div class="job-card__customer">John Smith</div>
+            <div class="job-card__address">
+              <svg class="icon" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              123 Maple Street, Springfield
+            </div>
+            <div style="font-size:13px; color: var(--color-gray-600); margin-top:4px;">Issue: Screen flickering</div>
+          </div>
+        </article>
+      </div>
+
+      <div class="variant-group">
+        <h3 class="variant-title">Variant: Urgent Priority</h3>
+        <article class="job-card job-card--urgent" tabindex="0">
+          <div class="job-card__header">
+            <div class="job-card__time" style="color: var(--color-error-text);">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              11:00 AM (ASAP)
+            </div>
+            <span class="badge badge--error">Urgent</span>
+          </div>
+          <div class="job-card__details">
+            <div class="job-card__customer">Sarah Connor</div>
+            <div class="job-card__address">
+              <svg class="icon" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              404 Tech Blvd, Cyberdyne
+            </div>
+            <div style="font-size:13px; color: var(--color-gray-600); margin-top:4px;">Issue: Total system failure</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- 3. Upload Attachment -->
+    <section class="showcase-section">
+      <header class="showcase-header">
+        <h2 class="showcase-title">3. Upload Attachment</h2>
+        <p class="showcase-desc">Interactive area for file uploads with status states.</p>
+      </header>
+
+      <div class="variant-group">
+        <h3 class="variant-title">State: Empty (Dropzone)</h3>
+        <div class="upload-zone" tabindex="0" role="button" aria-label="Upload file">
+          <input type="file" class="upload-zone__input" aria-hidden="true" tabindex="-1">
+          <div class="upload-zone__content">
+            <svg class="icon upload-zone__icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div class="upload-zone__text">Tap to upload</div>
+            <div class="upload-zone__sub">JPG, PNG or PDF (Max 5MB)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="variant-group">
+        <h3 class="variant-title">State: Uploading</h3>
+        <div class="upload-item">
+          <div class="upload-item__preview">
+            <!-- Thumbnail placeholder -->
+          </div>
+          <div class="upload-item__info">
+            <span class="upload-item__name">invoice_scan_01.jpg</span>
+            <div class="progress-bar">
+              <div class="progress-bar__fill"></div>
+            </div>
+            <span class="upload-item__status">Uploading... 60%</span>
+          </div>
+          <button class="btn-icon" aria-label="Cancel upload">
+            <svg class="icon" style="width:16px; height:16px;" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. OTP Input Group -->
+    <section class="showcase-section">
+      <header class="showcase-header">
+        <h2 class="showcase-title">4. OTP Input Group</h2>
+        <p class="showcase-desc">Security code entry with focus management styles.</p>
+      </header>
+
+      <div class="variant-group">
+        <h3 class="variant-title">Variant: Default</h3>
+        <fieldset style="border:0; padding:0; margin:0;" class="otp-group">
+          <legend class="sr-only">Enter 6-digit verification code</legend>
+          <input type="text" class="otp-input" maxlength="1" inputmode="numeric" value="4" aria-label="Digit 1">
+          <input type="text" class="otp-input" maxlength="1" inputmode="numeric" value="2" aria-label="Digit 2">
+          <input type="text" class="otp-input" maxlength="1" inputmode="numeric" value="" aria-label="Digit 3" autofocus>
+          <input type="text" class="otp-input" maxlength="1" inputmode="numeric" value="" aria-label="Digit 4">
+          <input type="text" class="otp-input" maxlength="1" inputmode="numeric" value="" aria-label="Digit 5">
+          <input type="text" class="otp-input" maxlength="1" inputmode="numeric" value="" aria-label="Digit 6">
+        </fieldset>
+      </div>
+
+      <div class="variant-group">
+        <h3 class="variant-title">Variant: Error State</h3>
+        <div class="otp-group otp-group--error">
+          <input type="text" class="otp-input" maxlength="1" value="9">
+          <input type="text" class="otp-input" maxlength="1" value="9">
+          <input type="text" class="otp-input" maxlength="1" value="9">
+          <input type="text" class="otp-input" maxlength="1" value="9">
+          <input type="text" class="otp-input" maxlength="1" value="9">
+          <input type="text" class="otp-input" maxlength="1" value="9">
+        </div>
+        <p class="input-error-msg" style="text-align:center; margin-top:8px;">Incorrect code. Please try again.</p>
+      </div>
+    </section>
+
+    <!-- 5. Chat Message Bubble -->
+    <section class="showcase-section">
+      <header class="showcase-header">
+        <h2 class="showcase-title">5. Chat Message Bubble</h2>
+        <p class="showcase-desc">Communication components for user-technician chat.</p>
+      </header>
+
+      <div class="variant-group">
+        <h3 class="variant-title">Conversation View</h3>
+        <div class="chat-container">
+          
+          <!-- System Message -->
+          <div class="chat-bubble chat-bubble--system">
+            Technician joined the chat
+          </div>
+
+          <!-- Receiver (Technician) -->
+          <div class="chat-bubble chat-bubble--receiver">
+            <div class="chat-bubble__text">Hi! I'm about 15 minutes away. Is the gate code #1234?</div>
+            <div class="chat-bubble__meta">10:42 AM</div>
+          </div>
+
+          <!-- Sender (Me) -->
+          <div class="chat-bubble chat-bubble--sender">
+            <div class="chat-bubble__text">Yes, that's correct. See you soon!</div>
+            <div class="chat-bubble__meta">
+              10:43 AM 
+              <svg class="icon" style="width:12px; height:12px;" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="sr-only">
+    <!-- Utility for screen readers -->
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+  </div>
+
+</body>
+</html>

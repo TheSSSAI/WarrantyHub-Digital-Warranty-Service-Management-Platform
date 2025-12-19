@@ -1,0 +1,1071 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-CF-001
+
+## 1.2 Name
+
+Auditing a Critical Administrative Action via Event Bus
+
+## 1.3 Description
+
+When a privileged user performs a critical action, the responsible microservice publishes a generic event. A dedicated Audit service consumes this event and writes a record to an immutable audit store.
+
+## 1.4 Type
+
+🔹 ComplianceFlow
+
+## 1.5 Purpose
+
+To fulfill the system's auditability requirement (REQ-AUDIT-001) by creating a tamper-proof record of all significant actions for security analysis and regulatory compliance.
+
+## 1.6 Complexity
+
+Medium
+
+## 1.7 Priority
+
+🔴 High
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- service-center-service-004
+- audit-service-011
+
+## 1.10 Key Interactions
+
+- A Super Admin approves a new service center via the ServiceCenterService.
+- After successfully updating the database, the ServiceCenterService constructs and publishes a 'CriticalActionOccurred' event to a dedicated 'audit-events' topic on Azure Service Bus.
+- The event payload contains the userId, actionType ('ServiceCenterApproved'), targetEntityId, timestamp, source IP, and before/after state.
+- The AuditService, a dedicated consumer with a subscription to this topic, receives the event.
+- The AuditService transforms the event into a structured JSON document.
+- The AuditService writes the document to the secure, tamper-proof audit store (OpenSearch).
+
+## 1.11 Triggers
+
+- A business logic path that is designated as a critical, auditable event is executed.
+
+## 1.12 Outcomes
+
+- A detailed audit record of the action is securely and immutably stored.
+- The audit log is available for fast searching and analysis by administrators.
+
+## 1.13 Business Rules
+
+- Audit logs must be retained for a minimum of 24 months.
+- Auditable events include logins, permission changes, and CRUD operations on key entities.
+- The audit trail must be immutable.
+
+## 1.14 Error Scenarios
+
+- The message bus is down, preventing the event from being published (the primary action may need to be rolled back).
+- The AuditService fails to process the event, causing it to be dead-lettered.
+- The audit store is unavailable.
+
+## 1.15 Integration Points
+
+- Azure Service Bus
+- AuditDB (OpenSearch)
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-CF-001
+
+## 2.2 Name
+
+Implementation: Critical Action Audit via Asynchronous Event
+
+## 2.3 Description
+
+This sequence diagram provides the technical implementation for auditing a critical administrative action. A source microservice performs a state change, and upon successful commit, publishes a standardized audit event to an Azure Service Bus topic. A dedicated, decoupled Audit Service consumes this event and persists an immutable record into an OpenSearch cluster, fulfilling REQ-AUDIT-001.
+
+## 2.4 Participants
+
+### 2.4.1 Actor
+
+#### 2.4.1.1 Repository Id
+
+USER_ACTOR
+
+#### 2.4.1.2 Display Name
+
+Super Admin
+
+#### 2.4.1.3 Type
+
+🔹 Actor
+
+#### 2.4.1.4 Technology
+
+Web Browser / API Client
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #90CAF9 |
+| Stereotype | User |
+
+### 2.4.2.0 Service
+
+#### 2.4.2.1 Repository Id
+
+REPO-BS-004
+
+#### 2.4.2.2 Display Name
+
+ServiceCenterService
+
+#### 2.4.2.3 Type
+
+🔹 Service
+
+#### 2.4.2.4 Technology
+
+.NET 8, ASP.NET Core
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #A5D6A7 |
+| Stereotype | Microservice |
+
+### 2.4.3.0 Database
+
+#### 2.4.3.1 Repository Id
+
+DB-Postgres
+
+#### 2.4.3.2 Display Name
+
+Persistence Layer
+
+#### 2.4.3.3 Type
+
+🔹 Database
+
+#### 2.4.3.4 Technology
+
+Azure Database for PostgreSQL 16
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #B39DDB |
+| Stereotype | Primary DB |
+
+### 2.4.4.0 MessageBroker
+
+#### 2.4.4.1 Repository Id
+
+INFRA-Messaging
+
+#### 2.4.4.2 Display Name
+
+Messaging Infrastructure
+
+#### 2.4.4.3 Type
+
+🔹 MessageBroker
+
+#### 2.4.4.4 Technology
+
+Azure Service Bus
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | queue |
+| Color | #FFAB91 |
+| Stereotype | Event Topic |
+
+### 2.4.5.0 Service
+
+#### 2.4.5.1 Repository Id
+
+REPO-BS-011
+
+#### 2.4.5.2 Display Name
+
+AuditService
+
+#### 2.4.5.3 Type
+
+🔹 Service
+
+#### 2.4.5.4 Technology
+
+.NET 8 Worker Service
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #A5D6A7 |
+| Stereotype | Microservice |
+
+### 2.4.6.0 Database
+
+#### 2.4.6.1 Repository Id
+
+AuditDB
+
+#### 2.4.6.2 Display Name
+
+Audit Store
+
+#### 2.4.6.3 Type
+
+🔹 Database
+
+#### 2.4.6.4 Technology
+
+OpenSearch 2.11
+
+#### 2.4.6.5 Order
+
+6
+
+#### 2.4.6.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #F48FB1 |
+| Stereotype | Search Cluster |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Request
+
+#### 2.5.1.1 Source Id
+
+USER_ACTOR
+
+#### 2.5.1.2 Target Id
+
+REPO-BS-004
+
+#### 2.5.1.3 Message
+
+1. Approve Service Center
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Request
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+8. HTTP 200 OK
+
+#### 2.5.1.8 Has Return
+
+✅ Yes
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+##### 2.5.1.10.1 Protocol
+
+HTTPS
+
+##### 2.5.1.10.2 Method
+
+POST /api/v1/service-centers/{serviceCenterId}/approve
+
+##### 2.5.1.10.3 Parameters
+
+###### 2.5.1.10.3.1 GUID
+
+####### 2.5.1.10.3.1.1 Name
+
+serviceCenterId
+
+####### 2.5.1.10.3.1.2 Type
+
+🔹 GUID
+
+####### 2.5.1.10.3.1.3 In
+
+path
+
+###### 2.5.1.10.3.2.0 string
+
+####### 2.5.1.10.3.2.1 Name
+
+Authorization
+
+####### 2.5.1.10.3.2.2 Type
+
+🔹 string
+
+####### 2.5.1.10.3.2.3 In
+
+header
+
+####### 2.5.1.10.3.2.4 Description
+
+Bearer <JWT>
+
+##### 2.5.1.10.4.0.0 Authentication
+
+Required: Valid JWT with 'SuperAdmin' role claim.
+
+##### 2.5.1.10.5.0.0 Error Handling
+
+| Property | Value |
+|----------|-------|
+| 401 Unauthorized | Invalid or missing JWT. |
+| 403 Forbidden | JWT does not contain the required role. |
+| 404 Not Found | serviceCenterId does not exist. |
+
+##### 2.5.1.10.6.0.0 Performance
+
+###### 2.5.1.10.6.1.0 Sla
+
+P95 < 250ms
+
+#### 2.5.1.11.0.0.0 Nested Interactions
+
+##### 2.5.1.11.1.0.0 InternalProcessing
+
+###### 2.5.1.11.1.1.0 Source Id
+
+REPO-BS-004
+
+###### 2.5.1.11.1.2.0 Target Id
+
+REPO-BS-004
+
+###### 2.5.1.11.1.3.0 Message
+
+2. Begin Transaction
+
+###### 2.5.1.11.1.4.0 Sequence Number
+
+2
+
+###### 2.5.1.11.1.5.0 Type
+
+🔹 InternalProcessing
+
+###### 2.5.1.11.1.6.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.1.11.1.7.0 Return Message
+
+
+
+###### 2.5.1.11.1.8.0 Has Return
+
+❌ No
+
+###### 2.5.1.11.1.9.0 Is Activation
+
+❌ No
+
+###### 2.5.1.11.1.10.0 Technical Details
+
+####### 2.5.1.11.1.10.1 Protocol
+
+Internal
+
+####### 2.5.1.11.1.10.2 Method
+
+Start transaction scope for DB and Message Bus.
+
+####### 2.5.1.11.1.10.3 Parameters
+
+*No items available*
+
+####### 2.5.1.11.1.10.4 Authentication
+
+N/A
+
+####### 2.5.1.11.1.10.5 Error Handling
+
+######## 2.5.1.11.1.10.5.1 Exception
+
+Initiates rollback of all operations within the transaction.
+
+####### 2.5.1.11.1.10.6.0 Performance
+
+*No data available*
+
+##### 2.5.1.11.2.0.0.0 DatabaseCall
+
+###### 2.5.1.11.2.1.0.0 Source Id
+
+REPO-BS-004
+
+###### 2.5.1.11.2.2.0.0 Target Id
+
+DB-Postgres
+
+###### 2.5.1.11.2.3.0.0 Message
+
+3. Update Service Center Status
+
+###### 2.5.1.11.2.4.0.0 Sequence Number
+
+3
+
+###### 2.5.1.11.2.5.0.0 Type
+
+🔹 DatabaseCall
+
+###### 2.5.1.11.2.6.0.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.1.11.2.7.0.0 Return Message
+
+4. Rows Affected: 1
+
+###### 2.5.1.11.2.8.0.0 Has Return
+
+✅ Yes
+
+###### 2.5.1.11.2.9.0.0 Is Activation
+
+❌ No
+
+###### 2.5.1.11.2.10.0.0 Technical Details
+
+####### 2.5.1.11.2.10.1.0 Protocol
+
+TCP/IP (Npgsql)
+
+####### 2.5.1.11.2.10.2.0 Method
+
+```sql
+UPDATE public."ServiceCenters" SET "Status" = 'Approved' WHERE "Id" = @p0;
+```
+
+####### 2.5.1.11.2.10.3.0 Parameters
+
+- {'name': '@p0', 'type': 'UUID', 'value': 'serviceCenterId'}
+
+####### 2.5.1.11.2.10.4.0 Authentication
+
+Managed Identity or connection string from Azure Key Vault.
+
+####### 2.5.1.11.2.10.5.0 Error Handling
+
+######## 2.5.1.11.2.10.5.1 Npgsql Exception
+
+Transaction is rolled back, HTTP 500 returned to user.
+
+####### 2.5.1.11.2.10.6.0 Performance
+
+*No data available*
+
+##### 2.5.1.11.3.0.0.0 InternalProcessing
+
+###### 2.5.1.11.3.1.0.0 Source Id
+
+REPO-BS-004
+
+###### 2.5.1.11.3.2.0.0 Target Id
+
+REPO-BS-004
+
+###### 2.5.1.11.3.3.0.0 Message
+
+5. Construct 'CriticalActionOccurred' Event
+
+###### 2.5.1.11.3.4.0.0 Sequence Number
+
+5
+
+###### 2.5.1.11.3.5.0.0 Type
+
+🔹 InternalProcessing
+
+###### 2.5.1.11.3.6.0.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.1.11.3.7.0.0 Return Message
+
+
+
+###### 2.5.1.11.3.8.0.0 Has Return
+
+❌ No
+
+###### 2.5.1.11.3.9.0.0 Is Activation
+
+❌ No
+
+###### 2.5.1.11.3.10.0.0 Technical Details
+
+####### 2.5.1.11.3.10.1.0 Protocol
+
+Internal
+
+####### 2.5.1.11.3.10.2.0 Method
+
+new CriticalActionOccurredEvent(...)
+
+####### 2.5.1.11.3.10.3.0 Parameters
+
+######## 2.5.1.11.3.10.3.1 GUID
+
+######### 2.5.1.11.3.10.3.1.1 Name
+
+userId
+
+######### 2.5.1.11.3.10.3.1.2 Type
+
+🔹 GUID
+
+######### 2.5.1.11.3.10.3.1.3 Source
+
+JWT claim
+
+######## 2.5.1.11.3.10.3.2.0 string
+
+######### 2.5.1.11.3.10.3.2.1 Name
+
+actionType
+
+######### 2.5.1.11.3.10.3.2.2 Type
+
+🔹 string
+
+######### 2.5.1.11.3.10.3.2.3 Value
+
+ServiceCenterApproved
+
+######## 2.5.1.11.3.10.3.3.0 string
+
+######### 2.5.1.11.3.10.3.3.1 Name
+
+targetEntity
+
+######### 2.5.1.11.3.10.3.3.2 Type
+
+🔹 string
+
+######### 2.5.1.11.3.10.3.3.3 Value
+
+ServiceCenter
+
+######## 2.5.1.11.3.10.3.4.0 GUID
+
+######### 2.5.1.11.3.10.3.4.1 Name
+
+targetEntityId
+
+######### 2.5.1.11.3.10.3.4.2 Type
+
+🔹 GUID
+
+######### 2.5.1.11.3.10.3.4.3 Value
+
+serviceCenterId
+
+######## 2.5.1.11.3.10.3.5.0 JSON
+
+######### 2.5.1.11.3.10.3.5.1 Name
+
+changeDetails
+
+######### 2.5.1.11.3.10.3.5.2 Type
+
+🔹 JSON
+
+######### 2.5.1.11.3.10.3.5.3 Value
+
+{"before": {"status": "Pending"}, "after": {"status": "Approved"}}
+
+######## 2.5.1.11.3.10.3.6.0 string
+
+######### 2.5.1.11.3.10.3.6.1 Name
+
+sourceIpAddress
+
+######### 2.5.1.11.3.10.3.6.2 Type
+
+🔹 string
+
+######### 2.5.1.11.3.10.3.6.3 Source
+
+Request Header
+
+######## 2.5.1.11.3.10.3.7.0 DateTimeOffset
+
+######### 2.5.1.11.3.10.3.7.1 Name
+
+timestamp
+
+######### 2.5.1.11.3.10.3.7.2 Type
+
+🔹 DateTimeOffset
+
+######### 2.5.1.11.3.10.3.7.3 Value
+
+UtcNow
+
+####### 2.5.1.11.3.10.4.0.0 Authentication
+
+N/A
+
+####### 2.5.1.11.3.10.5.0.0 Error Handling
+
+*No data available*
+
+####### 2.5.1.11.3.10.6.0.0 Performance
+
+*No data available*
+
+##### 2.5.1.11.4.0.0.0.0 MessagePublish
+
+###### 2.5.1.11.4.1.0.0.0 Source Id
+
+REPO-BS-004
+
+###### 2.5.1.11.4.2.0.0.0 Target Id
+
+INFRA-Messaging
+
+###### 2.5.1.11.4.3.0.0.0 Message
+
+6. Publish Audit Event
+
+###### 2.5.1.11.4.4.0.0.0 Sequence Number
+
+6
+
+###### 2.5.1.11.4.5.0.0.0 Type
+
+🔹 MessagePublish
+
+###### 2.5.1.11.4.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.1.11.4.7.0.0.0 Return Message
+
+7. Acknowledgment
+
+###### 2.5.1.11.4.8.0.0.0 Has Return
+
+✅ Yes
+
+###### 2.5.1.11.4.9.0.0.0 Is Activation
+
+❌ No
+
+###### 2.5.1.11.4.10.0.0.0 Technical Details
+
+####### 2.5.1.11.4.10.1.0.0 Protocol
+
+AMQP
+
+####### 2.5.1.11.4.10.2.0.0 Method
+
+SendMessageAsync(topic='audit-events')
+
+####### 2.5.1.11.4.10.3.0.0 Parameters
+
+- {'name': 'Message', 'type': 'ServiceBusMessage', 'description': "Contains serialized 'CriticalActionOccurred' event payload. CorrelationId is set from request context."}
+
+####### 2.5.1.11.4.10.4.0.0 Authentication
+
+Managed Identity.
+
+####### 2.5.1.11.4.10.5.0.0 Error Handling
+
+######## 2.5.1.11.4.10.5.1.0 Service Bus Exception
+
+Transaction is rolled back, HTTP 503 returned to user.
+
+####### 2.5.1.11.4.10.6.0.0 Performance
+
+*No data available*
+
+### 2.5.2.0.0.0.0.0.0 MessageDelivery
+
+#### 2.5.2.1.0.0.0.0.0 Source Id
+
+INFRA-Messaging
+
+#### 2.5.2.2.0.0.0.0.0 Target Id
+
+REPO-BS-011
+
+#### 2.5.2.3.0.0.0.0.0 Message
+
+9. Deliver Audit Event (Async)
+
+#### 2.5.2.4.0.0.0.0.0 Sequence Number
+
+9
+
+#### 2.5.2.5.0.0.0.0.0 Type
+
+🔹 MessageDelivery
+
+#### 2.5.2.6.0.0.0.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.2.7.0.0.0.0.0 Return Message
+
+
+
+#### 2.5.2.8.0.0.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.2.9.0.0.0.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.2.10.0.0.0.0.0 Technical Details
+
+##### 2.5.2.10.1.0.0.0.0 Protocol
+
+AMQP
+
+##### 2.5.2.10.2.0.0.0.0 Method
+
+Message processing loop on subscription 'audit-service-subscription'
+
+##### 2.5.2.10.3.0.0.0.0 Parameters
+
+- {'name': 'Message', 'type': 'ServiceBusMessage', 'description': 'The published event.'}
+
+##### 2.5.2.10.4.0.0.0.0 Authentication
+
+N/A (triggered by broker)
+
+##### 2.5.2.10.5.0.0.0.0 Error Handling
+
+###### 2.5.2.10.5.1.0.0.0 Processing Failure
+
+Message is retried based on policy. After max retries, it's moved to the Dead-Letter Queue (DLQ).
+
+##### 2.5.2.10.6.0.0.0.0 Performance
+
+###### 2.5.2.10.6.1.0.0.0 Sla
+
+P99 delivery latency < 1s
+
+#### 2.5.2.11.0.0.0.0.0 Nested Interactions
+
+##### 2.5.2.11.1.0.0.0.0 InternalProcessing
+
+###### 2.5.2.11.1.1.0.0.0 Source Id
+
+REPO-BS-011
+
+###### 2.5.2.11.1.2.0.0.0 Target Id
+
+REPO-BS-011
+
+###### 2.5.2.11.1.3.0.0.0 Message
+
+10. Transform Event to AuditRecord Document
+
+###### 2.5.2.11.1.4.0.0.0 Sequence Number
+
+10
+
+###### 2.5.2.11.1.5.0.0.0 Type
+
+🔹 InternalProcessing
+
+###### 2.5.2.11.1.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.2.11.1.7.0.0.0 Return Message
+
+
+
+###### 2.5.2.11.1.8.0.0.0 Has Return
+
+❌ No
+
+###### 2.5.2.11.1.9.0.0.0 Is Activation
+
+❌ No
+
+###### 2.5.2.11.1.10.0.0.0 Technical Details
+
+####### 2.5.2.11.1.10.1.0.0 Protocol
+
+Internal
+
+####### 2.5.2.11.1.10.2.0.0 Method
+
+Map<CriticalActionOccurredEvent, AuditRecord>()
+
+####### 2.5.2.11.1.10.3.0.0 Parameters
+
+*No items available*
+
+####### 2.5.2.11.1.10.4.0.0 Authentication
+
+N/A
+
+####### 2.5.2.11.1.10.5.0.0 Error Handling
+
+######## 2.5.2.11.1.10.5.1.0 Mapping Exception
+
+Log error, do not acknowledge message, leading to retry/DLQ.
+
+####### 2.5.2.11.1.10.6.0.0 Performance
+
+*No data available*
+
+##### 2.5.2.11.2.0.0.0.0 DatabaseCall
+
+###### 2.5.2.11.2.1.0.0.0 Source Id
+
+REPO-BS-011
+
+###### 2.5.2.11.2.2.0.0.0 Target Id
+
+AuditDB
+
+###### 2.5.2.11.2.3.0.0.0 Message
+
+11. Index Audit Record
+
+###### 2.5.2.11.2.4.0.0.0 Sequence Number
+
+11
+
+###### 2.5.2.11.2.5.0.0.0 Type
+
+🔹 DatabaseCall
+
+###### 2.5.2.11.2.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.2.11.2.7.0.0.0 Return Message
+
+12. Indexing Successful
+
+###### 2.5.2.11.2.8.0.0.0 Has Return
+
+✅ Yes
+
+###### 2.5.2.11.2.9.0.0.0 Is Activation
+
+❌ No
+
+###### 2.5.2.11.2.10.0.0.0 Technical Details
+
+####### 2.5.2.11.2.10.1.0.0 Protocol
+
+HTTPS
+
+####### 2.5.2.11.2.10.2.0.0 Method
+
+POST /audit_records/_doc
+
+####### 2.5.2.11.2.10.3.0.0 Parameters
+
+- {'name': 'body', 'type': 'JSON', 'description': 'Serialized AuditRecord document.'}
+
+####### 2.5.2.11.2.10.4.0.0 Authentication
+
+API Key or IAM Role.
+
+####### 2.5.2.11.2.10.5.0.0 Error Handling
+
+######## 2.5.2.11.2.10.5.1.0 Ioexception/http 5xx
+
+Handler throws exception, message is not acknowledged, leading to retry/DLQ.
+
+######## 2.5.2.11.2.10.5.2.0 Http 4xx
+
+Log as error, acknowledge message to prevent poison pill scenario.
+
+####### 2.5.2.11.2.10.6.0.0 Performance
+
+*No data available*
+
+##### 2.5.2.11.3.0.0.0.0 MessageAck
+
+###### 2.5.2.11.3.1.0.0.0 Source Id
+
+REPO-BS-011
+
+###### 2.5.2.11.3.2.0.0.0 Target Id
+
+INFRA-Messaging
+
+###### 2.5.2.11.3.3.0.0.0 Message
+
+13. Complete Message
+
+###### 2.5.2.11.3.4.0.0.0 Sequence Number
+
+13
+
+###### 2.5.2.11.3.5.0.0.0 Type
+
+🔹 MessageAck
+
+###### 2.5.2.11.3.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.2.11.3.7.0.0.0 Return Message
+
+
+
+###### 2.5.2.11.3.8.0.0.0 Has Return
+
+❌ No
+
+###### 2.5.2.11.3.9.0.0.0 Is Activation
+
+❌ No
+
+###### 2.5.2.11.3.10.0.0.0 Technical Details
+
+####### 2.5.2.11.3.10.1.0.0 Protocol
+
+AMQP
+
+####### 2.5.2.11.3.10.2.0.0 Method
+
+CompleteMessageAsync()
+
+####### 2.5.2.11.3.10.3.0.0 Parameters
+
+- {'name': 'lockToken', 'type': 'string', 'description': 'Lock token of the processed message.'}
+
+####### 2.5.2.11.3.10.4.0.0 Authentication
+
+N/A
+
+####### 2.5.2.11.3.10.5.0.0 Error Handling
+
+*No data available*
+
+####### 2.5.2.11.3.10.6.0.0 Performance
+
+*No data available*
+
+## 2.6.0.0.0.0.0.0.0 Notes
+
+### 2.6.1.0.0.0.0.0.0 Content
+
+#### 2.6.1.1.0.0.0.0.0 Content
+
+Transactional Integrity: The database update (Step 3) and message publication (Step 6) MUST be an atomic operation. This is best implemented using the Transactional Outbox pattern to guarantee that an audit event is published if and only if the business transaction commits successfully.
+
+#### 2.6.1.2.0.0.0.0.0 Position
+
+TopRight
+
+#### 2.6.1.3.0.0.0.0.0 Participant Id
+
+REPO-BS-004
+
+#### 2.6.1.4.0.0.0.0.0 Sequence Number
+
+6
+
+### 2.6.2.0.0.0.0.0.0 Content
+
+#### 2.6.2.1.0.0.0.0.0 Content
+
+Immutability: The 'AuditDB' (OpenSearch) index should be configured with append-only permissions for the AuditService's credentials. Deletes and updates must be forbidden at the data store level to ensure a tamper-proof audit trail as per REQ-AUDIT-001.
+
+#### 2.6.2.2.0.0.0.0.0 Position
+
+BottomRight
+
+#### 2.6.2.3.0.0.0.0.0 Participant Id
+
+AuditDB
+
+#### 2.6.2.4.0.0.0.0.0 Sequence Number
+
+11
+
+### 2.6.3.0.0.0.0.0.0 Content
+
+#### 2.6.3.1.0.0.0.0.0 Content
+
+Dead-Letter Queue (DLQ): If the AuditService repeatedly fails to process a message (e.g., due to a persistent error in writing to OpenSearch), the message will be moved to the subscription's DLQ. A critical alert MUST be configured to monitor the DLQ message count.
+
+#### 2.6.3.2.0.0.0.0.0 Position
+
+BottomRight
+
+#### 2.6.3.3.0.0.0.0.0 Participant Id
+
+REPO-BS-011
+
+#### 2.6.3.4.0.0.0.0.0 Sequence Number
+
+9
+
+## 2.7.0.0.0.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | 1. **API Endpoint Security**: The endpoint in Serv... |
+| Performance Targets | 1. **Synchronous Action**: The initial API call (S... |
+| Error Handling Strategy | 1. **Publish Failure**: If publishing the event to... |
+| Testing Considerations | 1. **Unit Tests**: Verify the correct construction... |
+| Monitoring Requirements | 1. **DLQ Alert**: A critical alert must be configu... |
+| Deployment Considerations | The AuditService is a critical component for compl... |
+

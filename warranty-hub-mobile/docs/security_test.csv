@@ -1,0 +1,3 @@
+"security_area","test_type","security_risk","compliance_requirement","test_frequency","testing_tools","test_scenarios","acceptance_criteria","remediation_sla","responsible_team","reporting_requirements","trend_analysis"
+"API Authorization (RBAC)","Automated DAST","Critical","GDPR; ISO 27001","Nightly","OWASP ZAP API Scan","[""IDOR checks"",""Privilege Escalation"",""Tenant Isolation""]","Zero High/Critical findings","Immediate","Backend Team","Automated report to Security Channel","Zero regressions"
+"Infrastructure as Code","Static Analysis","High","Azure Security Benchmark","Per Commit","tfsec; checkov","[""Public Access check"",""Encryption enabled"",""Least Privilege""]","Zero policy violations","Before Merge","DevOps","PR Comment","Reducing suppressions"

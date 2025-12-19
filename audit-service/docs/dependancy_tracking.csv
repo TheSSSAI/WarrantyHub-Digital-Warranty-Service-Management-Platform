@@ -1,0 +1,4 @@
+"dependency_id","from_task","to_task","dependency_type","description","critical_path","lead_time_days","responsible_team","coordination_required","risk_level","mitigation_plan","status","resolution_date","impact_if_delayed","escalation_required"
+"DEP-001","TASK-INFRA-001.2","TASK-BE-003.1","Infrastructure","PostGIS DB required for Backend Routing Logic","true","4","DevOps","true","Medium","Start DB provision day 1","Active","2025-01-14","Routing logic blocked",""
+"DEP-002","TASK-BE-001.1","TASK-BE-001.2","Technical","Passport Strategy required for Guards","true","","Backend","","Low","Pair programming","Active","2025-01-10","RBAC implementation blocked",""
+"DEP-003","TASK-MOB-001.1","TASK-MOB-001.2","Technical","Native permissions required for background service","true","","Mobile","","High","Research specific OS constraints","Active","2025-01-10","Location tracking blocked",""

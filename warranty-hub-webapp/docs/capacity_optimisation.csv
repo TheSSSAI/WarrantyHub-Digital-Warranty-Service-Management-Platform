@@ -1,0 +1,3 @@
+"optimization_area","current_state","recommended_action","expected_benefit","implementation_cost","timeline","success_metrics","roi_calculation"
+"Backend Load Balancing","Backend Dev overloaded (95%), Backend Lead underutilized in coding tasks","Move 'Implement PostGIS Geometry Columns' (5.2h) to Backend Lead","Reduces Backend Dev utilization to manageable 82%","","Immediate","Sprint 2 Backend Dev utilization < 85%","Prevents potential 1-week slip ($5000+ value)"
+"Mobile Knowledge Transfer","Mobile Lead holds all architectural knowledge for offline sync","Formalize 5 hours of pair programming in Sprint 1","Accelerates Mobile Dev velocity in Sprint 2 by 20%","500","Sprint 1","Mobile Dev completes database models independently","Avoids rework and architectural debt"

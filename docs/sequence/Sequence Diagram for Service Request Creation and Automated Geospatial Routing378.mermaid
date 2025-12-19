@@ -1,0 +1,31 @@
+sequenceDiagram
+    participant "Monitoring System" as MonitoringSystem
+    participant "Operations Team Member" as OperationsTeamMember
+    participant "GitHub Actions" as GitHubActions
+    participant "Azure Container Registry (ACR)" as AzureContainerRegistryACR
+    participant "Azure Kubernetes Service (AKS)" as AzureKubernetesServiceAKS
+
+    activate OperationsTeamMember
+    MonitoringSystem->>OperationsTeamMember: 1. [ALERT] Critical SLO Breach Detected
+    OperationsTeamMember->>OperationsTeamMember: 2. Investigates alert, confirms impact, consults runbook, and decides to execute rollback.
+    OperationsTeamMember-->>OperationsTeamMember: Decision: Proceed with rollback. Identified stable image tag (e.g., v1.2.0).
+    activate GitHubActions
+    OperationsTeamMember->>GitHubActions: 3. Trigger 'Rollback Deployment' Workflow
+    GitHubActions-->>OperationsTeamMember: Workflow run initiated successfully.
+    GitHubActions->>AzureContainerRegistryACR: 4. az acr login && docker pull <stable_image_tag>
+    AzureContainerRegistryACR-->>GitHubActions: Image layers downloaded to runner.
+    activate AzureKubernetesServiceAKS
+    GitHubActions->>AzureKubernetesServiceAKS: 5. kubectl set image deployment/<service_name> <container_name>=<acr_path>:<stable_image_tag>
+    AzureKubernetesServiceAKS-->>GitHubActions: deployment.apps/<service_name> image updated.
+    AzureKubernetesServiceAKS->>AzureContainerRegistryACR: 6. Pull container image for new pods
+    AzureContainerRegistryACR-->>AzureKubernetesServiceAKS: Image pulled to cluster nodes.
+    AzureKubernetesServiceAKS->>AzureKubernetesServiceAKS: 7. Execute rolling update strategy
+    OperationsTeamMember->>MonitoringSystem: 8. Validate system health and SLO recovery
+
+    note over OperationsTeamMember: Database Rollback Procedure: In case of data corruption or a destructive migration, the approved ...
+    note over OperationsTeamMember: Infrastructure Rollback Procedure: For a failed infrastructure change, the procedure is to revert...
+    note over OperationsTeamMember: Post-Mortem Requirement: Every production rollback event must be followed by a blameless post-mor...
+
+    deactivate AzureKubernetesServiceAKS
+    deactivate GitHubActions
+    deactivate OperationsTeamMember

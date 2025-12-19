@@ -1,0 +1,81 @@
+<!-- 
+    Policy Definition for Product Service
+    Dependency Level: 2
+    
+    Architectural Analysis:
+    - Inherits from Global Policy (Level 1) via <base />.
+    - Implements Gateway Offloading for Routing.
+    - Implements Cache-Aside pattern for Performance (REQ-PERF-001).
+    - Implements Circuit Breaker/Retry pattern for Resilience.
+    - Uses Named Values (Level 0) for environment abstraction.
+-->
+<policies>
+    <inbound>
+        <!-- Inherit global policies (CORS, JWT Validation, Rate Limiting) -->
+        <base />
+        
+        <!-- 
+             Route to the internal Product Service URL.
+             Dependency: Named Value 'product-service-url' defined in Level 0.
+        -->
+        <set-backend-service base-url="{{product-service-url}}" />
+
+        <!-- 
+             Performance Optimization: Response Caching for GET requests.
+             Implements REQ-PERF-001 (P95 < 250ms).
+             Logic:
+             1. Only cache GET requests.
+             2. Vary cache by Authorization header to ensure tenant/user data isolation.
+             3. Vary by Accept header for content negotiation.
+             4. Vary by standard query parameters to support pagination/filtering.
+        -->
+        <choose>
+            <when condition="@(context.Request.Method == "GET")">
+                <cache-lookup vary-by-developer="false" vary-by-developer-groups="false" allow-private-response-caching="true" must-revalidate="true" downstream-caching-type="none">
+                    <vary-by-header>Authorization</vary-by-header>
+                    <vary-by-header>Accept</vary-by-header>
+                    <vary-by-query-parameter>page</vary-by-query-parameter>
+                    <vary-by-query-parameter>limit</vary-by-query-parameter>
+                    <vary-by-query-parameter>sort</vary-by-query-parameter>
+                    <vary-by-query-parameter>category</vary-by-query-parameter>
+                    <vary-by-query-parameter>brandId</vary-by-query-parameter>
+                </cache-lookup>
+            </when>
+        </choose>
+    </inbound>
+
+    <backend>
+        <!-- 
+             Resilience: Retry logic for transient backend failures.
+             Logic:
+             1. Retry on server errors (5xx).
+             2. Exponential backoff (implicit in intervals, though simulated here with fixed).
+             3. Fast first retry to recover quick blips.
+             4. Max 3 retries to prevent cascading failures.
+        -->
+        <retry condition="@(context.Response.StatusCode >= 500)" count="3" interval="1" first-fast-retry="true">
+            <forward-request timeout="30" buffer-request-body="true" />
+        </retry>
+    </backend>
+
+    <outbound>
+        <!-- Inherit global outbound policies -->
+        <base />
+
+        <!-- 
+             Cache Store Logic:
+             Only store successful GET responses in the cache.
+             Duration: 60 seconds (short TTL for consistency).
+        -->
+        <choose>
+            <when condition="@(context.Response.StatusCode == 200 && context.Request.Method == "GET")">
+                <cache-store duration="60" />
+            </when>
+        </choose>
+    </outbound>
+
+    <on-error>
+        <!-- Inherit global error handling -->
+        <base />
+    </on-error>
+</policies>

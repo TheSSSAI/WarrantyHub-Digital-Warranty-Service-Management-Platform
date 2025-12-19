@@ -1,0 +1,2 @@
+"total_risks_identified","critical_risks","high_priority_risks","average_risk_score","key_risk_themes","immediate_actions_required"
+"6","1","3","16.3","[""Mobile Hardware/OS Limitations"",""Geospatial Performance Scalability"",""Identity Management Complexity""]","[""Select and validate a commercial-grade background location library for React Native immediately."",""Initiate load testing on PostGIS routing queries with synthetic data."",""Secure Azure AD B2C expertise to prevent authentication implementation delays.""]"

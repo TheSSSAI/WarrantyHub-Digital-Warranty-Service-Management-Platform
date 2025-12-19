@@ -1,0 +1,3 @@
+"optimization_area","current_state","recommended_action","expected_benefit","implementation_cost","timeline","success_metrics","roi_calculation"
+"Frontend Utilization","0% utilization in Sprint 1","Pull forward TASK-013-01 and TASK-013-02 using API Mocks","Gain 15.5 hours of productivity; Reduce Sprint 2 pressure","4","Sprint 1","Frontend dev billing > 30 hours in Sprint 1","Recover $1200 of idle time value"
+"DevOps Utilization","25% utilization in Sprint 1","Pull forward TASK-081-06 (Policy Pipeline) from Sprint 2 to Sprint 1","Relieve pressure on Security Architect; Automate testing earlier","","Sprint 1","DevOps utilization > 50%","Improved security architect efficiency by 15%"

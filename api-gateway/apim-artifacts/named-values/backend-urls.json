@@ -1,0 +1,37 @@
+[
+  {
+    "name": "product-service-url",
+    "displayName": "product-service-url",
+    "value": "https://internal-product-service.warrantyhub.local",
+    "secret": false,
+    "tags": ["url", "backend"]
+  },
+  {
+    "name": "identity-service-url",
+    "displayName": "identity-service-url",
+    "value": "https://internal-identity-service.warrantyhub.local",
+    "secret": false,
+    "tags": ["url", "backend"]
+  },
+  {
+    "name": "service-request-service-url",
+    "displayName": "service-request-service-url",
+    "value": "https://internal-request-service.warrantyhub.local",
+    "secret": false,
+    "tags": ["url", "backend"]
+  },
+  {
+    "name": "geolocation-service-http-url",
+    "displayName": "geolocation-service-http-url",
+    "value": "https://internal-geo-service.warrantyhub.local",
+    "secret": false,
+    "tags": ["url", "backend"]
+  },
+  {
+    "name": "geolocation-service-ws-url",
+    "displayName": "geolocation-service-ws-url",
+    "value": "wss://internal-geo-service.warrantyhub.local",
+    "secret": false,
+    "tags": ["url", "backend", "websocket"]
+  }
+]

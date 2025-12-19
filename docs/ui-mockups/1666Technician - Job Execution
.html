@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Technician Job Execution Screen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+  
+  <style>
+    /* 
+     * DESIGN SYSTEM TOKENS & RESET 
+     */
+    :root {
+      /* Colors - Primary */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      --color-primary-800: #3730a3;
+
+      /* Colors - Neutrals */
+      --color-white: #ffffff;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-700: #374151;
+      --color-gray-800: #1f2937;
+      --color-gray-900: #111827;
+
+      /* Colors - Semantic */
+      --color-success-bg: #d1e7dd;
+      --color-success-text: #0f5132;
+      --color-success-main: #28a745;
+      --color-warning-bg: #fff3cd;
+      --color-warning-text: #664d03;
+      --color-error-main: #dc3545;
+      --color-error-bg: #f8d7da;
+
+      /* Typography */
+      --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      /* Spacing */
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+      
+      /* Borders */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-full: 9999px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      
+      /* Transitions */
+      --transition-base: all 0.2s ease-in-out;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-900);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 80px; /* Space for sticky footer */
+    }
+
+    /* 
+     * LAYOUT & STRUCTURE
+     */
+    .screen-container {
+      max-width: 100%;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Desktop Optimization */
+    @media (min-width: 1024px) {
+      .screen-container {
+        max-width: 1140px;
+        padding: var(--space-lg);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-xl);
+        align-items: start;
+        padding-bottom: var(--space-xl); /* Reset footer space on desktop */
+      }
+      
+      .sticky-footer-wrapper {
+        position: sticky; /* Not fixed on desktop */
+        bottom: 0;
+        grid-column: span 2;
+        z-index: 10;
+      }
+
+      /* Desktop specific grid assignments */
+      .layout-left-col {
+        grid-column: 1;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-lg);
+      }
+
+      .layout-right-col {
+        grid-column: 2;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-lg);
+      }
+    }
+
+    /* 
+     * COMPONENTS
+     */
+    
+    /* Header */
+    .app-header {
+      background: var(--color-white);
+      border-bottom: 1px solid var(--color-gray-200);
+      padding: var(--space-md);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .back-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: var(--space-xs);
+      color: var(--color-gray-600);
+    }
+
+    .job-id {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--color-gray-500);
+    }
+
+    .job-title {
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    /* Status Badge */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .status-badge.assigned { background: var(--color-primary-100); color: var(--color-primary-700); }
+    .status-badge.traveling { background: var(--color-warning-bg); color: var(--color-warning-text); }
+    .status-badge.working { background: var(--color-primary-600); color: var(--color-white); }
+    .status-badge.completed { background: var(--color-success-bg); color: var(--color-success-text); }
+
+    /* Cards */
+    .card {
+      background: var(--color-white);
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-bottom: var(--space-md);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card-header {
+      padding: var(--space-md);
+      border-bottom: 1px solid var(--color-gray-100);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-gray-900);
+    }
+
+    .card-body {
+      padding: var(--space-md);
+    }
+
+    /* Customer Info */
+    .info-row {
+      display: flex;
+      gap: var(--space-md);
+      margin-bottom: var(--space-sm);
+    }
+
+    .info-icon {
+      color: var(--color-gray-400);
+      width: 20px;
+      flex-shrink: 0;
+    }
+
+    .info-content h4 {
+      font-size: 14px;
+      color: var(--color-gray-900);
+      margin-bottom: 2px;
+    }
+
+    .info-content p {
+      font-size: 14px;
+      color: var(--color-gray-600);
+    }
+
+    /* Map View */
+    .map-container {
+      height: 240px;
+      background-color: var(--color-gray-200);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%239ca3af' fill-opacity='0.2' fill-rule='evenodd'/%3E%3C/svg%3E");
+    }
+
+    .map-marker {
+      width: 40px;
+      height: 40px;
+      background: var(--color-primary-600);
+      border: 3px solid var(--color-white);
+      border-radius: 50%;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+    
+    .map-pulse {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      background: var(--color-primary-600);
+      border-radius: 50%;
+      opacity: 0.5;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.5; }
+      100% { transform: scale(3); opacity: 0; }
+    }
+
+    /* Forms & Inputs */
+    .form-group {
+      margin-bottom: var(--space-md);
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-gray-700);
+      margin-bottom: var(--space-xs);
+    }
+
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--color-gray-900);
+      transition: var(--transition-base);
+    }
+
+    .form-input:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--color-primary-600);
+      box-shadow: 0 0 0 3px var(--color-primary-100);
+    }
+
+    /* Media Upload */
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: var(--space-sm);
+    }
+
+    .media-item {
+      aspect-ratio: 1;
+      border-radius: var(--radius-md);
+      background: var(--color-gray-100);
+      border: 1px dashed var(--color-gray-300);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .media-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .media-add-icon {
+      color: var(--color-gray-400);
+    }
+
+    /* Signature Canvas */
+    .signature-pad {
+      background: var(--color-gray-50);
+      border: 1px dashed var(--color-gray-400);
+      border-radius: var(--radius-md);
+      height: 180px;
+      width: 100%;
+      touch-action: none;
+      position: relative;
+    }
+    
+    .signature-placeholder {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: var(--color-gray-400);
+      pointer-events: none;
+    }
+
+    /* Sticky Footer Action Bar */
+    .action-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--color-white);
+      padding: var(--space-md);
+      box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+      display: flex;
+      gap: var(--space-md);
+      z-index: 100;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 24px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: var(--transition-base);
+      text-decoration: none;
+      border: none;
+      flex: 1;
+    }
+
+    .btn-primary {
+      background-color: var(--color-primary-600);
+      color: var(--color-white);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--color-primary-700);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      background-color: var(--color-white);
+      color: var(--color-gray-700);
+      border: 1px solid var(--color-gray-300);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--color-gray-50);
+    }
+    
+    .btn-disabled {
+      background-color: var(--color-gray-200);
+      color: var(--color-gray-400);
+      cursor: not-allowed;
+    }
+
+    /* State Toggles (For Demo) */
+    .debug-controls {
+      position: fixed;
+      top: 80px;
+      right: 10px;
+      background: rgba(0,0,0,0.8);
+      padding: 10px;
+      border-radius: 8px;
+      color: white;
+      font-size: 12px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .debug-controls button {
+      padding: 4px 8px;
+      background: #333;
+      border: 1px solid #555;
+      color: white;
+      cursor: pointer;
+    }
+
+    /* State-based Visibility */
+    .view-section { display: none; }
+    
+    body.state-assigned .section-assigned { display: block; }
+    body.state-traveling .section-traveling { display: block; }
+    body.state-working .section-working { display: block; }
+    body.state-signing .section-signing { display: block; }
+    body.state-completed .section-completed { display: block; }
+
+    /* Persistent Sections logic */
+    .always-visible { display: block !important; }
+
+    /* Helper Classes */
+    .text-sm { font-size: 14px; }
+    .text-gray { color: var(--color-gray-500); }
+    .mb-2 { margin-bottom: var(--space-sm); }
+    .mt-4 { margin-top: var(--space-lg); }
+
+  </style>
+</head>
+<body class="state-assigned">
+
+  <!-- Debug Controls for Demo Purposes -->
+  <div class="debug-controls">
+    <strong>Simulate State:</strong>
+    <button onclick="switchState('assigned')">1. Assigned</button>
+    <button onclick="switchState('traveling')">2. Traveling</button>
+    <button onclick="switchState('working')">3. Working</button>
+    <button onclick="switchState('signing')">4. Signing</button>
+    <button onclick="switchState('completed')">5. Completed</button>
+  </div>
+
+  <header class="app-header">
+    <div class="header-left">
+      <button class="back-btn" aria-label="Go back">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <div>
+        <div class="job-id">JOB-2023-8492</div>
+        <div class="job-title">AC Unit Repair</div>
+      </div>
+    </div>
+    <span class="status-badge assigned" id="status-badge">Assigned</span>
+  </header>
+
+  <div class="screen-container">
+    
+    <!-- LEFT COLUMN (Desktop) / TOP (Mobile) -->
+    <div class="layout-left-col">
+      <!-- Customer Info Card (Always Visible) -->
+      <section class="card always-visible">
+        <div class="card-header">
+          <h3 class="card-title">Customer Details</h3>
+          <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px;">Call</button>
+        </div>
+        <div class="card-body">
+          <div class="info-row">
+            <div class="info-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="info-content">
+              <h4>Sarah Connor</h4>
+              <p>Premium Member</p>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div class="info-content">
+              <h4>1284 Tech Plaza, Suite 400</h4>
+              <p>San Francisco, CA 94107</p>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div class="info-content">
+              <h4>Reported Issue</h4>
+              <p>Unit is making loud rattling noise when fan is on high speed. Cooling seems effective but noise is disruptive.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Map View (Visible in Traveling State) -->
+      <section class="card view-section section-traveling">
+        <div class="map-container" aria-label="Map showing route to customer">
+          <div class="map-pulse"></div>
+          <div class="map-marker">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.8 0-1.6.4-2 1v13"/><path d="M13.8 20.8A3.003 3.003 0 0 0 18 17"/><path d="M4.2 17A3.003 3.003 0 0 0 8 20.8"/></svg>
+          </div>
+          <div style="position: absolute; bottom: 10px; left: 10px; background: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            ETA: 15 mins
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="info-row">
+            <div class="info-content">
+              <h4>Navigation Active</h4>
+              <p>Updating customer with live location.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- RIGHT COLUMN (Desktop) / BOTTOM (Mobile) -->
+    <div class="layout-right-col">
+      <!-- Work Execution Form (Visible in Working State) -->
+      <section class="card view-section section-working">
+        <div class="card-header">
+          <h3 class="card-title">Work Log</h3>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label" for="notes">Technical Notes</label>
+            <textarea class="form-textarea" id="notes" rows="4" placeholder="Describe the work performed..."></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Parts Used</label>
+            <div style="border: 1px solid var(--color-gray-200); border-radius: var(--radius-md); overflow: hidden;">
+              <div style="padding: 8px 12px; background: var(--color-gray-50); border-bottom: 1px solid var(--color-gray-200); display: flex; justify-content: space-between; font-size: 13px; font-weight: 500;">
+                <span>Fan Blade Assembly</span>
+                <span>1 pc</span>
+              </div>
+              <div style="padding: 8px 12px; display: flex; align-items: center; gap: 8px; color: var(--color-primary-600); font-weight: 500; font-size: 14px; cursor: pointer;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add Part
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Evidence (Photos/Video)</label>
+            <div class="media-grid">
+              <div class="media-item">
+                <img src="https://placehold.co/100x100/e2e8f0/64748b?text=Img1" alt="Evidence 1">
+              </div>
+              <div class="media-item">
+                <img src="https://placehold.co/100x100/e2e8f0/64748b?text=Img2" alt="Evidence 2">
+              </div>
+              <div class="media-item" role="button" aria-label="Add photo">
+                <svg class="media-add-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Signature Capture (Visible in Signing State) -->
+      <section class="card view-section section-signing">
+        <div class="card-header">
+          <h3 class="card-title">Customer Sign-off</h3>
+        </div>
+        <div class="card-body">
+          <p class="text-sm text-gray mb-2">I acknowledge the work has been completed to my satisfaction.</p>
+          <div class="signature-pad" id="signature-pad">
+            <span class="signature-placeholder">Sign Here</span>
+          </div>
+          <button class="btn-secondary" style="margin-top: 10px; width: 100%;" onclick="clearSignature()">Clear Signature</button>
+        </div>
+      </section>
+
+      <!-- Completion Summary (Visible in Completed State) -->
+      <section class="card view-section section-completed">
+        <div class="card-body" style="text-align: center; padding: 40px 20px;">
+          <div style="width: 60px; height: 60px; background: var(--color-success-bg); color: var(--color-success-main); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <h3 style="margin-bottom: 8px;">Job Completed</h3>
+          <p class="text-gray">The service request has been closed and the customer has been notified.</p>
+        </div>
+      </section>
+    </div>
+
+  </div>
+
+  <!-- Sticky Footer Action Bar -->
+  <div class="sticky-footer-wrapper">
+    <footer class="action-bar view-section section-assigned">
+      <button class="btn btn-secondary">Reschedule</button>
+      <button class="btn btn-primary" onclick="switchState('traveling')">Start Travel</button>
+    </footer>
+
+    <footer class="action-bar view-section section-traveling">
+      <button class="btn btn-secondary">Report Delay</button>
+      <button class="btn btn-primary" onclick="switchState('working')">Arrived at Site</button>
+    </footer>
+
+    <footer class="action-bar view-section section-working">
+      <button class="btn btn-secondary">Pause Job</button>
+      <button class="btn btn-primary" onclick="switchState('signing')">Proceed to Sign-off</button>
+    </footer>
+
+    <footer class="action-bar view-section section-signing">
+      <button class="btn btn-secondary" onclick="switchState('working')">Back</button>
+      <button class="btn btn-primary" onclick="switchState('completed')">Complete Job</button>
+    </footer>
+
+    <footer class="action-bar view-section section-completed">
+      <button class="btn btn-primary" style="width: 100%">Return to Job List</button>
+    </footer>
+  </div>
+
+  <script>
+    // Simple state management for demo purposes
+    function switchState(state) {
+      // Update Body Class
+      document.body.className = 'state-' + state;
+      
+      // Update Badge
+      const badge = document.getElementById('status-badge');
+      badge.className = 'status-badge ' + state;
+      
+      let badgeText = 'Assigned';
+      if(state === 'traveling') badgeText = 'On The Way';
+      if(state === 'working') badgeText = 'In Progress';
+      if(state === 'signing') badgeText = 'Signing';
+      if(state === 'completed') badgeText = 'Completed';
+      
+      badge.textContent = badgeText;
+      
+      // Scroll to top
+      window.scrollTo(0, 0);
+    }
+
+    // Basic Signature Canvas Logic
+    const canvasContainer = document.getElementById('signature-pad');
+    
+    // Simulate drawing
+    canvasContainer.addEventListener('mousedown', function() {
+      canvasContainer.style.background = '#fff';
+      canvasContainer.querySelector('.signature-placeholder').style.display = 'none';
+      canvasContainer.style.border = '1px solid var(--color-primary-600)';
+    });
+
+    function clearSignature() {
+      canvasContainer.style.background = 'var(--color-gray-50)';
+      canvasContainer.querySelector('.signature-placeholder').style.display = 'block';
+      canvasContainer.style.border = '1px dashed var(--color-gray-400)';
+    }
+  </script>
+</body>
+</html>

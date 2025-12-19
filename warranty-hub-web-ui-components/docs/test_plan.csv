@@ -1,0 +1,2 @@
+"strategy_version","project_name","architectural_style","total_estimated_test_cases","target_automation_coverage","quality_confidence_score","risk_profile","maintenance_overhead_projection","primary_tech_stack"
+"1.0.0","Warranty Platform","Event-Driven Microservices / Modular Monolith","450","85","0.94","High (Real-time Geolocation, Financial Implications, PII)","Medium","NestJS, React Native, Next.js, PostgreSQL (PostGIS), Redis, Azure AD B2C"

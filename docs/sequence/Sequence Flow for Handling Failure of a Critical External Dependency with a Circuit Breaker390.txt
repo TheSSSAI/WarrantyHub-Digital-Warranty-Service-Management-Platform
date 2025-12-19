@@ -1,0 +1,1201 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-EH-001
+
+## 1.2 Name
+
+Handling Failure of a Critical External Dependency with a Circuit Breaker
+
+## 1.3 Description
+
+A background worker attempts to call the external OCR service, which is unavailable. After several failed retries, a circuit breaker opens, causing subsequent calls to fail fast and preventing system resources from being wasted on doomed requests.
+
+## 1.4 Type
+
+🔹 ErrorHandling
+
+## 1.5 Purpose
+
+To improve system resilience and prevent cascading failures when a critical but non-essential third-party service is down.
+
+## 1.6 Complexity
+
+High
+
+## 1.7 Priority
+
+🔴 High
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- invoice-ocr-worker-010
+
+## 1.10 Key Interactions
+
+- The InvoiceOcrWorker attempts to call the Azure AI Document Intelligence service via an HTTP client.
+- The service is down and the call returns a 503 Service Unavailable.
+- A Polly retry policy makes several more attempts with exponential backoff, which also fail.
+- The Polly circuit breaker policy, wrapping the retry policy, records these failures.
+- After the failure threshold (e.g., 5 consecutive failures) is reached, the breaker transitions to the 'Open' state.
+- For the next 30 seconds (break duration), any attempt by the worker to call the service is immediately rejected with a `BrokenCircuitException`, without making a network call. The worker logs the failure and moves the message to a retry queue.
+- An alert is triggered. After 30 seconds, the breaker transitions to 'Half-Open', allowing one trial call. If it succeeds, the breaker closes; otherwise, it re-opens.
+
+## 1.11 Triggers
+
+- A critical external service becomes unresponsive or continuously returns errors.
+
+## 1.12 Outcomes
+
+- The system stops sending requests to the failing dependency, conserving resources.
+- The service degrades gracefully (OCR processing is delayed, but the rest of the system is unaffected).
+- The system automatically detects when the dependency has recovered.
+
+## 1.13 Business Rules
+
+- Calls to critical external dependencies (OCR, FCM) must be protected by a circuit breaker policy.
+
+## 1.14 Error Scenarios
+
+- The circuit breaker is misconfigured, causing it to open too easily or not at all.
+- All instances of the worker open their circuits, halting all OCR processing until recovery.
+
+## 1.15 Integration Points
+
+- Polly (.NET Resilience Library)
+- Azure AI Document Intelligence
+- Monitoring System (for alerting on open circuits)
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-EH-001
+
+## 2.2 Name
+
+Error Handling: Circuit Breaker for Critical External Dependency Failure
+
+## 2.3 Description
+
+This sequence details the implementation of a resilient background worker using the Circuit Breaker and Retry patterns. When the external OCR service becomes unavailable, a Polly resilience pipeline in the .NET worker handles transient errors with an exponential backoff retry strategy. Upon repeated failures exceeding a configured threshold, the circuit breaker opens, causing subsequent requests to fail-fast. This prevents resource exhaustion and allows the system to degrade gracefully by requeueing the failed message for later processing. The sequence concludes by showing the circuit breaker's self-healing capability via the 'Half-Open' state, which tests for recovery.
+
+## 2.4 Participants
+
+### 2.4.1 Worker Service
+
+#### 2.4.1.1 Repository Id
+
+invoice-ocr-worker-010
+
+#### 2.4.1.2 Display Name
+
+InvoiceOcrWorker
+
+#### 2.4.1.3 Type
+
+🔹 Worker Service
+
+#### 2.4.1.4 Technology
+
+.NET 8 Worker Service, Polly
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #1E90FF |
+| Stereotype | Background Job |
+
+### 2.4.2.0 External Service
+
+#### 2.4.2.1 Repository Id
+
+lib-azure-ai-di
+
+#### 2.4.2.2 Display Name
+
+Azure AI Document Intelligence
+
+#### 2.4.2.3 Type
+
+🔹 External Service
+
+#### 2.4.2.4 Technology
+
+HTTPS/REST API
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #FFD700 |
+| Stereotype | Third-Party API |
+
+### 2.4.3.0 Messaging Infrastructure
+
+#### 2.4.3.1 Repository Id
+
+tech-asb
+
+#### 2.4.3.2 Display Name
+
+Azure Service Bus
+
+#### 2.4.3.3 Type
+
+🔹 Messaging Infrastructure
+
+#### 2.4.3.4 Technology
+
+AMQP
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | queue |
+| Color | #90EE90 |
+| Stereotype | Message Broker |
+
+### 2.4.4.0 Observability Platform
+
+#### 2.4.4.1 Repository Id
+
+monitoring-platform
+
+#### 2.4.4.2 Display Name
+
+Azure Monitor
+
+#### 2.4.4.3 Type
+
+🔹 Observability Platform
+
+#### 2.4.4.4 Technology
+
+Azure Log Analytics, Application Insights
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #DDA0DD |
+| Stereotype | Monitoring System |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Message Receive
+
+#### 2.5.1.1 Source Id
+
+tech-asb
+
+#### 2.5.1.2 Target Id
+
+invoice-ocr-worker-010
+
+#### 2.5.1.3 Message
+
+1. [async] Receive 'InvoiceUploadedForProcessing' message
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Message Receive
+
+#### 2.5.1.6 Is Synchronous
+
+❌ No
+
+#### 2.5.1.7 Return Message
+
+
+
+#### 2.5.1.8 Has Return
+
+❌ No
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | AMQP |
+| Method | Dequeue |
+| Parameters | Queue: 'invoice-processing-queue' |
+| Authentication | Managed Identity or Connection String |
+| Error Handling | Message lock expires, message becomes visible agai... |
+| Performance | N/A |
+
+### 2.5.2.0 Internal Processing
+
+#### 2.5.2.1 Source Id
+
+invoice-ocr-worker-010
+
+#### 2.5.2.2 Target Id
+
+invoice-ocr-worker-010
+
+#### 2.5.2.3 Message
+
+2. Begin processing within Polly Resilience Pipeline (Retry + CircuitBreaker)
+
+#### 2.5.2.4 Sequence Number
+
+2
+
+#### 2.5.2.5 Type
+
+🔹 Internal Processing
+
+#### 2.5.2.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7 Return Message
+
+
+
+#### 2.5.2.8 Has Return
+
+❌ No
+
+#### 2.5.2.9 Is Activation
+
+❌ No
+
+#### 2.5.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | In-Process |
+| Method | Polly.ResiliencePipeline.ExecuteAsync() |
+| Parameters | Task to call external service |
+| Authentication | N/A |
+| Error Handling | Catches HttpRequestException to trigger retry and ... |
+| Performance | Overhead is minimal (<1ms). |
+
+#### 2.5.2.11 Nested Interactions
+
+##### 2.5.2.11.1 API Call
+
+###### 2.5.2.11.1.1 Source Id
+
+invoice-ocr-worker-010
+
+###### 2.5.2.11.1.2 Target Id
+
+lib-azure-ai-di
+
+###### 2.5.2.11.1.3 Message
+
+2a. Call OCR Service (Attempt 1/5)
+
+###### 2.5.2.11.1.4 Sequence Number
+
+3
+
+###### 2.5.2.11.1.5 Type
+
+🔹 API Call
+
+###### 2.5.2.11.1.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.2.11.1.7 Return Message
+
+2b. 503 Service Unavailable
+
+###### 2.5.2.11.1.8 Has Return
+
+✅ Yes
+
+###### 2.5.2.11.1.9 Is Activation
+
+✅ Yes
+
+###### 2.5.2.11.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS |
+| Method | POST /documentintelligence/invoices:analyze |
+| Parameters | Body: { 'urlSource': '...' } |
+| Authentication | API Key in 'Ocp-Apim-Subscription-Key' header |
+| Error Handling | Response status is checked by Polly `ShouldHandle`... |
+| Performance | Timeout configured for 15s. |
+
+##### 2.5.2.11.2.0 Internal Processing
+
+###### 2.5.2.11.2.1 Source Id
+
+invoice-ocr-worker-010
+
+###### 2.5.2.11.2.2 Target Id
+
+invoice-ocr-worker-010
+
+###### 2.5.2.11.2.3 Message
+
+2c. Polly: Handle failure, wait exponential backoff (e.g., 2s)
+
+###### 2.5.2.11.2.4 Sequence Number
+
+4
+
+###### 2.5.2.11.2.5 Type
+
+🔹 Internal Processing
+
+###### 2.5.2.11.2.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.2.11.2.7 Return Message
+
+
+
+###### 2.5.2.11.2.8 Has Return
+
+❌ No
+
+###### 2.5.2.11.2.9 Is Activation
+
+❌ No
+
+###### 2.5.2.11.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | In-Process |
+| Method | OnRetryAsync delegate |
+| Parameters | N/A |
+| Authentication | N/A |
+| Error Handling | N/A |
+| Performance | N/A |
+
+##### 2.5.2.11.3.0 API Call
+
+###### 2.5.2.11.3.1 Source Id
+
+invoice-ocr-worker-010
+
+###### 2.5.2.11.3.2 Target Id
+
+lib-azure-ai-di
+
+###### 2.5.2.11.3.3 Message
+
+2d. Call OCR Service (Attempts 2-5 fail similarly)
+
+###### 2.5.2.11.3.4 Sequence Number
+
+5
+
+###### 2.5.2.11.3.5 Type
+
+🔹 API Call
+
+###### 2.5.2.11.3.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.2.11.3.7 Return Message
+
+503 Service Unavailable
+
+###### 2.5.2.11.3.8 Has Return
+
+✅ Yes
+
+###### 2.5.2.11.3.9 Is Activation
+
+❌ No
+
+###### 2.5.2.11.3.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS |
+| Method | POST /documentintelligence/invoices:analyze |
+| Parameters | Backoff delay increases with each attempt (e.g., 4... |
+| Authentication | API Key in 'Ocp-Apim-Subscription-Key' header |
+| Error Handling | Each failure increments the circuit breaker's cons... |
+| Performance | Timeout configured for 15s. |
+
+### 2.5.3.0.0.0 State Change
+
+#### 2.5.3.1.0.0 Source Id
+
+invoice-ocr-worker-010
+
+#### 2.5.3.2.0.0 Target Id
+
+invoice-ocr-worker-010
+
+#### 2.5.3.3.0.0 Message
+
+3. Polly: Failure threshold (5) reached. Transition Circuit Breaker to OPEN state.
+
+#### 2.5.3.4.0.0 Sequence Number
+
+6
+
+#### 2.5.3.5.0.0 Type
+
+🔹 State Change
+
+#### 2.5.3.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7.0.0 Return Message
+
+
+
+#### 2.5.3.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.3.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.3.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | In-Process |
+| Method | Circuit Breaker 'OnBreak' delegate |
+| Parameters | Break Duration: 30s |
+| Authentication | N/A |
+| Error Handling | The original HttpRequestException is wrapped and r... |
+| Performance | N/A |
+
+### 2.5.4.0.0.0 Telemetry
+
+#### 2.5.4.1.0.0 Source Id
+
+invoice-ocr-worker-010
+
+#### 2.5.4.2.0.0 Target Id
+
+monitoring-platform
+
+#### 2.5.4.3.0.0 Message
+
+4. [async] Emit metric 'dependency.circuit_breaker.state' (State=1/Open)
+
+#### 2.5.4.4.0.0 Sequence Number
+
+7
+
+#### 2.5.4.5.0.0 Type
+
+🔹 Telemetry
+
+#### 2.5.4.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.4.7.0.0 Return Message
+
+
+
+#### 2.5.4.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.4.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.4.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | OpenTelemetry Protocol (OTLP) |
+| Method | TrackMetric |
+| Parameters | MetricName, Value, Dimensions: { 'service.name': '... |
+| Authentication | Instrumentation Key |
+| Error Handling | Fire-and-forget |
+| Performance | N/A |
+
+### 2.5.5.0.0.0 Alerting
+
+#### 2.5.5.1.0.0 Source Id
+
+monitoring-platform
+
+#### 2.5.5.2.0.0 Target Id
+
+monitoring-platform
+
+#### 2.5.5.3.0.0 Message
+
+5. Alert rule fires: 'Circuit Breaker for OCR Service is Open'
+
+#### 2.5.5.4.0.0 Sequence Number
+
+8
+
+#### 2.5.5.5.0.0 Type
+
+🔹 Alerting
+
+#### 2.5.5.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7.0.0 Return Message
+
+[async] Send notification to PagerDuty/Ops Team
+
+#### 2.5.5.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.5.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.5.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Internal |
+| Method | Azure Monitor Alert Rule Evaluation |
+| Parameters | Threshold: 'dependency.circuit_breaker.state' > 0 ... |
+| Authentication | N/A |
+| Error Handling | N/A |
+| Performance | Evaluation frequency: 1 minute |
+
+### 2.5.6.0.0.0 Exception Handling
+
+#### 2.5.6.1.0.0 Source Id
+
+invoice-ocr-worker-010
+
+#### 2.5.6.2.0.0 Target Id
+
+invoice-ocr-worker-010
+
+#### 2.5.6.3.0.0 Message
+
+6. Catch final exception from pipeline and initiate graceful failure logic
+
+#### 2.5.6.4.0.0 Sequence Number
+
+9
+
+#### 2.5.6.5.0.0 Type
+
+🔹 Exception Handling
+
+#### 2.5.6.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7.0.0 Return Message
+
+
+
+#### 2.5.6.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.6.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.6.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | In-Process |
+| Method | catch (HttpRequestException ex) |
+| Parameters | Exception object |
+| Authentication | N/A |
+| Error Handling | This is the top-level handler for the message proc... |
+| Performance | N/A |
+
+### 2.5.7.0.0.0 Logging
+
+#### 2.5.7.1.0.0 Source Id
+
+invoice-ocr-worker-010
+
+#### 2.5.7.2.0.0 Target Id
+
+monitoring-platform
+
+#### 2.5.7.3.0.0 Message
+
+7. [async] Log error: 'OCR processing failed after all retries. Circuit breaker is now open.'
+
+#### 2.5.7.4.0.0 Sequence Number
+
+10
+
+#### 2.5.7.5.0.0 Type
+
+🔹 Logging
+
+#### 2.5.7.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.7.7.0.0 Return Message
+
+
+
+#### 2.5.7.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.7.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.7.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | OTLP |
+| Method | TrackException / LogError |
+| Parameters | Exception, Properties: { CorrelationId, InvoiceId ... |
+| Authentication | Instrumentation Key |
+| Error Handling | Fire-and-forget |
+| Performance | N/A |
+
+### 2.5.8.0.0.0 Message Send
+
+#### 2.5.8.1.0.0 Source Id
+
+invoice-ocr-worker-010
+
+#### 2.5.8.2.0.0 Target Id
+
+tech-asb
+
+#### 2.5.8.3.0.0 Message
+
+8. [async] Send message to a retry-queue with 5-min delayed visibility
+
+#### 2.5.8.4.0.0 Sequence Number
+
+11
+
+#### 2.5.8.5.0.0 Type
+
+🔹 Message Send
+
+#### 2.5.8.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.8.7.0.0 Return Message
+
+
+
+#### 2.5.8.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.8.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.8.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | AMQP |
+| Method | SendMessageAsync |
+| Parameters | Queue: 'invoice-processing-retry-queue', Scheduled... |
+| Authentication | Managed Identity |
+| Error Handling | If this fails, move to DLQ or log critical error f... |
+| Performance | N/A |
+
+### 2.5.9.0.0.0 Internal Processing
+
+#### 2.5.9.1.0.0 Source Id
+
+invoice-ocr-worker-010
+
+#### 2.5.9.2.0.0 Target Id
+
+invoice-ocr-worker-010
+
+#### 2.5.9.3.0.0 Message
+
+9. Acknowledge and complete original message
+
+#### 2.5.9.4.0.0 Sequence Number
+
+12
+
+#### 2.5.9.5.0.0 Type
+
+🔹 Internal Processing
+
+#### 2.5.9.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.9.7.0.0 Return Message
+
+
+
+#### 2.5.9.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.9.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.9.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | AMQP |
+| Method | CompleteMessageAsync |
+| Parameters | Message lock token |
+| Authentication | N/A |
+| Error Handling | If completion fails, the message might be processe... |
+| Performance | N/A |
+
+### 2.5.10.0.0.0 Message Receive
+
+#### 2.5.10.1.0.0 Source Id
+
+tech-asb
+
+#### 2.5.10.2.0.0 Target Id
+
+invoice-ocr-worker-010
+
+#### 2.5.10.3.0.0 Message
+
+10. [async] Receive another message while circuit is OPEN
+
+#### 2.5.10.4.0.0 Sequence Number
+
+13
+
+#### 2.5.10.5.0.0 Type
+
+🔹 Message Receive
+
+#### 2.5.10.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.10.7.0.0 Return Message
+
+
+
+#### 2.5.10.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.10.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.10.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | AMQP |
+| Method | Dequeue |
+| Parameters | Queue: 'invoice-processing-queue' |
+| Authentication | Managed Identity |
+| Error Handling | N/A |
+| Performance | N/A |
+
+### 2.5.11.0.0.0 Internal Processing
+
+#### 2.5.11.1.0.0 Source Id
+
+invoice-ocr-worker-010
+
+#### 2.5.11.2.0.0 Target Id
+
+invoice-ocr-worker-010
+
+#### 2.5.11.3.0.0 Message
+
+11. Polly: Circuit is OPEN. Reject call immediately (fail-fast).
+
+#### 2.5.11.4.0.0 Sequence Number
+
+14
+
+#### 2.5.11.5.0.0 Type
+
+🔹 Internal Processing
+
+#### 2.5.11.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.11.7.0.0 Return Message
+
+Throw BrokenCircuitException
+
+#### 2.5.11.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.11.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.11.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | In-Process |
+| Method | Polly.ResiliencePipeline.ExecuteAsync() |
+| Parameters | N/A |
+| Authentication | N/A |
+| Error Handling | The pipeline immediately throws without executing ... |
+| Performance | Extremely fast (<1ms), prevents thread/socket cont... |
+
+### 2.5.12.0.0.0 Exception Handling
+
+#### 2.5.12.1.0.0 Source Id
+
+invoice-ocr-worker-010
+
+#### 2.5.12.2.0.0 Target Id
+
+invoice-ocr-worker-010
+
+#### 2.5.12.3.0.0 Message
+
+12. Catch BrokenCircuitException and execute graceful failure logic (repeat steps 7-9)
+
+#### 2.5.12.4.0.0 Sequence Number
+
+15
+
+#### 2.5.12.5.0.0 Type
+
+🔹 Exception Handling
+
+#### 2.5.12.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.12.7.0.0 Return Message
+
+
+
+#### 2.5.12.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.12.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.12.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | In-Process |
+| Method | catch (BrokenCircuitException ex) |
+| Parameters | N/A |
+| Authentication | N/A |
+| Error Handling | Logs a specific message indicating fail-fast and r... |
+| Performance | N/A |
+
+### 2.5.13.0.0.0 State Change
+
+#### 2.5.13.1.0.0 Source Id
+
+invoice-ocr-worker-010
+
+#### 2.5.13.2.0.0 Target Id
+
+invoice-ocr-worker-010
+
+#### 2.5.13.3.0.0 Message
+
+13. After 30s, Polly: Transition Circuit Breaker to HALF-OPEN state.
+
+#### 2.5.13.4.0.0 Sequence Number
+
+16
+
+#### 2.5.13.5.0.0 Type
+
+🔹 State Change
+
+#### 2.5.13.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.13.7.0.0 Return Message
+
+
+
+#### 2.5.13.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.13.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.13.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | In-Process |
+| Method | Internal timer |
+| Parameters | N/A |
+| Authentication | N/A |
+| Error Handling | N/A |
+| Performance | N/A |
+
+### 2.5.14.0.0.0 API Call
+
+#### 2.5.14.1.0.0 Source Id
+
+invoice-ocr-worker-010
+
+#### 2.5.14.2.0.0 Target Id
+
+lib-azure-ai-di
+
+#### 2.5.14.3.0.0 Message
+
+14. Permit a single trial call to the OCR Service
+
+#### 2.5.14.4.0.0 Sequence Number
+
+17
+
+#### 2.5.14.5.0.0 Type
+
+🔹 API Call
+
+#### 2.5.14.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.14.7.0.0 Return Message
+
+15a. 202 Accepted (Service Recovered)
+
+#### 2.5.14.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.14.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.14.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS |
+| Method | POST /documentintelligence/invoices:analyze |
+| Parameters | This is the first call attempted after the break d... |
+| Authentication | API Key |
+| Error Handling | If this call fails, the circuit re-opens immediate... |
+| Performance | N/A |
+
+### 2.5.15.0.0.0 State Change
+
+#### 2.5.15.1.0.0 Source Id
+
+invoice-ocr-worker-010
+
+#### 2.5.15.2.0.0 Target Id
+
+invoice-ocr-worker-010
+
+#### 2.5.15.3.0.0 Message
+
+15b. Polly: Trial call successful. Transition Circuit Breaker to CLOSED state.
+
+#### 2.5.15.4.0.0 Sequence Number
+
+18
+
+#### 2.5.15.5.0.0 Type
+
+🔹 State Change
+
+#### 2.5.15.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.15.7.0.0 Return Message
+
+
+
+#### 2.5.15.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.15.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.15.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | In-Process |
+| Method | Circuit Breaker 'OnReset' delegate |
+| Parameters | N/A |
+| Authentication | N/A |
+| Error Handling | N/A |
+| Performance | N/A |
+
+### 2.5.16.0.0.0 Telemetry
+
+#### 2.5.16.1.0.0 Source Id
+
+invoice-ocr-worker-010
+
+#### 2.5.16.2.0.0 Target Id
+
+monitoring-platform
+
+#### 2.5.16.3.0.0 Message
+
+16. [async] Emit metric 'dependency.circuit_breaker.state' (State=0/Closed)
+
+#### 2.5.16.4.0.0 Sequence Number
+
+19
+
+#### 2.5.16.5.0.0 Type
+
+🔹 Telemetry
+
+#### 2.5.16.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.16.7.0.0 Return Message
+
+
+
+#### 2.5.16.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.16.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.16.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | OTLP |
+| Method | TrackMetric |
+| Parameters | MetricName, Value=0 |
+| Authentication | Instrumentation Key |
+| Error Handling | Fire-and-forget |
+| Performance | N/A |
+
+## 2.6.0.0.0.0 Notes
+
+### 2.6.1.0.0.0 Content
+
+#### 2.6.1.1.0.0 Content
+
+
+
+```
+Polly Resilience Pipeline Configuration:
+- Retry Strategy: Exponential backoff with jitter.
+- Retry Attempts: 5
+- Circuit Breaker Failure Threshold: 5 consecutive failures
+- Circuit Breaker Break Duration: 30 seconds
+```
+
+#### 2.6.1.2.0.0 Position
+
+top-right
+
+#### 2.6.1.3.0.0 Participant Id
+
+invoice-ocr-worker-010
+
+#### 2.6.1.4.0.0 Sequence Number
+
+2
+
+### 2.6.2.0.0.0 Content
+
+#### 2.6.2.1.0.0 Content
+
+Using a separate retry-queue with delayed visibility prevents a poison message from blocking the main queue while the external dependency is down. It also prevents immediate, pointless retries.
+
+#### 2.6.2.2.0.0 Position
+
+bottom-left
+
+#### 2.6.2.3.0.0 Participant Id
+
+tech-asb
+
+#### 2.6.2.4.0.0 Sequence Number
+
+11
+
+## 2.7.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | The API Key for the Azure AI Document Intelligence... |
+| Performance Targets | The fail-fast mechanism of the open circuit breake... |
+| Error Handling Strategy | The primary strategy is graceful degradation. The ... |
+| Testing Considerations | Implement integration tests that use a mock HTTP s... |
+| Monitoring Requirements | A dashboard in Grafana/Azure Monitor must be creat... |
+| Deployment Considerations | The Polly pipeline configuration (retry counts, br... |
+

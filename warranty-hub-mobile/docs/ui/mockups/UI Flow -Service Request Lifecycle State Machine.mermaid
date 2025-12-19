@@ -1,0 +1,71 @@
+stateDiagram-v2
+    direction TB
+    
+    %% Initial State
+    [*] --> Requested : User Creates Request
+
+    %% Active Lifecycle
+    state "Active Service Lifecycle" as Active {
+        
+        state "Triage & Assignment" as Triage {
+            Requested --> Acknowledged : SC Admin Acknowledges
+            Acknowledged --> TechnicianAssigned : SC Admin Assigns Tech
+            TechnicianAssigned --> TechnicianAssigned : SC Admin Re-assigns
+        }
+
+        state "Field Execution" as Execution {
+            TechnicianAssigned --> TechnicianOnTheWay : Tech Activates Travel Mode
+            TechnicianOnTheWay --> WorkInProgress : Tech Starts Work
+            TechnicianOnTheWay --> TechnicianAssigned : Travel Mode Deactivated/Stopped
+            WorkInProgress --> Resolved : Tech Marks Resolved\n(Req: Notes + Signature)
+        }
+
+        %% User Cancellation Path (Allowed in early stages)
+        Requested --> Cancelled : User Cancels
+        Acknowledged --> Cancelled : User Cancels
+        TechnicianAssigned --> Cancelled : User Cancels
+    }
+
+    %% Paused State (Cross-cutting concern)
+    state "Paused (Ownership Transfer)" as Paused
+    
+    %% Transitions to Pause
+    Active --> Paused : Product Transfer Initiated\n(System)
+    
+    %% Transitions from Pause
+    Paused --> Active : Transfer Accepted/Rejected/Expired\n(Resumes previous state)
+
+    %% Post-Resolution Flows
+    state "Resolution & Closure" as PostResolution {
+        Resolved --> Closed : SC Admin Finalizes\n(No Dispute)
+        
+        %% Dispute Loop
+        Resolved --> Disputed : User Disputes\n(Within 7 Days)
+        Disputed --> Closed : Brand Admin Upholds Resolution\n(Dispute Rejected)
+        Disputed --> Acknowledged : Brand Admin Re-opens Ticket\n(Dispute Valid)
+    }
+
+    %% Terminal States
+    Closed --> [*]
+    Cancelled --> [*]
+
+    %% Notes
+    note right of Requested
+        User creates request
+        from Warranty Card
+    end note
+
+    note right of Paused
+        Freezes SLA timers
+        & notifications
+    end note
+
+    note left of Disputed
+        Escalates to
+        Brand Admin
+    end note
+
+    note right of Closed
+        Triggers User Rating
+        & Feedback
+    end note

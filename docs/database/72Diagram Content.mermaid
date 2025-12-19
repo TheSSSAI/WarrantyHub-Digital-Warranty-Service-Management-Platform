@@ -1,0 +1,8 @@
+erDiagram
+    ChatConversation {
+        UUID _id PK "Corresponds to serviceRequestId"
+        Array_UUID_ participants "List of userIds involved"
+        Array_Object_ messages "Each object contains: messageId, senderId, messageText, sentAt"
+        DateTime createdAt
+        DateTime updatedAt
+    }

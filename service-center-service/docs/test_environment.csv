@@ -1,0 +1,4 @@
+"env_name","purpose","data_strategy","infrastructure","deployment"
+"Development","Unit testing, Dev integration","Mocked services, Local DB containers","Local Docker / Minikube","Manual / On-demand"
+"Staging","Integration, System, E2E, Security","Anonymized production subset (US-123 compliant)","Geo-Redundant Azure Replica (matches Prod)","Automated CD Pipeline"
+"Performance","Load, Stress, Chaos Testing","Synthetic high-volume data generation","Scalable AKS Cluster (Isolated)","On-demand before major releases"

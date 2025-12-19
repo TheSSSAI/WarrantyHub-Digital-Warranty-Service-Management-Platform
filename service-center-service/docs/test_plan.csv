@@ -1,0 +1,2 @@
+"strategy_version","target_platform","total_test_scenarios_identified","automation_target_percentage","manual_testing_allocation","quality_confidence_score","risk_coverage_percentage","critical_path_coverage","environments_required","testing_tools_stack"
+"1.0.0","Microservices on Azure AKS + React Native Mobile","145","85","15% (Exploratory & Usability)","0.94","98","100%","[""Local"",""Development"",""Staging (Geo-Redundant)"",""Production"",""Performance""]","[""Jest"",""Cypress"",""Detox"",""k6"",""OWASP ZAP"",""SonarQube""]"

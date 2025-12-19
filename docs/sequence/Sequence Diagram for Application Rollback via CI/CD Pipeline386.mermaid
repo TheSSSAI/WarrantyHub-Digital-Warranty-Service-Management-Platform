@@ -1,0 +1,33 @@
+sequenceDiagram
+    participant "Operations SRE" as OperationsSRE
+    participant "Monitoring System" as MonitoringSystem
+    participant "ProductService" as ProductService
+    participant "Grafana Dashboard" as GrafanaDashboard
+    participant "Azure Container Registry" as AzureContainerRegistry
+    participant "GitHub Actions CI/CD" as GitHubActionsCICD
+    participant "Azure Kubernetes Service" as AzureKubernetesService
+
+    ProductService->>MonitoringSystem: 1. 1. [Post-Deployment] ProductService v1.1 pods emit metrics (e.g., HTTP 5xx error rate).
+    activate MonitoringSystem
+    MonitoringSystem->>MonitoringSystem: 2. 2. Evaluate alert rule: rate(http_requests_total{status=~'5..'}[5m]) > 0.02.
+    MonitoringSystem->>OperationsSRE: 3. 3. Fire critical PagerDuty alert: 'High 5xx Error Rate on ProductService'.
+    activate GrafanaDashboard
+    OperationsSRE->>GrafanaDashboard: 4. 4. Investigate incident by accessing ProductService dashboard.
+    GrafanaDashboard-->>OperationsSRE: 5. Display dashboards with correlated metrics (error rate, latency, deployment annotations).
+    OperationsSRE->>AzureContainerRegistry: 6. 6. Decide to rollback; identify previous stable image tag (v1.0).
+    AzureContainerRegistry-->>OperationsSRE: 7. Return list of available image tags for the repository.
+    activate GitHubActionsCICD
+    OperationsSRE->>GitHubActionsCICD: 8. 8. Trigger 'Deploy to Production' workflow with manual parameters.
+    GitHubActionsCICD->>GitHubActionsCICD: 8.1. 8.1. Generate Kubernetes manifest using v1.0 image tag.
+    GitHubActionsCICD->>AzureKubernetesService: 8.2. 8.2. Apply updated manifest to cluster.
+    AzureKubernetesService-->>GitHubActionsCICD: 8.3. Acknowledge manifest application.
+    GitHubActionsCICD->>OperationsSRE: 9. 9. Report workflow completion status.
+    OperationsSRE->>GrafanaDashboard: 10. 10. Validate system health post-rollback.
+    GrafanaDashboard-->>OperationsSRE: 11. Display dashboards showing error rates returning to baseline.
+    OperationsSRE->>ProductService: 12. 12. Perform smoke test by hitting health check endpoint.
+    ProductService-->>OperationsSRE: 13. Return HTTP 200 OK with Healthy status.
+
+
+    deactivate GitHubActionsCICD
+    deactivate GrafanaDashboard
+    deactivate MonitoringSystem

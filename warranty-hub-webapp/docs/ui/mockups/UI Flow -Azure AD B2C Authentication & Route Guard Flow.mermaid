@@ -1,0 +1,68 @@
+sequenceDiagram
+    autonumber
+    actor User
+    participant Client as Client App<br/>(Route Guard)
+    participant AuthStore as Auth State<br/>(Context/Store)
+    participant B2C as Azure AD B2C<br/>(Identity Provider)
+    participant API as API Gateway<br/>(Azure APIM)
+    participant Backend as Microservice
+
+    Note over User, Client: Scenario: User attempts to access a protected Admin Route
+
+    User->>Client: Navigate to /admin/dashboard
+    
+    rect rgb(240, 248, 255)
+        note right of Client: 🛡️ Client-Side Route Guard
+        Client->>AuthStore: Check Authentication Status
+        AuthStore-->>Client: Return { isAuthenticated, userRoles, token }
+        
+        alt is NOT Authenticated
+            Client->>User: Redirect to Login Page
+            User->>B2C: Enter Credentials & MFA (if enabled)
+            B2C->>B2C: Validate Credentials
+            B2C-->>Client: Return Auth Code / IdToken + AccessToken
+            Client->>AuthStore: Update State (Store Tokens Securely)
+            Client->>Client: Re-evaluate Route Guard
+        else is Authenticated
+            Client->>Client: Continue to Role Check
+        end
+    end
+
+    rect rgb(255, 250, 240)
+        note right of Client: 👮 Authorization Check (RBAC)
+        
+        alt Role Missing or Mismatch
+            Note right of Client: e.g., User has 'Consumer' role but needs 'Admin'
+            Client->>User: Redirect to /403-unauthorized
+            Note over User: User sees "Access Denied" page
+        else Role Matches
+            Client->>User: Render /admin/dashboard (Skeleton UI)
+            Note right of Client: User sees loading state while data fetches
+            
+            par Data Fetching
+                Client->>API: GET /api/v1/admin/stats<br/>(Authorization: Bearer JWT)
+                
+                Note over API, Backend: 🔒 Server-Side Defense in Depth
+                
+                API->>API: Validate JWT Signature & Expiry
+                alt Invalid Token
+                    API-->>Client: 401 Unauthorized
+                    Client->>AuthStore: Clear Session
+                    Client->>User: Redirect to Login
+                else Valid Token
+                    API->>Backend: Forward Request with Claims
+                    Backend->>Backend: Verify 'Admin' Role in Claims
+                    
+                    alt Backend AuthZ Success
+                        Backend-->>API: 200 OK { JSON Data }
+                        API-->>Client: 200 OK { JSON Data }
+                        Client->>User: Render Dashboard Data
+                    else Backend AuthZ Failure
+                        Backend-->>API: 403 Forbidden
+                        API-->>Client: 403 Forbidden
+                        Client->>User: Show Error Toast "Permission Denied"
+                    end
+                end
+            end
+        end
+    end

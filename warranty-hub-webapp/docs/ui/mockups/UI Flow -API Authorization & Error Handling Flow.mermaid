@@ -1,0 +1,57 @@
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Gateway as API Gateway
+    participant Auth as Auth Middleware
+    participant Service as Business Logic
+    participant DB as Database
+
+    Note over Client, Gateway: Scenario: Protected Resource Request
+
+    Client->>Gateway: HTTP Request (GET /resource/id)<br/>Authorization: Bearer {token}
+    
+    rect rgb(255, 240, 240)
+        Note right of Gateway: Gate 1: Token Integrity
+        Gateway->>Gateway: Validate JWT Signature & Expiry
+        
+        alt Token is Expired
+            Gateway-->>Client: 401 Unauthorized<br/>{error: "TokenExpired"}
+        else Token is Invalid / Missing
+            Gateway-->>Client: 401 Unauthorized<br/>{error: "InvalidToken"}
+        end
+    end
+    
+    Gateway->>Auth: Forward Request (Valid Token)
+    
+    rect rgb(255, 250, 230)
+        Note right of Auth: Gate 2: RBAC Policy
+        Auth->>Auth: Check User Role vs Endpoint Policy
+        
+        alt Role Mismatch
+            Note right of Auth: User role != Required role
+            Auth-->>Gateway: 403 Forbidden
+            Gateway-->>Client: 403 Forbidden<br/>{error: "InsufficientPermissions"}
+        end
+    end
+
+    Auth->>Service: Forward Authorized Request
+    
+    rect rgb(240, 240, 255)
+        Note right of Service: Gate 3: Data Ownership
+        Service->>DB: Query Resource Metadata
+        DB-->>Service: Owner ID
+        
+        alt Unauthorized Access Attempt
+            Note right of Service: User ID != Owner ID
+            Service-->>Gateway: 403 Forbidden
+            Gateway-->>Client: 403 Forbidden<br/>{error: "AccessDenied"}
+        end
+    end
+    
+    rect rgb(240, 255, 240)
+        Note right of Service: Success Path
+        Service->>DB: Execute Operation
+        DB-->>Service: Result Data
+        Service-->>Gateway: 200 OK
+        Gateway-->>Client: 200 OK (Response Data)
+    end

@@ -1,0 +1,15 @@
+require_relative '../node_modules/react-native/scripts/react_native_pods'
+require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
+
+platform :ios, '14.0'
+
+target 'WarrantyHubUI' do
+  use_react_native!
+  
+  # Pods for WarrantyHubUI
+  pod 'Detox', :configurations => ['Debug']
+  
+  target 'WarrantyHubUITests' do
+    inherit! :search_paths
+  end
+end

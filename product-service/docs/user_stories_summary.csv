@@ -1,0 +1,2 @@
+"total_stories","total_story_points","must_have_stories","should_have_stories","could_have_stories","epics_identified","estimated_sprints","key_dependencies"
+"8","49","4","4","0","[""Core Features"",""Data Management"",""Performance"",""User Experience"",""Integration"",""Security""]","4","[""Infrastructure (WI-INFRA-001, WI-INFRA-002)"",""Azure AD B2C Configuration""]"

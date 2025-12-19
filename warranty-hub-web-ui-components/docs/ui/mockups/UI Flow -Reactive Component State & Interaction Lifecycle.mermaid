@@ -1,0 +1,62 @@
+flowchart TD
+    %% Define Nodes
+    subgraph Triggers ["Data & Interaction Sources"]
+        UserAction([User Interaction Trigger])
+        PropUpdate([Prop/Global State Update])
+        InternalTrigger([Internal Event / Timer])
+    end
+
+    subgraph ComponentLogic ["Component Lifecycle & Logic"]
+        Handler{Handle Event}
+        LocalStateUpdate[Update Internal State]
+        
+        subgraph SideEffects ["Side Effects & API"]
+            APICall[Execute Async Action / API Call]
+            GlobalUpdate[Update Global Store / Zustand]
+            Rollback[Rollback Optimistic Update]
+        end
+        
+        EffectCheck{Prop Changed?}
+        Render[Re-Render UI]
+        NotifyError[Display Error Toast]
+    end
+
+    %% Define Relationships
+    
+    %% Flow 1: User Interaction
+    UserAction --> Handler
+    Handler -- "1. Optimistic UI / Loading" --> LocalStateUpdate
+    Handler -- "2. Async Action" --> APICall
+    
+    %% Flow 2: API & Global State
+    APICall -- Success --> GlobalUpdate
+    APICall -- Failure --> Rollback
+    Rollback --> NotifyError
+    Rollback --> LocalStateUpdate
+    
+    GlobalUpdate -- "New Data" --> PropUpdate
+    
+    %% Flow 3: Prop Updates
+    PropUpdate --> EffectCheck
+    EffectCheck -- Yes --> Render
+    EffectCheck -- No --> End((No Op))
+    
+    %% Flow 4: Internal State
+    InternalTrigger --> LocalStateUpdate
+    LocalStateUpdate --> Render
+    
+    %% Rendering Output
+    Render --> UpdateDOM[[Update DOM / Native View]]
+
+    %% Styling
+    classDef trigger fill:#e1bee7,stroke:#4a148c,stroke-width:2px,color:#000
+    classDef logic fill:#bbdefb,stroke:#0d47a1,stroke-width:2px,color:#000
+    classDef effect fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,color:#000
+    classDef critical fill:#ffcdd2,stroke:#b71c1c,stroke-width:2px,color:#000
+    classDef output fill:#c8e6c9,stroke:#1b5e20,stroke-width:2px,color:#000
+
+    class UserAction,PropUpdate,InternalTrigger trigger
+    class Handler,EffectCheck,LocalStateUpdate,Render logic
+    class APICall,GlobalUpdate effect
+    class Rollback,NotifyError critical
+    class UpdateDOM output

@@ -1,0 +1,5 @@
+"dependency_id","from_task","to_task","dependency_type","description","critical_path","lead_time_days","responsible_team","status"
+"DEP-001","TASK-INFRA-001","TASK-INFRA-004","Technical","VNet must exist before Postgres Endpoint","true","1","DevOps","Active"
+"DEP-002","TASK-INFRA-005","TASK-AUTH-004","Technical","DB Schema init required for User Sync","true","1","Backend","Active"
+"DEP-003","TASK-SERV-005","TASK-SERV-007","Technical","WebSocket Gateway needed for Location Ingestion","true","2","Backend","Active"
+"DEP-004","TASK-SERV-007","TASK-APP-002","Integration","Backend WS Event required for Mobile Emitter","true","2","Mobile","Active"

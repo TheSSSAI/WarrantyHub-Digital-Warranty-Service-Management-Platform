@@ -1,0 +1,952 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-DF-002
+
+## 1.2 Name
+
+Admin Performs Bulk Import of Product Model Data
+
+## 1.3 Description
+
+A Super Admin or Brand Admin uploads a CSV file containing product model data (model number, warranty duration, etc.). The system validates the file in a dry run, then processes it to create multiple product model records in a single operation.
+
+## 1.4 Type
+
+🔹 DataFlow
+
+## 1.5 Purpose
+
+To efficiently onboard new brands or large product catalogs without requiring manual entry for each product model.
+
+## 1.6 Complexity
+
+High
+
+## 1.7 Priority
+
+🟡 Medium
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- web-client-012
+- api-gateway-001
+- product-service-003
+
+## 1.10 Key Interactions
+
+- Admin downloads the CSV template from the portal.
+- Admin fills the CSV and uploads it, selecting a 'Dry Run' option.
+- The ProductService receives the file, parses it, and validates each row for data types, constraints, and referential integrity (e.g., does the brand exist?).
+- The service returns a validation report (success/failure counts, list of errors) without committing data.
+- The Admin reviews the report, fixes the CSV, and re-uploads for a final import.
+- The ProductService re-validates and then performs a bulk insert/update operation against the database.
+- A final import report is generated.
+
+## 1.11 Triggers
+
+- Admin uploads a CSV file for bulk product model creation.
+
+## 1.12 Outcomes
+
+- Multiple product model records are created or updated in the database.
+- The admin receives a detailed report of successful and failed records.
+
+## 1.13 Business Rules
+
+- A dry-run mode must be available to validate a data file without making changes.
+- Data must be provided in a predefined CSV format.
+
+## 1.14 Error Scenarios
+
+- The CSV file is malformed or has incorrect headers.
+- A significant percentage of rows fail validation due to bad data.
+- The bulk database transaction fails and must be rolled back.
+
+## 1.15 Integration Points
+
+- Azure Blob Storage (for temporary file storage)
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-OPS-001
+
+## 2.2 Name
+
+Operations: System Rollback Procedure Execution
+
+## 2.3 Description
+
+Describes the technical steps an Operations Engineer takes to roll back a failed deployment, covering application code, database state, and infrastructure configuration, in order to restore the system to a stable state. This sequence is triggered by a critical incident and aims to minimize Mean Time To Recovery (MTTR).
+
+## 2.4 Participants
+
+### 2.4.1 Actor
+
+#### 2.4.1.1 Repository Id
+
+ops-engineer
+
+#### 2.4.1.2 Display Name
+
+Operations Engineer
+
+#### 2.4.1.3 Type
+
+🔹 Actor
+
+#### 2.4.1.4 Technology
+
+Human
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #9063CD |
+| Stereotype | *N/A* |
+
+### 2.4.2.0 System
+
+#### 2.4.2.1 Repository Id
+
+monitoring-system
+
+#### 2.4.2.2 Display Name
+
+Monitoring System
+
+#### 2.4.2.3 Type
+
+🔹 System
+
+#### 2.4.2.4 Technology
+
+Grafana / Azure Monitor
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #4380B5 |
+| Stereotype | Monitoring |
+
+### 2.4.3.0 System
+
+#### 2.4.3.1 Repository Id
+
+knowledge-base
+
+#### 2.4.3.2 Display Name
+
+Knowledge Base
+
+#### 2.4.3.3 Type
+
+🔹 System
+
+#### 2.4.3.4 Technology
+
+Git Repo / Confluence
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #D3D3D3 |
+| Stereotype | Documentation |
+
+### 2.4.4.0 System
+
+#### 2.4.4.1 Repository Id
+
+github-actions
+
+#### 2.4.4.2 Display Name
+
+GitHub Actions
+
+#### 2.4.4.3 Type
+
+🔹 System
+
+#### 2.4.4.4 Technology
+
+CI/CD Pipeline
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #2088FF |
+| Stereotype | CI/CD |
+
+### 2.4.5.0 System
+
+#### 2.4.5.1 Repository Id
+
+azure-container-registry
+
+#### 2.4.5.2 Display Name
+
+Azure Container Registry
+
+#### 2.4.5.3 Type
+
+🔹 System
+
+#### 2.4.5.4 Technology
+
+Azure PaaS
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #0078D4 |
+| Stereotype | Registry |
+
+### 2.4.6.0 System
+
+#### 2.4.6.1 Repository Id
+
+azure-kubernetes-service
+
+#### 2.4.6.2 Display Name
+
+Azure Kubernetes Service
+
+#### 2.4.6.3 Type
+
+🔹 System
+
+#### 2.4.6.4 Technology
+
+Kubernetes
+
+#### 2.4.6.5 Order
+
+6
+
+#### 2.4.6.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #326CE5 |
+| Stereotype | Orchestrator |
+
+### 2.4.7.0 System
+
+#### 2.4.7.1 Repository Id
+
+azure-portal
+
+#### 2.4.7.2 Display Name
+
+Azure Portal
+
+#### 2.4.7.3 Type
+
+🔹 System
+
+#### 2.4.7.4 Technology
+
+Web UI
+
+#### 2.4.7.5 Order
+
+7
+
+#### 2.4.7.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #0078D4 |
+| Stereotype | Cloud Console |
+
+### 2.4.8.0 Database
+
+#### 2.4.8.1 Repository Id
+
+azure-postgresql
+
+#### 2.4.8.2 Display Name
+
+Azure DB for PostgreSQL
+
+#### 2.4.8.3 Type
+
+🔹 Database
+
+#### 2.4.8.4 Technology
+
+PostgreSQL 16
+
+#### 2.4.8.5 Order
+
+8
+
+#### 2.4.8.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #336791 |
+| Stereotype | Database |
+
+### 2.4.9.0 Repository
+
+#### 2.4.9.1 Repository Id
+
+terraform-repo
+
+#### 2.4.9.2 Display Name
+
+Terraform Repo
+
+#### 2.4.9.3 Type
+
+🔹 Repository
+
+#### 2.4.9.4 Technology
+
+Git / Terraform HCL
+
+#### 2.4.9.5 Order
+
+9
+
+#### 2.4.9.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #623CE4 |
+| Stereotype | VCS |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Notification
+
+#### 2.5.1.1 Source Id
+
+monitoring-system
+
+#### 2.5.1.2 Target Id
+
+ops-engineer
+
+#### 2.5.1.3 Message
+
+1. Fires Critical Alert (e.g., P95 Latency > 500ms, Error Rate > 5%)
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Notification
+
+#### 2.5.1.6 Is Synchronous
+
+❌ No
+
+#### 2.5.1.7 Return Message
+
+*Not specified*
+
+#### 2.5.1.8 Has Return
+
+❌ No
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | PagerDuty / Slack |
+| Method | Webhook |
+| Parameters | Alert payload containing metric, threshold, and af... |
+| Authentication | N/A |
+| Error Handling | Alertmanager retry policies. |
+| Performance | Latency < 1 minute. |
+
+#### 2.5.1.11 Nested Interactions
+
+*No items available*
+
+### 2.5.2.0 Request
+
+#### 2.5.2.1 Source Id
+
+ops-engineer
+
+#### 2.5.2.2 Target Id
+
+knowledge-base
+
+#### 2.5.2.3 Message
+
+2. Consults 'Production Rollback Procedure' Runbook
+
+#### 2.5.2.4 Sequence Number
+
+2
+
+#### 2.5.2.5 Type
+
+🔹 Request
+
+#### 2.5.2.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7 Return Message
+
+Returns step-by-step instructions for rollback scenarios.
+
+#### 2.5.2.8 Has Return
+
+✅ Yes
+
+#### 2.5.2.9 Is Activation
+
+❌ No
+
+#### 2.5.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS |
+| Method | GET |
+| Parameters | URL to the runbook document. |
+| Authentication | SSO |
+| Error Handling | N/A |
+| Performance | N/A |
+
+#### 2.5.2.11 Nested Interactions
+
+*No items available*
+
+### 2.5.3.0 Decision
+
+#### 2.5.3.1 Source Id
+
+ops-engineer
+
+#### 2.5.3.2 Target Id
+
+ops-engineer
+
+#### 2.5.3.3 Message
+
+3. ALT: Selects Rollback Strategy based on incident type
+
+#### 2.5.3.4 Sequence Number
+
+3
+
+#### 2.5.3.5 Type
+
+🔹 Decision
+
+#### 2.5.3.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7 Return Message
+
+
+
+#### 2.5.3.8 Has Return
+
+❌ No
+
+#### 2.5.3.9 Is Activation
+
+❌ No
+
+#### 2.5.3.10 Technical Details
+
+##### 2.5.3.10.1 Protocol
+
+N/A
+
+##### 2.5.3.10.2 Method
+
+N/A
+
+##### 2.5.3.10.3 Parameters
+
+*No items available*
+
+##### 2.5.3.10.4 Authentication
+
+N/A
+
+##### 2.5.3.10.5 Error Handling
+
+N/A
+
+##### 2.5.3.10.6 Performance
+
+N/A
+
+#### 2.5.3.11.0 Nested Interactions
+
+##### 2.5.3.11.1 Action
+
+###### 2.5.3.11.1.1 Source Id
+
+ops-engineer
+
+###### 2.5.3.11.1.2 Target Id
+
+github-actions
+
+###### 2.5.3.11.1.3 Message
+
+3.1 [Application Failure]: Triggers 'Deploy' workflow with previous stable image tag
+
+###### 2.5.3.11.1.4 Sequence Number
+
+3.1
+
+###### 2.5.3.11.1.5 Type
+
+🔹 Action
+
+###### 2.5.3.11.1.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.3.11.1.7 Return Message
+
+Workflow execution logs and status (Success/Failure)
+
+###### 2.5.3.11.1.8 Has Return
+
+✅ Yes
+
+###### 2.5.3.11.1.9 Is Activation
+
+✅ Yes
+
+###### 2.5.3.11.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS / GitHub API |
+| Method | workflow_dispatch event |
+| Parameters | inputs: { imageTag: 'v1.2.0-stable' } |
+| Authentication | GitHub Token (via RBAC) |
+| Error Handling | Workflow fails if image tag not found or Kubernete... |
+| Performance | Workflow execution time target < 5 minutes. |
+
+###### 2.5.3.11.1.11 Nested Interactions
+
+####### 2.5.3.11.1.11.1 Request
+
+######## 2.5.3.11.1.11.1.1 Source Id
+
+github-actions
+
+######## 2.5.3.11.1.11.1.2 Target Id
+
+azure-container-registry
+
+######## 2.5.3.11.1.11.1.3 Message
+
+3.1.1. Pulls specified container image
+
+######## 2.5.3.11.1.11.1.4 Sequence Number
+
+3.11
+
+######## 2.5.3.11.1.11.1.5 Type
+
+🔹 Request
+
+######## 2.5.3.11.1.11.1.6 Is Synchronous
+
+✅ Yes
+
+######## 2.5.3.11.1.11.1.7 Return Message
+
+Image layers
+
+######## 2.5.3.11.1.11.1.8 Has Return
+
+✅ Yes
+
+######## 2.5.3.11.1.11.1.9 Is Activation
+
+❌ No
+
+######## 2.5.3.11.1.11.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Docker Registry API |
+| Method | PULL |
+| Parameters | repository, tag |
+| Authentication | Azure Service Principal |
+| Error Handling | Fails if image does not exist or credentials are i... |
+| Performance | Dependent on image size and network. |
+
+######## 2.5.3.11.1.11.1.11 Nested Interactions
+
+*No items available*
+
+####### 2.5.3.11.1.11.2.0 Command
+
+######## 2.5.3.11.1.11.2.1 Source Id
+
+github-actions
+
+######## 2.5.3.11.1.11.2.2 Target Id
+
+azure-kubernetes-service
+
+######## 2.5.3.11.1.11.2.3 Message
+
+3.1.2. Applies updated Kubernetes Deployment manifest
+
+######## 2.5.3.11.1.11.2.4 Sequence Number
+
+3.12
+
+######## 2.5.3.11.1.11.2.5 Type
+
+🔹 Command
+
+######## 2.5.3.11.1.11.2.6 Is Synchronous
+
+✅ Yes
+
+######## 2.5.3.11.1.11.2.7 Return Message
+
+Deployment status update
+
+######## 2.5.3.11.1.11.2.8 Has Return
+
+✅ Yes
+
+######## 2.5.3.11.1.11.2.9 Is Activation
+
+✅ Yes
+
+######## 2.5.3.11.1.11.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Kubernetes API |
+| Method | kubectl apply -f deployment.yaml |
+| Parameters | YAML manifest with updated `spec.template.spec.con... |
+| Authentication | Kubeconfig with Service Principal credentials |
+| Error Handling | API server validation errors; deployment timeout. |
+| Performance | Deployment rollout time depends on pod startup and... |
+
+######## 2.5.3.11.1.11.2.11 Nested Interactions
+
+*No items available*
+
+##### 2.5.3.11.2.0.0.0 Action
+
+###### 2.5.3.11.2.1.0.0 Source Id
+
+ops-engineer
+
+###### 2.5.3.11.2.2.0.0 Target Id
+
+azure-portal
+
+###### 2.5.3.11.2.3.0.0 Message
+
+3.2 [Database Corruption]: Initiates Point-in-Time Recovery (PITR)
+
+###### 2.5.3.11.2.4.0.0 Sequence Number
+
+3.2
+
+###### 2.5.3.11.2.5.0.0 Type
+
+🔹 Action
+
+###### 2.5.3.11.2.6.0.0 Is Synchronous
+
+❌ No
+
+###### 2.5.3.11.2.7.0.0 Return Message
+
+PITR operation initiated notification
+
+###### 2.5.3.11.2.8.0.0 Has Return
+
+✅ Yes
+
+###### 2.5.3.11.2.9.0.0 Is Activation
+
+✅ Yes
+
+###### 2.5.3.11.2.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS |
+| Method | UI Interaction |
+| Parameters | Source Server, Restore Point (Timestamp), New Serv... |
+| Authentication | Azure AD with MFA |
+| Error Handling | Portal will prevent restore if backups are unavail... |
+| Performance | PITR operation can take minutes to hours depending... |
+
+###### 2.5.3.11.2.11.0.0 Nested Interactions
+
+- {'sourceId': 'azure-portal', 'targetId': 'azure-postgresql', 'message': '3.2.1. Provisions new DB instance from backup', 'sequenceNumber': 3.21, 'type': 'Command', 'isSynchronous': False, 'returnMessage': 'New instance ready', 'hasReturn': True, 'isActivation': True, 'technicalDetails': {'protocol': 'Azure Control Plane API', 'method': 'Server Restore', 'parameters': 'Source Server ID, Restore Timestamp', 'authentication': 'System Managed Identity', 'errorHandling': 'Underlying backup storage issues; provisioning failures.', 'performance': 'RPO is < 15 minutes. RTO depends on DB size.'}, 'nestedInteractions': []}
+
+##### 2.5.3.11.3.0.0.0 Action
+
+###### 2.5.3.11.3.1.0.0 Source Id
+
+ops-engineer
+
+###### 2.5.3.11.3.2.0.0 Target Id
+
+terraform-repo
+
+###### 2.5.3.11.3.3.0.0 Message
+
+3.3 [Infrastructure Failure]: Reverts breaking change and applies
+
+###### 2.5.3.11.3.4.0.0 Sequence Number
+
+3.3
+
+###### 2.5.3.11.3.5.0.0 Type
+
+🔹 Action
+
+###### 2.5.3.11.3.6.0.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.3.11.3.7.0.0 Return Message
+
+Git push confirmation
+
+###### 2.5.3.11.3.8.0.0 Has Return
+
+✅ Yes
+
+###### 2.5.3.11.3.9.0.0 Is Activation
+
+✅ Yes
+
+###### 2.5.3.11.3.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Git |
+| Method | git revert <commit_hash>; git push |
+| Parameters | Commit SHA of the failed infrastructure change. |
+| Authentication | SSH Key / PAT |
+| Error Handling | Merge conflicts during revert. |
+| Performance | N/A |
+
+###### 2.5.3.11.3.11.0.0 Nested Interactions
+
+- {'sourceId': 'ops-engineer', 'targetId': 'terraform-repo', 'message': '3.3.1. Runs `terraform apply`', 'sequenceNumber': 3.31, 'type': 'Command', 'isSynchronous': True, 'returnMessage': 'Terraform apply logs and result', 'hasReturn': True, 'isActivation': False, 'technicalDetails': {'protocol': 'Terraform CLI', 'method': 'apply', 'parameters': 'Terraform plan file (implicitly generated)', 'authentication': 'Azure Service Principal (via environment variables)', 'errorHandling': 'Terraform state lock errors; Azure API errors during resource modification.', 'performance': 'Depends on the number and type of resources being changed.'}, 'nestedInteractions': []}
+
+### 2.5.4.0.0.0.0.0 Query
+
+#### 2.5.4.1.0.0.0.0 Source Id
+
+ops-engineer
+
+#### 2.5.4.2.0.0.0.0 Target Id
+
+monitoring-system
+
+#### 2.5.4.3.0.0.0.0 Message
+
+4. Validates System Stability Post-Rollback
+
+#### 2.5.4.4.0.0.0.0 Sequence Number
+
+4
+
+#### 2.5.4.5.0.0.0.0 Type
+
+🔹 Query
+
+#### 2.5.4.6.0.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7.0.0.0.0 Return Message
+
+Dashboards showing key metrics (Error Rate, Latency, Saturation)
+
+#### 2.5.4.8.0.0.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.4.9.0.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.4.10.0.0.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS |
+| Method | GET |
+| Parameters | Grafana dashboard URL with appropriate time window... |
+| Authentication | SSO |
+| Error Handling | N/A |
+| Performance | Dashboard query time should be < 10s. |
+
+#### 2.5.4.11.0.0.0.0 Nested Interactions
+
+*No items available*
+
+### 2.5.5.0.0.0.0.0 Request
+
+#### 2.5.5.1.0.0.0.0 Source Id
+
+ops-engineer
+
+#### 2.5.5.2.0.0.0.0 Target Id
+
+azure-kubernetes-service
+
+#### 2.5.5.3.0.0.0.0 Message
+
+5. Performs Smoke Test on critical endpoint
+
+#### 2.5.5.4.0.0.0.0 Sequence Number
+
+5
+
+#### 2.5.5.5.0.0.0.0 Type
+
+🔹 Request
+
+#### 2.5.5.6.0.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7.0.0.0.0 Return Message
+
+HTTP 200 OK
+
+#### 2.5.5.8.0.0.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.5.9.0.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.5.10.0.0.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS |
+| Method | GET |
+| Parameters | URL: /health/ready |
+| Authentication | N/A (if public) or Bearer Token (if private) |
+| Error Handling | Expects 200 OK. Any other status code indicates a ... |
+| Performance | Response time < 200ms. |
+
+#### 2.5.5.11.0.0.0.0 Nested Interactions
+
+*No items available*
+
+## 2.6.0.0.0.0.0.0 Notes
+
+### 2.6.1.0.0.0.0.0 Content
+
+#### 2.6.1.1.0.0.0.0 Content
+
+For Database Rollback (3.2), the engineer must manually update application configurations (e.g., in Azure Key Vault) to point to the new database instance created by PITR. This is a critical manual step.
+
+#### 2.6.1.2.0.0.0.0 Position
+
+bottom
+
+#### 2.6.1.3.0.0.0.0 Participant Id
+
+ops-engineer
+
+#### 2.6.1.4.0.0.0.0 Sequence Number
+
+3.2
+
+### 2.6.2.0.0.0.0.0 Content
+
+#### 2.6.2.1.0.0.0.0 Content
+
+Following a successful rollback, a blameless post-mortem is mandatory to understand the root cause and prevent recurrence.
+
+#### 2.6.2.2.0.0.0.0 Position
+
+bottom
+
+#### 2.6.2.3.0.0.0.0 Participant Id
+
+*Not specified*
+
+#### 2.6.2.4.0.0.0.0 Sequence Number
+
+5
+
+## 2.7.0.0.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | Access to trigger deployment workflows, execute Te... |
+| Performance Targets | The RTO for the system is 4 hours. A standard appl... |
+| Error Handling Strategy | The entire sequence is an error handling strategy ... |
+| Testing Considerations | This entire procedure MUST be tested end-to-end in... |
+| Monitoring Requirements | The trigger for this process relies on accurate, l... |
+| Deployment Considerations | The rollback strategy relies on immutable infrastr... |
+

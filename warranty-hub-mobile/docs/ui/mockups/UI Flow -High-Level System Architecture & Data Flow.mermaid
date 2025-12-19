@@ -1,0 +1,81 @@
+flowchart TD
+    %% Styling Definitions
+    classDef client fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#000
+    classDef gateway fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,color:#000
+    classDef service fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef data fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
+    classDef external fill:#ffebee,stroke:#c62828,stroke-width:2px,stroke-dasharray: 5 5,color:#000
+
+    subgraph ClientLayer ["📱 Client Presentation Layer"]
+        ConsumerApp("Consumer App<br/>(React Native)"):::client
+        TechApp("Technician App<br/>(React Native)"):::client
+        WebPortals("Admin Portals<br/>(Next.js)"):::client
+    end
+
+    subgraph EdgeLayer ["🛡️ Edge / Ingress"]
+        APIGW("Azure API Gateway<br/>(Auth & Routing)"):::gateway
+    end
+
+    subgraph ServiceLayer ["⚙️ Core Microservices (AKS)"]
+        AuthSvc("Identity Service<br/>(Azure AD B2C)"):::service
+        ProductSvc("Product & Warranty<br/>Service"):::service
+        RequestSvc("Service Request<br/>Service"):::service
+        LocationSvc("Geolocation Service<br/>(WebSockets)"):::service
+        NotifSvc("Notification<br/>Service"):::service
+        AuditSvc("Audit<br/>Service"):::service
+        ReportSvc("Reporting<br/>Service"):::service
+    end
+
+    subgraph DataLayer ["🗄️ Data & Event Layer"]
+        ServiceBus[("Azure Service Bus<br/>(Pub/Sub Events)")]:::data
+        Postgres[("Primary DB<br/>(PostgreSQL + PostGIS)")]:::data
+        BlobStore[("Document Storage<br/>(Azure Blob)")]:::data
+        Redis[("Real-time Cache<br/>(Azure Redis)")]:::data
+        OpenSearch[("Search & Audit Index<br/>(OpenSearch)")]:::data
+    end
+
+    subgraph ExternalServices ["🌐 External Integrations"]
+        Ext_FCM("Firebase FCM<br/>(Push Notifs)"):::external
+        Ext_Maps("Mapbox API<br/>(Routing/Tiles)"):::external
+        Ext_OCR("Azure AI<br/>Doc Intelligence"):::external
+        Ext_Email("Azure Comm<br/>Services"):::external
+    end
+
+    %% -- Connections --
+
+    %% 1. Authentication Flow
+    ClientLayer --> APIGW
+    APIGW -- "Validate JWT" --> AuthSvc
+    AuthSvc -- "User Profile" --> Postgres
+
+    %% 2. Product Registration Flow (OCR)
+    ConsumerApp -- "1. Upload Invoice" --> ProductSvc
+    ProductSvc -- "2. Store File" --> BlobStore
+    ProductSvc -- "3. Analyze Img" --> Ext_OCR
+    ProductSvc -- "4. Save Product" --> Postgres
+    ProductSvc -- "5. Index Data" --> OpenSearch
+
+    %% 3. Service Request & Routing
+    ConsumerApp -- "Create Request" --> RequestSvc
+    WebPortals -- "Dispatch/Manage" --> RequestSvc
+    RequestSvc -- "Geo-Spatial Query" --> Postgres
+    RequestSvc -- "Publish Status Event" --> ServiceBus
+
+    %% 4. Technician Real-time Location Flow
+    TechApp -- "1. Activate Travel Mode" --> RequestSvc
+    TechApp -- "2. Stream GPS" --> LocationSvc
+    LocationSvc -- "3. Cache State" --> Redis
+    LocationSvc -- "4. Calc ETA" --> Ext_Maps
+    LocationSvc -- "5. Broadcast Pos" --> ConsumerApp
+
+    %% 5. Notifications & Audit
+    ServiceBus -- "Consume Events" --> NotifSvc
+    ServiceBus -- "Consume Events" --> AuditSvc
+    NotifSvc -- "Send Push" --> Ext_FCM
+    NotifSvc -- "Send Email" --> Ext_Email
+    Ext_FCM -.-> ConsumerApp & TechApp
+    AuditSvc -- "Log Critical Action" --> OpenSearch
+
+    %% 6. Analytics
+    WebPortals -- "Fetch Reports" --> ReportSvc
+    ReportSvc -- "Aggregated Query" --> Postgres

@@ -1,0 +1,29 @@
+sequenceDiagram
+    actor "Mobile Client" as MobileClient
+    participant "API Gateway" as APIGateway
+    participant "Service Request Service" as ServiceRequestService
+    participant "Persistence Layer" as PersistenceLayer
+    participant "Messaging Infrastructure" as MessagingInfrastructure
+    participant "Notification Service" as NotificationService
+    participant "Audit Service" as AuditService
+
+    activate APIGateway
+    MobileClient->>APIGateway: 1. 1. Dispute Service Request
+    APIGateway-->>MobileClient: 8. HTTP 200 OK
+    activate ServiceRequestService
+    APIGateway->>ServiceRequestService: 2. 2. Forward Dispute Request
+    ServiceRequestService-->>APIGateway: 7. HTTP 200 OK
+    activate NotificationService
+    MessagingInfrastructure->>NotificationService: 9. 9. Consume ServiceRequestStatusChanged Event
+    NotificationService->>NotificationService: 10. 10. Prepare and Send Push Notification
+    activate AuditService
+    MessagingInfrastructure->>AuditService: 11. 11. Consume CriticalActionOccurred Event
+    AuditService->>PersistenceLayer: 12. 12. Persist Audit Log
+
+    note over ServiceRequestService: Business Rule Enforcement: The core business logic for the 7-day dispute window (REQ-FUNC-008) is...
+    note over MessagingInfrastructure: Decoupled Communication: Notifications and auditing are handled asynchronously via an event-drive...
+
+    deactivate AuditService
+    deactivate NotificationService
+    deactivate ServiceRequestService
+    deactivate APIGateway

@@ -1,0 +1,45 @@
+sequenceDiagram
+    actor "User Client" as UserClient
+    participant "API Gateway" as APIGateway
+    participant "Product Service" as ProductService
+    participant "Azure Blob Storage" as AzureBlobStorage
+    participant "Azure Service Bus" as AzureServiceBus
+    participant "Invoice OCR Worker" as InvoiceOCRWorker
+    participant "Azure AI Document Intelligence" as AzureAIDocumentIntelligence
+
+    activate APIGateway
+    UserClient->>APIGateway: 1. 1. Upload Invoice File
+    APIGateway-->>UserClient: 8. HTTP 202 Accepted
+    activate ProductService
+    APIGateway->>ProductService: 2. 2. Forward Invoice Upload Request
+    ProductService-->>APIGateway: 7. HTTP 202 Accepted
+    ProductService->>ProductService: 3. 3. Create Invoice entity with 'Processing' status
+    ProductService-->>ProductService: Entity created
+    ProductService->>AzureBlobStorage: 4. 4. Upload Invoice to Blob Storage
+    AzureBlobStorage-->>ProductService: Blob URL
+    ProductService->>AzureServiceBus: 5. 5. Publish 'InvoiceUploadedForProcessing' command
+    AzureServiceBus-->>ProductService: Acknowledgement
+    ProductService->>APIGateway: 6. 6. Return HTTP 202 Accepted
+    activate InvoiceOCRWorker
+    AzureServiceBus->>InvoiceOCRWorker: 9. 9. Deliver 'InvoiceUploadedForProcessing' message
+    InvoiceOCRWorker->>InvoiceOCRWorker: 10. 10. Begin processing; check idempotency
+    InvoiceOCRWorker->>AzureBlobStorage: 11. 11. Download Invoice file
+    AzureBlobStorage-->>InvoiceOCRWorker: File Stream
+    InvoiceOCRWorker->>AzureAIDocumentIntelligence: 12. 12. Analyze document with OCR service
+    AzureAIDocumentIntelligence-->>InvoiceOCRWorker: 13. Structured JSON data
+    InvoiceOCRWorker->>ProductService: 12.1. 12a. [On Failure] Update invoice status to 'OcrFailed'
+    ProductService-->>InvoiceOCRWorker: HTTP 200 OK
+    InvoiceOCRWorker->>AzureServiceBus: 12.2. 12b. [On Failure] Move message to Dead-Letter Queue
+    AzureServiceBus-->>InvoiceOCRWorker: Acknowledgement
+    InvoiceOCRWorker->>InvoiceOCRWorker: 14. 14. Parse and validate OCR response
+    InvoiceOCRWorker->>ProductService: 15. 15. Update Invoice with extracted data
+    ProductService-->>InvoiceOCRWorker: 16. HTTP 200 OK
+    InvoiceOCRWorker->>AzureServiceBus: 17. 17. Acknowledge and complete message
+    AzureServiceBus-->>InvoiceOCRWorker: Acknowledgement
+
+    note over InvoiceOCRWorker: Idempotency is critical. The worker MUST check if an invoice has already been processed before ta...
+    note over AzureServiceBus: Dead-Letter Queue (DLQ) for 'ocr-processing-queue' must be monitored. An alert should be configur...
+
+    deactivate InvoiceOCRWorker
+    deactivate ProductService
+    deactivate APIGateway

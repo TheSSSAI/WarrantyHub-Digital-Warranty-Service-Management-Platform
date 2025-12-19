@@ -1,0 +1,845 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-BP-001
+
+## 1.2 Name
+
+Service Request Creation and Automated Geospatial Routing
+
+## 1.3 Description
+
+A user creates a service request for a registered product. The system automatically determines the correct service center using a geospatial query based on the user's location and product's brand, then assigns the ticket.
+
+## 1.4 Type
+
+🔹 BusinessProcess
+
+## 1.5 Purpose
+
+To streamline the initiation of a service request by automating the complex logic of finding and assigning the request to the correct, geographically-appropriate service center.
+
+## 1.6 Complexity
+
+High
+
+## 1.7 Priority
+
+🚨 Critical
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- mobile-client-013
+- api-gateway-001
+- service-request-service-005
+- product-service-003
+- service-center-service-004
+
+## 1.10 Key Interactions
+
+- User submits a service request form from the client, including their current location.
+- API Gateway routes the request to the ServiceRequestService.
+- ServiceRequestService first calls the ProductService to verify the product's warranty status.
+- ServiceRequestService then calls the ServiceCenterService, providing the product brand ID and user's location coordinates (latitude/longitude).
+- ServiceCenterService performs a geospatial query (e.g., using PostGIS `ST_Contains`) to find service centers whose defined service area polygon contains the user's location point.
+- ServiceCenterService returns a list of eligible service centers.
+- ServiceRequestService uses a round-robin algorithm to select one, creates the service request ticket in the database, and assigns it.
+
+## 1.11 Triggers
+
+- User submits a 'Raise Service Request' form.
+
+## 1.12 Outcomes
+
+- A new service request ticket is created with a 'Requested' status.
+- The ticket is automatically assigned to the correct service center.
+- The user and the service center are notified of the new request.
+
+## 1.13 Business Rules
+
+- Routing is based on a match between user location and the service center's geofenced service area (REQ-3.1).
+- If multiple service centers match, a round-robin algorithm is used.
+- A service request cannot be created for a product with a 'pending approval' brand (REQ-3.4).
+
+## 1.14 Error Scenarios
+
+- No service center is found for the user's location and product brand (handled by SEQ-EH-002).
+- The product's warranty information cannot be retrieved.
+- The geospatial query in the database fails.
+
+## 1.15 Integration Points
+
+- PostgreSQL with PostGIS
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-OPS-001
+
+## 2.2 Name
+
+Operations: Application Rollback due to Critical Deployment Failure
+
+## 2.3 Description
+
+This sequence outlines the critical business process for an Operations Team Member to roll back a failed application deployment. The process is initiated by a critical alert from the monitoring system indicating an SLO breach. The rollback is executed by redeploying the last known stable container image via the GitHub Actions CI/CD pipeline to Azure Kubernetes Service (AKS). The procedure concludes with rigorous validation of system health to confirm a successful recovery, directly implementing the requirements of US-132.
+
+## 2.4 Participants
+
+### 2.4.1 ObservabilityPlatform
+
+#### 2.4.1.1 Repository Id
+
+monitoring-service-016
+
+#### 2.4.1.2 Display Name
+
+Monitoring System
+
+#### 2.4.1.3 Type
+
+🔹 ObservabilityPlatform
+
+#### 2.4.1.4 Technology
+
+Prometheus, Grafana, Alertmanager
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #FFC300 |
+| Stereotype | System |
+
+### 2.4.2.0 HumanActor
+
+#### 2.4.2.1 Repository Id
+
+OperationsTeamMember
+
+#### 2.4.2.2 Display Name
+
+Operations Team Member
+
+#### 2.4.2.3 Type
+
+🔹 HumanActor
+
+#### 2.4.2.4 Technology
+
+kubectl, Azure CLI, Web Browser
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #4D4D4D |
+| Stereotype | Human |
+
+### 2.4.3.0 CI/CD Platform
+
+#### 2.4.3.1 Repository Id
+
+cicd-pipeline-017
+
+#### 2.4.3.2 Display Name
+
+GitHub Actions
+
+#### 2.4.3.3 Type
+
+🔹 CI/CD Platform
+
+#### 2.4.3.4 Technology
+
+GitHub Actions Workflows (YAML)
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | participant |
+| Color | #6E5494 |
+| Stereotype | System |
+
+### 2.4.4.0 ArtifactRegistry
+
+#### 2.4.4.1 Repository Id
+
+container-registry-018
+
+#### 2.4.4.2 Display Name
+
+Azure Container Registry (ACR)
+
+#### 2.4.4.3 Type
+
+🔹 ArtifactRegistry
+
+#### 2.4.4.4 Technology
+
+Azure PaaS
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #0078D4 |
+| Stereotype | Registry |
+
+### 2.4.5.0 ContainerOrchestrator
+
+#### 2.4.5.1 Repository Id
+
+container-orchestrator-019
+
+#### 2.4.5.2 Display Name
+
+Azure Kubernetes Service (AKS)
+
+#### 2.4.5.3 Type
+
+🔹 ContainerOrchestrator
+
+#### 2.4.5.4 Technology
+
+Kubernetes v1.29+
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | participant |
+| Color | #0078D4 |
+| Stereotype | Platform |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Notification
+
+#### 2.5.1.1 Source Id
+
+monitoring-service-016
+
+#### 2.5.1.2 Target Id
+
+OperationsTeamMember
+
+#### 2.5.1.3 Message
+
+[ALERT] Critical SLO Breach Detected
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Notification
+
+#### 2.5.1.6 Is Synchronous
+
+❌ No
+
+#### 2.5.1.7 Return Message
+
+
+
+#### 2.5.1.8 Has Return
+
+❌ No
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+##### 2.5.1.10.1 Protocol
+
+PagerDuty/Slack Webhook
+
+##### 2.5.1.10.2 Method
+
+POST
+
+##### 2.5.1.10.3 Parameters
+
+Payload contains alert details: firing metric (e.g., `api_p95_latency_ms > 500`), severity ('critical'), affected service, and link to Grafana dashboard.
+
+##### 2.5.1.10.4 Authentication
+
+Webhook Secret/Token
+
+##### 2.5.1.10.5 Error Handling
+
+Alertmanager will retry notifications on failure. Escalation policies are defined in PagerDuty.
+
+##### 2.5.1.10.6 Performance
+
+###### 2.5.1.10.6.1 Latency
+
+< 5s delivery
+
+### 2.5.2.0.0.0 ManualProcess
+
+#### 2.5.2.1.0.0 Source Id
+
+OperationsTeamMember
+
+#### 2.5.2.2.0.0 Target Id
+
+OperationsTeamMember
+
+#### 2.5.2.3.0.0 Message
+
+Investigates alert, confirms impact, consults runbook, and decides to execute rollback.
+
+#### 2.5.2.4.0.0 Sequence Number
+
+2
+
+#### 2.5.2.5.0.0 Type
+
+🔹 ManualProcess
+
+#### 2.5.2.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7.0.0 Return Message
+
+Decision: Proceed with rollback. Identified stable image tag (e.g., `v1.2.0`).
+
+#### 2.5.2.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.2.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.2.10.0.0 Technical Details
+
+##### 2.5.2.10.1.0 Protocol
+
+Human-System Interaction
+
+##### 2.5.2.10.2.0 Method
+
+Analysis of Grafana dashboards, logs (KQL), and runbook (Confluence/Git).
+
+##### 2.5.2.10.3.0 Parameters
+
+Triggering metric values, error logs, deployment history.
+
+##### 2.5.2.10.4.0 Authentication
+
+Azure AD SSO for Grafana/Azure Portal.
+
+##### 2.5.2.10.5.0 Error Handling
+
+If root cause is unclear, escalate to incident commander before rolling back.
+
+##### 2.5.2.10.6.0 Performance
+
+###### 2.5.2.10.6.1 Throughput
+
+Target: < 15 minutes for investigation and decision.
+
+### 2.5.3.0.0.0 WorkflowDispatch
+
+#### 2.5.3.1.0.0 Source Id
+
+OperationsTeamMember
+
+#### 2.5.3.2.0.0 Target Id
+
+cicd-pipeline-017
+
+#### 2.5.3.3.0.0 Message
+
+Trigger 'Rollback Deployment' Workflow
+
+#### 2.5.3.4.0.0 Sequence Number
+
+3
+
+#### 2.5.3.5.0.0 Type
+
+🔹 WorkflowDispatch
+
+#### 2.5.3.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7.0.0 Return Message
+
+Workflow run initiated successfully.
+
+#### 2.5.3.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.3.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.3.10.0.0 Technical Details
+
+##### 2.5.3.10.1.0 Protocol
+
+GitHub API / Web UI
+
+##### 2.5.3.10.2.0 Method
+
+workflow_dispatch event
+
+##### 2.5.3.10.3.0 Parameters
+
+Inputs: `service_name`, `image_tag` (e.g., 'v1.2.0'), `environment` ('staging' or 'production').
+
+##### 2.5.3.10.4.0 Authentication
+
+GitHub user authentication with RBAC. Workflow requires 'deploy' permissions.
+
+##### 2.5.3.10.5.0 Error Handling
+
+GitHub Actions UI will report if the workflow fails to start. Invalid inputs are rejected by the workflow.
+
+##### 2.5.3.10.6.0 Performance
+
+###### 2.5.3.10.6.1 Latency
+
+< 10s to start
+
+### 2.5.4.0.0.0 ImagePull
+
+#### 2.5.4.1.0.0 Source Id
+
+cicd-pipeline-017
+
+#### 2.5.4.2.0.0 Target Id
+
+container-registry-018
+
+#### 2.5.4.3.0.0 Message
+
+az acr login && docker pull <stable_image_tag>
+
+#### 2.5.4.4.0.0 Sequence Number
+
+4
+
+#### 2.5.4.5.0.0 Type
+
+🔹 ImagePull
+
+#### 2.5.4.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7.0.0 Return Message
+
+Image layers downloaded to runner.
+
+#### 2.5.4.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.4.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.4.10.0.0 Nested Interactions
+
+*No items available*
+
+#### 2.5.4.11.0.0 Technical Details
+
+##### 2.5.4.11.1.0 Protocol
+
+HTTPS (Docker Registry API)
+
+##### 2.5.4.11.2.0 Method
+
+GET /v2/...
+
+##### 2.5.4.11.3.0 Parameters
+
+Repository name and image tag/digest.
+
+##### 2.5.4.11.4.0 Authentication
+
+Azure AD Workload Identity federated with GitHub Actions runner for token-based auth with ACR.
+
+##### 2.5.4.11.5.0 Error Handling
+
+Workflow fails if image tag is not found (HTTP 404) or authentication fails (HTTP 401). Retry logic for transient network issues.
+
+##### 2.5.4.11.6.0 Performance
+
+###### 2.5.4.11.6.1 Latency
+
+Dependent on image size and network.
+
+### 2.5.5.0.0.0 ConfigurationUpdate
+
+#### 2.5.5.1.0.0 Source Id
+
+cicd-pipeline-017
+
+#### 2.5.5.2.0.0 Target Id
+
+container-orchestrator-019
+
+#### 2.5.5.3.0.0 Message
+
+kubectl set image deployment/<service_name> <container_name>=<acr_path>:<stable_image_tag>
+
+#### 2.5.5.4.0.0 Sequence Number
+
+5
+
+#### 2.5.5.5.0.0 Type
+
+🔹 ConfigurationUpdate
+
+#### 2.5.5.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7.0.0 Return Message
+
+deployment.apps/<service_name> image updated.
+
+#### 2.5.5.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.5.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.5.10.0.0 Technical Details
+
+##### 2.5.5.10.1.0 Protocol
+
+HTTPS (Kubernetes API)
+
+##### 2.5.5.10.2.0 Method
+
+PATCH /apis/apps/v1/namespaces/default/deployments/<service_name>
+
+##### 2.5.5.10.3.0 Parameters
+
+JSON Patch payload specifying the new container image.
+
+##### 2.5.5.10.4.0 Authentication
+
+Azure AD Workload Identity federated with GitHub Actions runner for Kubeconfig authentication.
+
+##### 2.5.5.10.5.0 Error Handling
+
+Workflow fails if the deployment or container name is incorrect, or if RBAC permissions are insufficient.
+
+##### 2.5.5.10.6.0 Performance
+
+###### 2.5.5.10.6.1 Latency
+
+< 2s
+
+### 2.5.6.0.0.0 ImagePull
+
+#### 2.5.6.1.0.0 Source Id
+
+container-orchestrator-019
+
+#### 2.5.6.2.0.0 Target Id
+
+container-registry-018
+
+#### 2.5.6.3.0.0 Message
+
+Pull container image for new pods
+
+#### 2.5.6.4.0.0 Sequence Number
+
+6
+
+#### 2.5.6.5.0.0 Type
+
+🔹 ImagePull
+
+#### 2.5.6.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7.0.0 Return Message
+
+Image pulled to cluster nodes.
+
+#### 2.5.6.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.6.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.6.10.0.0 Technical Details
+
+##### 2.5.6.10.1.0 Protocol
+
+HTTPS (Docker Registry API)
+
+##### 2.5.6.10.2.0 Method
+
+GET /v2/...
+
+##### 2.5.6.10.3.0 Parameters
+
+Image repository and tag.
+
+##### 2.5.6.10.4.0 Authentication
+
+AKS cluster's managed identity has AcrPull role assignment on the target ACR.
+
+##### 2.5.6.10.5.0 Error Handling
+
+Pod fails with `ImagePullBackOff` error if image is not found or permissions are incorrect. This blocks the rolling update.
+
+##### 2.5.6.10.6.0 Performance
+
+###### 2.5.6.10.6.1 Latency
+
+Dependent on image size and network.
+
+### 2.5.7.0.0.0 StateTransition
+
+#### 2.5.7.1.0.0 Source Id
+
+container-orchestrator-019
+
+#### 2.5.7.2.0.0 Target Id
+
+container-orchestrator-019
+
+#### 2.5.7.3.0.0 Message
+
+Execute rolling update strategy
+
+#### 2.5.7.4.0.0 Sequence Number
+
+7
+
+#### 2.5.7.5.0.0 Type
+
+🔹 StateTransition
+
+#### 2.5.7.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.7.7.0.0 Return Message
+
+
+
+#### 2.5.7.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.7.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.7.10.0.0 Technical Details
+
+##### 2.5.7.10.1.0 Protocol
+
+Internal Kubernetes Control Plane Logic
+
+##### 2.5.7.10.2.0 Method
+
+N/A
+
+##### 2.5.7.10.3.0 Parameters
+
+Deployment strategy: `rollingUpdate`, `maxUnavailable`, `maxSurge`.
+
+##### 2.5.7.10.4.0 Authentication
+
+N/A
+
+##### 2.5.7.10.5.0 Error Handling
+
+If new pods fail liveness/readiness probes, the rolling update will pause or fail, preventing a complete outage.
+
+##### 2.5.7.10.6.0 Performance
+
+###### 2.5.7.10.6.1 Throughput
+
+Dependent on pod startup time and probe settings.
+
+### 2.5.8.0.0.0 Monitoring
+
+#### 2.5.8.1.0.0 Source Id
+
+OperationsTeamMember
+
+#### 2.5.8.2.0.0 Target Id
+
+monitoring-service-016
+
+#### 2.5.8.3.0.0 Message
+
+Validate system health and SLO recovery
+
+#### 2.5.8.4.0.0 Sequence Number
+
+8
+
+#### 2.5.8.5.0.0 Type
+
+🔹 Monitoring
+
+#### 2.5.8.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.8.7.0.0 Return Message
+
+
+
+#### 2.5.8.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.8.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.8.10.0.0 Technical Details
+
+##### 2.5.8.10.1.0 Protocol
+
+HTTPS
+
+##### 2.5.8.10.2.0 Method
+
+Querying Grafana dashboards.
+
+##### 2.5.8.10.3.0 Parameters
+
+Metrics to check: API P95 latency, server-side error rate (5xx), pod restart counts, active database connections.
+
+##### 2.5.8.10.4.0 Authentication
+
+Azure AD SSO
+
+##### 2.5.8.10.5.0 Error Handling
+
+If metrics do not return to baseline, the rollback may have failed or the 'stable' image is also faulty. Escalate incident.
+
+##### 2.5.8.10.6.0 Performance
+
+###### 2.5.8.10.6.1 Throughput
+
+Validation should be complete within 5-10 minutes post-rollback.
+
+## 2.6.0.0.0.0 Notes
+
+### 2.6.1.0.0.0 Content
+
+#### 2.6.1.1.0.0 Content
+
+Database Rollback Procedure: In case of data corruption or a destructive migration, the approved procedure is Point-in-Time Recovery (PITR) via the Azure Portal/CLI. This restores the entire database to a new instance from automated backups, respecting the RPO of <15 minutes. 'Down' migrations are forbidden in production.
+
+#### 2.6.1.2.0.0 Position
+
+bottom
+
+#### 2.6.1.3.0.0 Participant Id
+
+OperationsTeamMember
+
+#### 2.6.1.4.0.0 Sequence Number
+
+2
+
+### 2.6.2.0.0.0 Content
+
+#### 2.6.2.1.0.0 Content
+
+Infrastructure Rollback Procedure: For a failed infrastructure change, the procedure is to revert the problematic commit in the Terraform Git repository and re-run the `terraform apply` pipeline. The `terraform plan` must be carefully reviewed before applying.
+
+#### 2.6.2.2.0.0 Position
+
+bottom
+
+#### 2.6.2.3.0.0 Participant Id
+
+OperationsTeamMember
+
+#### 2.6.2.4.0.0 Sequence Number
+
+2
+
+### 2.6.3.0.0.0 Content
+
+#### 2.6.3.1.0.0 Content
+
+Post-Mortem Requirement: Every production rollback event must be followed by a blameless post-mortem analysis to identify the root cause and define preventive actions, as per business rule BR-002.
+
+#### 2.6.3.2.0.0 Position
+
+bottom
+
+#### 2.6.3.3.0.0 Participant Id
+
+OperationsTeamMember
+
+#### 2.6.3.4.0.0 Sequence Number
+
+8
+
+## 2.7.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | Role-Based Access Control (RBAC) must be strictly ... |
+| Performance Targets | The end-to-end rollback process for an application... |
+| Error Handling Strategy | The rollback workflow must have robust error handl... |
+| Testing Considerations | The entire rollback procedure (application, databa... |
+| Monitoring Requirements | The trigger condition for considering a rollback i... |
+| Deployment Considerations | The use of a rolling update strategy in Kubernetes... |
+

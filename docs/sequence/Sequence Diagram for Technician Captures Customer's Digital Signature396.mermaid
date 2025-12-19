@@ -1,0 +1,32 @@
+sequenceDiagram
+    actor "Mobile Client (Technician)" as MobileClientTechnician
+    participant "API Gateway" as APIGateway
+    participant "Service Request Service" as ServiceRequestService
+
+    MobileClientTechnician->>MobileClientTechnician: 1. 1. technicianTapsCompleteJob(serviceRequestId)
+    MobileClientTechnician->>MobileClientTechnician: 2. 2. renderSignatureCanvas()
+    MobileClientTechnician->>MobileClientTechnician: 3. 3. captureSignatureAsPng()
+    MobileClientTechnician-->>MobileClientTechnician: Returns PNG byte array (Uint8List)
+    activate APIGateway
+    MobileClientTechnician->>APIGateway: 4. 4. POST /api/v1/service-requests/{id}/signature
+    activate ServiceRequestService
+    APIGateway->>ServiceRequestService: 5. 5. Forward POST /api/v1/service-requests/{id}/signature
+    ServiceRequestService->>ServiceRequestService: 6. 6. Authorize request and validate state
+    ServiceRequestService->>ServiceRequestService: 7. 7. Upload PNG to Azure Blob Storage
+    ServiceRequestService-->>ServiceRequestService: Returns secure blob URL
+    ServiceRequestService->>ServiceRequestService: 8. 8. Persist Blob URL to Database
+    ServiceRequestService-->>ServiceRequestService: Returns updated ServiceRequest entity
+    ServiceRequestService->>ServiceRequestService: 9. 9. Publish 'ServiceRequestCompleted' domain event
+    ServiceRequestService->>APIGateway: 10. 10. HTTP 200 OK
+    APIGateway-->>ServiceRequestService: Body: { "success": true, "signatureUrl": "<blob_url>" }
+    APIGateway->>MobileClientTechnician: 11. 11. HTTP 200 OK
+    MobileClientTechnician-->>APIGateway: Body: { "success": true, "signatureUrl": "<blob_url>" }
+    MobileClientTechnician->>MobileClientTechnician: 12. 12. displaySuccessConfirmation()
+
+    note over MobileClientTechnician: Feature Implementation: The 'signature' (5.4.x) Flutter library is used for capturing the signatu...
+    note over APIGateway: Data Flow: The PNG image is encoded and sent as a 'multipart/form-data' payload, which is standar...
+    note over ServiceRequestService: Security Checkpoint: The Service Request Service MUST verify that the authenticated user (technic...
+    note over ServiceRequestService: Integration Point: The service integrates with Azure Blob Storage via the Azure.Storage.Blobs SDK...
+
+    deactivate ServiceRequestService
+    deactivate APIGateway

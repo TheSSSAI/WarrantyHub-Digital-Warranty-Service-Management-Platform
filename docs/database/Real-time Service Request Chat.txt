@@ -1,0 +1,42 @@
+/* Switch to the ChatDB database (it will be created if it doesn't exist) */
+use ChatDB;
+
+/* Create the ChatConversation collection */
+db.createCollection("ChatConversation");
+
+/* 
+  Create an index on the 'participants' array.
+  This allows for efficient lookups of all conversations a specific user is part of. 
+*/
+db.ChatConversation.createIndex({ "participants": 1 }, { "name": "IX_Chat_Participants" });
+
+/* 
+  Create an index on the 'sentAt' field within the 'messages' sub-documents.
+  This optimizes queries that sort or filter messages by their timestamp.
+*/
+db.ChatConversation.createIndex({ "messages.sentAt": 1 }, { "name": "IX_Chat_Messages_SentAt" });
+
+/* 
+  (Optional) Insert a sample document to illustrate the data structure. 
+  _id corresponds to a unique serviceRequestId.
+*/
+db.ChatConversation.insertOne({
+  "_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "participants": ["e9a3b10c-58cc-4372-a567-0e02b2c3d479", "a1b2c3d4-58cc-4372-a567-0e02b2c3d479"],
+  "messages": [
+    {
+      "messageId": "c4da9f3b-58cc-4372-a567-0e02b2c3d479",
+      "senderId": "e9a3b10c-58cc-4372-a567-0e02b2c3d479",
+      "messageText": "Hello, I need assistance with my service request.",
+      "sentAt": new Date()
+    },
+    {
+      "messageId": "b2c1d0e8-58cc-4372-a567-0e02b2c3d479",
+      "senderId": "a1b2c3d4-58cc-4372-a567-0e02b2c3d479",
+      "messageText": "Certainly, how can I help you today?",
+      "sentAt": new Date()
+    }
+  ],
+  "createdAt": new Date(),
+  "updatedAt": new Date()
+});

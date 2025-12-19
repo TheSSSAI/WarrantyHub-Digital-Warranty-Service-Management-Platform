@@ -1,0 +1,856 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-FF-003
+
+## 1.2 Name
+
+Technician Captures Customer's Digital Signature
+
+## 1.3 Description
+
+Upon completing a service job, the technician presents their mobile device to the customer, who provides a digital signature on the screen. The signature is captured as an image and attached to the service request record.
+
+## 1.4 Type
+
+🔹 FeatureFlow
+
+## 1.5 Purpose
+
+To obtain and securely store proof of service completion, protecting both the service center and the customer.
+
+## 1.6 Complexity
+
+Medium
+
+## 1.7 Priority
+
+🔴 High
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- mobile-client-013
+- api-gateway-001
+- service-request-service-005
+
+## 1.10 Key Interactions
+
+- Technician marks a job as complete in their app, which presents a signature canvas.
+- The customer signs on the screen using their finger or a stylus.
+- The mobile client (using the 'signature' library) captures the signature as a PNG image file.
+- The technician confirms the signature.
+- The mobile client uploads the PNG file to the ServiceRequestService, associated with the specific ticket ID.
+- The ServiceRequestService stores the image file in Azure Blob Storage and links it to the service request record.
+
+## 1.11 Triggers
+
+- Technician completes a service job and requires customer sign-off.
+
+## 1.12 Outcomes
+
+- A PNG image of the customer's signature is securely stored.
+- The service request record is updated with proof of completion.
+
+## 1.13 Business Rules
+
+- The signature must be captured as a PNG image file.
+
+## 1.14 Error Scenarios
+
+- The file upload to the server fails.
+- The signature capture widget fails to load.
+- The customer refuses to sign.
+
+## 1.15 Integration Points
+
+- lib-flutter-signature
+- Azure Blob Storage
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-FF-003
+
+## 2.2 Name
+
+Implementation: Technician Captures Customer Digital Signature and Uploads Proof of Completion
+
+## 2.3 Description
+
+This sequence details the technical implementation for a technician capturing a customer's digital signature via the Flutter mobile application upon service completion. It covers the client-side capture process, the secure file upload via a multipart/form-data request, API gateway validation, backend service authorization, file persistence to Azure Blob Storage, and the final update to the service request record in the PostgreSQL database.
+
+## 2.4 Participants
+
+### 2.4.1 Client
+
+#### 2.4.1.1 Repository Id
+
+mobile-client-013
+
+#### 2.4.1.2 Display Name
+
+Mobile Client (Technician)
+
+#### 2.4.1.3 Type
+
+🔹 Client
+
+#### 2.4.1.4 Technology
+
+Flutter 3.19+ with 'signature' library
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #4CAF50 |
+| Stereotype | <<Mobile App>> |
+
+### 2.4.2.0 Gateway
+
+#### 2.4.2.1 Repository Id
+
+api-gateway-001
+
+#### 2.4.2.2 Display Name
+
+API Gateway
+
+#### 2.4.2.3 Type
+
+🔹 Gateway
+
+#### 2.4.2.4 Technology
+
+YARP on .NET 8
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | rectangle |
+| Color | #2196F3 |
+| Stereotype | <<Gateway>> |
+
+### 2.4.3.0 Service
+
+#### 2.4.3.1 Repository Id
+
+service-request-service-005
+
+#### 2.4.3.2 Display Name
+
+Service Request Service
+
+#### 2.4.3.3 Type
+
+🔹 Service
+
+#### 2.4.3.4 Technology
+
+.NET 8, ASP.NET Core 8, EF Core 8
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | rectangle |
+| Color | #FFC107 |
+| Stereotype | <<Microservice>> |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Internal
+
+#### 2.5.1.1 Source Id
+
+mobile-client-013
+
+#### 2.5.1.2 Target Id
+
+mobile-client-013
+
+#### 2.5.1.3 Message
+
+1. technicianTapsCompleteJob(serviceRequestId)
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Internal
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+
+
+#### 2.5.1.8 Has Return
+
+❌ No
+
+#### 2.5.1.9 Is Activation
+
+❌ No
+
+#### 2.5.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | UI Event |
+| Method | onPressed |
+| Parameters | serviceRequestId: The unique identifier for the cu... |
+| Authentication | N/A |
+| Error Handling | Button should be disabled if service request is no... |
+| Performance | Immediate response required. |
+
+### 2.5.2.0 Internal
+
+#### 2.5.2.1 Source Id
+
+mobile-client-013
+
+#### 2.5.2.2 Target Id
+
+mobile-client-013
+
+#### 2.5.2.3 Message
+
+2. renderSignatureCanvas()
+
+#### 2.5.2.4 Sequence Number
+
+2
+
+#### 2.5.2.5 Type
+
+🔹 Internal
+
+#### 2.5.2.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7 Return Message
+
+
+
+#### 2.5.2.8 Has Return
+
+❌ No
+
+#### 2.5.2.9 Is Activation
+
+❌ No
+
+#### 2.5.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | UI Render |
+| Method | Navigator.push() with Signature widget |
+| Parameters | Initializes the 'signature' library canvas. |
+| Authentication | N/A |
+| Error Handling | Display a loading indicator. If the widget fails t... |
+| Performance | Canvas should render in < 200ms. |
+
+### 2.5.3.0 Internal
+
+#### 2.5.3.1 Source Id
+
+mobile-client-013
+
+#### 2.5.3.2 Target Id
+
+mobile-client-013
+
+#### 2.5.3.3 Message
+
+3. captureSignatureAsPng()
+
+#### 2.5.3.4 Sequence Number
+
+3
+
+#### 2.5.3.5 Type
+
+🔹 Internal
+
+#### 2.5.3.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7 Return Message
+
+Returns PNG byte array (Uint8List)
+
+#### 2.5.3.8 Has Return
+
+✅ Yes
+
+#### 2.5.3.9 Is Activation
+
+❌ No
+
+#### 2.5.3.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Library Call |
+| Method | signatureController.toPngBytes() |
+| Parameters | None |
+| Authentication | N/A |
+| Error Handling | If the customer refuses to sign, the technician ca... |
+| Performance | Capture should be near-instantaneous. |
+
+### 2.5.4.0 Request
+
+#### 2.5.4.1 Source Id
+
+mobile-client-013
+
+#### 2.5.4.2 Target Id
+
+api-gateway-001
+
+#### 2.5.4.3 Message
+
+4. POST /api/v1/service-requests/{id}/signature
+
+#### 2.5.4.4 Sequence Number
+
+4
+
+#### 2.5.4.5 Type
+
+🔹 Request
+
+#### 2.5.4.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7 Return Message
+
+
+
+#### 2.5.4.8 Has Return
+
+✅ Yes
+
+#### 2.5.4.9 Is Activation
+
+✅ Yes
+
+#### 2.5.4.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS/1.1 |
+| Method | POST |
+| Parameters | Path: {id} (UUID); Body: multipart/form-data conta... |
+| Authentication | Requires valid JWT. Header: 'Authorization: Bearer... |
+| Error Handling | Client-side timeout of 30 seconds. Implements retr... |
+| Performance | Upload size is expected to be small (<50KB). Timeo... |
+
+### 2.5.5.0 Forward
+
+#### 2.5.5.1 Source Id
+
+api-gateway-001
+
+#### 2.5.5.2 Target Id
+
+service-request-service-005
+
+#### 2.5.5.3 Message
+
+5. Forward POST /api/v1/service-requests/{id}/signature
+
+#### 2.5.5.4 Sequence Number
+
+5
+
+#### 2.5.5.5 Type
+
+🔹 Forward
+
+#### 2.5.5.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7 Return Message
+
+
+
+#### 2.5.5.8 Has Return
+
+✅ Yes
+
+#### 2.5.5.9 Is Activation
+
+✅ Yes
+
+#### 2.5.5.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS (internal) |
+| Method | POST |
+| Parameters | Forwards original request path, headers, and body. |
+| Authentication | Validates JWT signature and expiry. Propagates val... |
+| Error Handling | Returns 401 if JWT is invalid/expired. Returns 503... |
+| Performance | Adds < 10ms latency. |
+
+#### 2.5.5.11 Nested Interactions
+
+##### 2.5.5.11.1 Validation
+
+###### 2.5.5.11.1.1 Source Id
+
+service-request-service-005
+
+###### 2.5.5.11.1.2 Target Id
+
+service-request-service-005
+
+###### 2.5.5.11.1.3 Message
+
+6. Authorize request and validate state
+
+###### 2.5.5.11.1.4 Sequence Number
+
+6
+
+###### 2.5.5.11.1.5 Type
+
+🔹 Validation
+
+###### 2.5.5.11.1.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.5.11.1.7 Return Message
+
+
+
+###### 2.5.5.11.1.8 Has Return
+
+❌ No
+
+###### 2.5.5.11.1.9 Is Activation
+
+❌ No
+
+###### 2.5.5.11.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Internal Logic |
+| Method | AuthorizationHandler.HandleAsync() |
+| Parameters | Checks if 'sub' claim in JWT matches the 'assigned... |
+| Authentication | N/A |
+| Error Handling | Throws 'ForbiddenException' (-> 403) if user is no... |
+| Performance | DB lookup should be indexed and < 20ms. |
+
+##### 2.5.5.11.2.0 External Call
+
+###### 2.5.5.11.2.1 Source Id
+
+service-request-service-005
+
+###### 2.5.5.11.2.2 Target Id
+
+service-request-service-005
+
+###### 2.5.5.11.2.3 Message
+
+7. Upload PNG to Azure Blob Storage
+
+###### 2.5.5.11.2.4 Sequence Number
+
+7
+
+###### 2.5.5.11.2.5 Type
+
+🔹 External Call
+
+###### 2.5.5.11.2.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.5.11.2.7 Return Message
+
+Returns secure blob URL
+
+###### 2.5.5.11.2.8 Has Return
+
+✅ Yes
+
+###### 2.5.5.11.2.9 Is Activation
+
+❌ No
+
+###### 2.5.5.11.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS (Azure SDK) |
+| Method | BlobClient.UploadAsync(fileStream) |
+| Parameters | File stream from request, unique blob name (e.g., ... |
+| Authentication | Uses Managed Identity for secure access to the Blo... |
+| Error Handling | Wraps SDK calls in a Polly Circuit Breaker policy.... |
+| Performance | Depends on file size and network, but expected < 5... |
+
+##### 2.5.5.11.3.0 Database
+
+###### 2.5.5.11.3.1 Source Id
+
+service-request-service-005
+
+###### 2.5.5.11.3.2 Target Id
+
+service-request-service-005
+
+###### 2.5.5.11.3.3 Message
+
+8. Persist Blob URL to Database
+
+###### 2.5.5.11.3.4 Sequence Number
+
+8
+
+###### 2.5.5.11.3.5 Type
+
+🔹 Database
+
+###### 2.5.5.11.3.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.5.11.3.7 Return Message
+
+Returns updated ServiceRequest entity
+
+###### 2.5.5.11.3.8 Has Return
+
+✅ Yes
+
+###### 2.5.5.11.3.9 Is Activation
+
+❌ No
+
+###### 2.5.5.11.3.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | TCP/IP (Npgsql) |
+| Method | DbContext.SaveChangesAsync() |
+| Parameters | Updates 'SignatureUrl' and 'Status' fields on the ... |
+| Authentication | Connection string with credentials from Azure Key ... |
+| Error Handling | Handles DbUpdateConcurrencyException. Throws 'Data... |
+| Performance | Should complete in < 50ms. |
+
+##### 2.5.5.11.4.0 Message Queue
+
+###### 2.5.5.11.4.1 Source Id
+
+service-request-service-005
+
+###### 2.5.5.11.4.2 Target Id
+
+service-request-service-005
+
+###### 2.5.5.11.4.3 Message
+
+9. Publish 'ServiceRequestCompleted' domain event
+
+###### 2.5.5.11.4.4 Sequence Number
+
+9
+
+###### 2.5.5.11.4.5 Type
+
+🔹 Message Queue
+
+###### 2.5.5.11.4.6 Is Synchronous
+
+❌ No
+
+###### 2.5.5.11.4.7 Return Message
+
+
+
+###### 2.5.5.11.4.8 Has Return
+
+❌ No
+
+###### 2.5.5.11.4.9 Is Activation
+
+❌ No
+
+###### 2.5.5.11.4.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | AMQP |
+| Method | ServiceBusSender.SendMessageAsync() |
+| Parameters | Event payload containing ServiceRequestId, UserId,... |
+| Authentication | Uses Managed Identity to access Azure Service Bus. |
+| Error Handling | Fire-and-forget with logging on failure. Critical ... |
+| Performance | Low overhead, async operation. |
+
+### 2.5.6.0.0.0 Response
+
+#### 2.5.6.1.0.0 Source Id
+
+service-request-service-005
+
+#### 2.5.6.2.0.0 Target Id
+
+api-gateway-001
+
+#### 2.5.6.3.0.0 Message
+
+10. HTTP 200 OK
+
+#### 2.5.6.4.0.0 Sequence Number
+
+10
+
+#### 2.5.6.5.0.0 Type
+
+🔹 Response
+
+#### 2.5.6.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7.0.0 Return Message
+
+Body: { "success": true, "signatureUrl": "<blob_url>" }
+
+#### 2.5.6.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.6.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.6.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS (internal) |
+| Method | N/A |
+| Parameters | JSON response body with confirmation. |
+| Authentication | N/A |
+| Error Handling | Propagates error status codes (403, 404, 409, 503)... |
+| Performance | N/A |
+
+### 2.5.7.0.0.0 Response
+
+#### 2.5.7.1.0.0 Source Id
+
+api-gateway-001
+
+#### 2.5.7.2.0.0 Target Id
+
+mobile-client-013
+
+#### 2.5.7.3.0.0 Message
+
+11. HTTP 200 OK
+
+#### 2.5.7.4.0.0 Sequence Number
+
+11
+
+#### 2.5.7.5.0.0 Type
+
+🔹 Response
+
+#### 2.5.7.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.7.7.0.0 Return Message
+
+Body: { "success": true, "signatureUrl": "<blob_url>" }
+
+#### 2.5.7.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.7.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.7.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS/1.1 |
+| Method | N/A |
+| Parameters | Returns success response to the client. |
+| Authentication | N/A |
+| Error Handling | If an error code (4xx, 5xx) is received, it is for... |
+| Performance | N/A |
+
+### 2.5.8.0.0.0 Internal
+
+#### 2.5.8.1.0.0 Source Id
+
+mobile-client-013
+
+#### 2.5.8.2.0.0 Target Id
+
+mobile-client-013
+
+#### 2.5.8.3.0.0 Message
+
+12. displaySuccessConfirmation()
+
+#### 2.5.8.4.0.0 Sequence Number
+
+12
+
+#### 2.5.8.5.0.0 Type
+
+🔹 Internal
+
+#### 2.5.8.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.8.7.0.0 Return Message
+
+
+
+#### 2.5.8.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.8.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.8.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | UI Event |
+| Method | showSnackBar() |
+| Parameters | Displays a 'Signature Uploaded Successfully' messa... |
+| Authentication | N/A |
+| Error Handling | If a non-200 response is received, displays a spec... |
+| Performance | Immediate UI feedback. |
+
+## 2.6.0.0.0.0 Notes
+
+### 2.6.1.0.0.0 Content
+
+#### 2.6.1.1.0.0 Content
+
+Feature Implementation: The 'signature' (5.4.x) Flutter library is used for capturing the signature as a PNG.
+
+#### 2.6.1.2.0.0 Position
+
+TopLeft
+
+#### 2.6.1.3.0.0 Participant Id
+
+mobile-client-013
+
+#### 2.6.1.4.0.0 Sequence Number
+
+2
+
+### 2.6.2.0.0.0 Content
+
+#### 2.6.2.1.0.0 Content
+
+Data Flow: The PNG image is encoded and sent as a 'multipart/form-data' payload, which is standard for file uploads.
+
+#### 2.6.2.2.0.0 Position
+
+BottomRight
+
+#### 2.6.2.3.0.0 Participant Id
+
+api-gateway-001
+
+#### 2.6.2.4.0.0 Sequence Number
+
+4
+
+### 2.6.3.0.0.0 Content
+
+#### 2.6.3.1.0.0 Content
+
+Security Checkpoint: The Service Request Service MUST verify that the authenticated user (technician) is the one assigned to the service request ID in the URL path to prevent unauthorized actions.
+
+#### 2.6.3.2.0.0 Position
+
+TopRight
+
+#### 2.6.3.3.0.0 Participant Id
+
+service-request-service-005
+
+#### 2.6.3.4.0.0 Sequence Number
+
+6
+
+### 2.6.4.0.0.0 Content
+
+#### 2.6.4.1.0.0 Content
+
+Integration Point: The service integrates with Azure Blob Storage via the Azure.Storage.Blobs SDK. The storage container must be configured for private access.
+
+#### 2.6.4.2.0.0 Position
+
+BottomRight
+
+#### 2.6.4.3.0.0 Participant Id
+
+service-request-service-005
+
+#### 2.6.4.4.0.0 Sequence Number
+
+7
+
+## 2.7.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | 1. JWT token must be validated by the API Gateway.... |
+| Performance Targets | The end-to-end P95 latency for the signature uploa... |
+| Error Handling Strategy | The mobile client should implement a retry-on-fail... |
+| Testing Considerations | Unit tests for the service should mock the `BlobCl... |
+| Monitoring Requirements | Monitor the HTTP status codes for the `/signature`... |
+| Deployment Considerations | This feature requires a coordinated deployment of ... |
+

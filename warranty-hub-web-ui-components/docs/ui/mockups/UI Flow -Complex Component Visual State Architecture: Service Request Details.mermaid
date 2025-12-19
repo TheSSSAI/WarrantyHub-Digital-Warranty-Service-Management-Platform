@@ -1,0 +1,87 @@
+stateDiagram-v2
+    direction LR
+    
+    %% Styling Definitions
+    classDef loading fill:#f3f4f6,stroke:#6b7280,stroke-width:2px,stroke-dasharray: 5 5,color:#374151
+    classDef error fill:#fef2f2,stroke:#ef4444,stroke-width:2px,color:#991b1b
+    classDef success fill:#f0fdf4,stroke:#15803d,stroke-width:2px,color:#14532d
+    classDef offline fill:#fff7ed,stroke:#f97316,stroke-width:2px,color:#9a3412
+    classDef active fill:#eef2ff,stroke:#4f46e5,stroke-width:2px,color:#312e81
+    classDef decision fill:#fff,stroke:#333,stroke-width:1px,stroke-dasharray: 1
+
+    %% Initial Entry
+    [*] --> LoadingState
+
+    state "Loading State" as LoadingState {
+        [*] --> SkeletonRender
+        SkeletonRender : Display Shimmer Effect
+        SkeletonRender : Disable Interactions
+        SkeletonRender : Set aria-busy="true"
+    }
+
+    state "Error State" as ErrorState {
+        APIError : 5xx/4xx Response
+        NetworkError : Connection Timeout
+        ErrorUI : Display Friendly Message
+        ErrorUI : Show "Retry" Button
+        
+        APIError --> ErrorUI
+        NetworkError --> ErrorUI
+    }
+
+    state "Data Evaluation" as DataCheck <<choice>>
+
+    state "Content Display State" as ContentState {
+        
+        state "Empty State" as Empty {
+            NullData : No records found
+            EmptyUI : Display SVG Illustration
+            EmptyUI : Show Call-to-Action
+            NullData --> EmptyUI
+        }
+
+        state "Populated State" as Active {
+            state "Standard View" as Standard {
+                ReadOnly : Render Details (Text/Images)
+                Interactive : Enable Buttons/Inputs
+            }
+            
+            state "Live Tracking View" as Live {
+                ConnectingWSS : Establish WebSocket
+                Streaming : Update Map/Chat live
+            }
+
+            state "Offline/Cached View" as Offline {
+                LoadFromLocal : Read AsyncStorage/SQLite
+                OfflineUI : Show Stale Data
+                OfflineBanner : Display "Offline Mode" Badge
+                LoadFromLocal --> OfflineUI
+                OfflineUI --> OfflineBanner
+            }
+
+            %% Transitions within Active Content
+            Standard --> Live : Event: Tech "On The Way"
+            Live --> Standard : Event: Job Started/Ended
+            
+            Standard --> Offline : Event: Network Loss
+            Live --> Offline : Event: Network Loss
+            
+            Offline --> Standard : Event: Network Restored (Sync)
+        }
+    }
+
+    %% Main Transitions
+    LoadingState --> ErrorState : Fetch Failed
+    ErrorState --> LoadingState : User Clicks Retry
+    
+    LoadingState --> DataCheck : Fetch Success
+    DataCheck --> Empty : Data Array Empty / Null
+    DataCheck --> Active : Valid Data Present
+
+    %% Apply Styles
+    class LoadingState loading
+    class ErrorState error
+    class Active active
+    class Offline offline
+    class Empty success
+    class DataCheck decision

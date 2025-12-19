@@ -1,0 +1,71 @@
+flowchart TD
+    %% Define Styles
+    classDef user fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000
+    classDef system fill:#f5f5f5,stroke:#616161,stroke-width:2px,color:#000
+    classDef scAdmin fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
+    classDef tech fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef decision fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,color:#000
+    classDef terminator fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#000
+
+    Start((Start)) --> UserSubmit[User Submits Service Request]
+    UserSubmit --> SysValidate{System: Warranty Check}
+    
+    SysValidate -- Active --> SysFlagIn[Flag: In Warranty]
+    SysValidate -- Expired --> SysFlagOut[Flag: Out of Warranty]
+    
+    SysFlagIn --> SysRoute[System: Route to Service Center]
+    SysFlagOut --> SysRoute
+    
+    SysRoute --> SCQueue[SC Admin: Pending Queue]
+    
+    subgraph ServiceCenterScope [Service Center Operations]
+        SCQueue --> SCAck[SC Admin: Acknowledge Request]
+        SCAck --> SCStatus1(Status: Acknowledged)
+        SCStatus1 --> SCSelect[SC Admin: Select Technician]
+        SCSelect --> SCAssign[SC Admin: Assign Job]
+        SCAssign --> TechNotify[System: Notify Technician]
+    end
+    
+    TechNotify --> TechApp[Technician App: My Jobs]
+    
+    subgraph FieldServiceScope [Field Service Execution]
+        TechApp --> TechTravel[Tech: Activate Travel Mode]
+        TechTravel --> SysTrack[System: Broadcast Live Location]
+        SysTrack --> TechArrive[Tech: Arrive & Start Work]
+        TechArrive --> StatusWIP(Status: Work In Progress)
+        StatusWIP --> TechDiagnose[Tech: Perform Repair]
+        TechDiagnose --> TechComplete{Job Complete?}
+        
+        TechComplete -- No --> StatusWIP
+        TechComplete -- Yes --> TechNotes[Tech: Enter Notes & Parts]
+        TechNotes --> TechSig[Tech: Capture Customer Signature]
+        TechSig --> TechResolve[Tech: Mark as Resolved]
+    end
+    
+    TechResolve --> StatusResolved(Status: Resolved)
+    StatusResolved --> UserNotify[System: Notify User & Request Rating]
+    
+    subgraph PostServiceScope [Post-Service & Closure]
+        UserNotify --> UserAction{User Action within 7 Days}
+        
+        UserAction -- "Submit Rating" --> SysLogRating[System: Save Rating]
+        SysLogRating --> AutoClose
+        
+        UserAction -- "Dispute Resolution" --> StatusDispute(Status: Disputed)
+        StatusDispute --> BrandReview[Brand Admin: Review Dispute]
+        BrandReview --> BrandDecide{Decision?}
+        BrandDecide -- "Re-Open" --> SCQueue
+        BrandDecide -- "Uphold/Close" --> AutoClose
+        
+        UserAction -- "No Action (Timeout)" --> AutoClose[System: Auto-Close Ticket]
+    end
+    
+    AutoClose --> End((End: Ticket Closed))
+
+    %% Apply Styles
+    class Start,UserSubmit,UserAction,UserNotify,Feedback user
+    class SysValidate,SysRoute,SysTrack,TechNotify,SysLogRating,AutoClose system
+    class SCQueue,SCAck,SCSelect,SCAssign,SCStatus1,BrandReview,BrandDecide scAdmin
+    class TechApp,TechTravel,TechArrive,StatusWIP,TechDiagnose,TechNotes,TechSig,TechResolve,StatusResolved,StatusDispute tech
+    class TechComplete,SysValidate,UserAction,BrandDecide decision
+    class End,SysFlagIn,SysFlagOut terminator

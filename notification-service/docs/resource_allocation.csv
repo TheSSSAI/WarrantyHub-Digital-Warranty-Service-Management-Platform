@@ -1,0 +1,6 @@
+"team_member","role","skills","sprint_1_hours","sprint_1_utilization","sprint_1_tasks","sprint_2_hours","sprint_2_utilization","sprint_2_tasks","total_allocated_hours","capacity_buffer","collaboration_time","learning_objectives","sprint_3_hours","sprint_3_utilization","sprint_3_tasks","risk_factors"
+"devops.lead@company.com","DevOps Engineer","Terraform,Azure,Kubernetes","14.3","36%","TASK-INFRA-001,TASK-INFRA-004","12.7","32%","TASK-INFRA-002","27","40%","15%","","","","",""
+"backend.lead@company.com","Backend Lead","NestJS,PostgreSQL,Architecture","4.3","11%","TASK-INFRA-005","","0%","","4.3","50%","30%","Coordinate architecture","","","",""
+"backend.dev1@company.com","Backend Developer","NestJS,Auth,Redis","10.3","26%","TASK-AUTH-001","22.3","56%","TASK-AUTH-003,TASK-AUTH-004","46.9","20%","15%","","14.3","36%","TASK-SERV-007",""
+"backend.dev2@company.com","Backend Developer","NestJS,WebSockets,PostGIS","10.3","26%","TASK-SERV-005","6.3","16%","TASK-SERV-001","40.6","20%","15%","","24","60%","TASK-SERV-002,TASK-SERV-008",""
+"mobile.dev@company.com","Mobile Developer","React Native,Offline,Native Modules","14","35%","TASK-APP-004","37","93%","TASK-APP-001,TASK-APP-005","63.3","15%","15%","","12.3","31%","TASK-APP-002","Overload in Sprint 2 due to complex native & sync tasks"

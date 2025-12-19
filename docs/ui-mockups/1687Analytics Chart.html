@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics Chart Organism</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* =========================================
+       1. DESIGN TOKENS (Shared Foundation)
+       ========================================= */
+    :root {
+      /* Colors: Brand */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-500: #6366f1;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      
+      /* Colors: Neutrals */
+      --color-white: #ffffff;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-600: #4b5563;
+      --color-gray-700: #374151;
+      --color-gray-800: #1f2937;
+      --color-gray-900: #111827;
+
+      /* Colors: Data Visualization */
+      --color-data-1: #4f46e5; /* Primary */
+      --color-data-2: #06b6d4; /* Cyan */
+      --color-data-3: #10b981; /* Emerald */
+      --color-data-4: #f59e0b; /* Amber */
+      --color-data-5: #ef4444; /* Red */
+
+      /* Typography */
+      --font-family-base: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-size-xs: 12px;
+      --font-size-sm: 14px;
+      --font-size-md: 16px;
+      --font-size-lg: 18px;
+      --font-size-xl: 20px;
+      
+      /* Spacing */
+      --spacing-1: 4px;
+      --spacing-2: 8px;
+      --spacing-3: 12px;
+      --spacing-4: 16px;
+      --spacing-6: 24px;
+      --spacing-8: 32px;
+
+      /* Radius */
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      
+      /* Transitions */
+      --transition-fast: 150ms ease-in-out;
+    }
+
+    /* =========================================
+       2. GLOBAL RESET & BASE STYLES
+       ========================================= */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family-base);
+      color: var(--color-gray-900);
+      background-color: var(--color-gray-100);
+      line-height: 1.5;
+      padding: var(--spacing-6);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Screen Reader Only Utility */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* =========================================
+       3. MOLECULAR COMPONENTS (Dependencies)
+       ========================================= */
+    
+    /* Card Molecule */
+    .card {
+      background: var(--color-white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-gray-200);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .card__header {
+      padding: var(--spacing-4) var(--spacing-6);
+      border-bottom: 1px solid var(--color-gray-100);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--color-white);
+    }
+
+    .card__title {
+      font-size: var(--font-size-md);
+      font-weight: 600;
+      color: var(--color-gray-900);
+    }
+
+    .card__body {
+      padding: var(--spacing-6);
+      flex: 1;
+      position: relative;
+    }
+
+    /* Form Controls (Mini) */
+    .select-control {
+      padding: 6px 28px 6px 12px;
+      font-size: var(--font-size-sm);
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--radius-md);
+      background-color: var(--color-white);
+      color: var(--color-gray-700);
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-size: 16px;
+    }
+    
+    .select-control:focus {
+      outline: none;
+      border-color: var(--color-primary-600);
+      box-shadow: 0 0 0 3px var(--color-primary-100);
+    }
+
+    /* =========================================
+       4. ORGANISM: ANALYTICS CHART STYLES
+       ========================================= */
+
+    /* Chart Container Layout */
+    .chart-organism {
+      /* Wrapper specific styling if needed beyond card */
+    }
+
+    .chart-controls {
+      display: flex;
+      gap: var(--spacing-2);
+    }
+
+    .chart-area {
+      position: relative;
+      height: 300px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    /* --- CHART VARIANT: BAR (CSS-Only Mockup) --- */
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      height: 100%;
+      padding-bottom: 24px; /* Space for x-axis labels */
+      padding-left: 40px;   /* Space for y-axis labels */
+      position: relative;
+      border-bottom: 1px solid var(--color-gray-200);
+      border-left: 1px solid var(--color-gray-200);
+      gap: var(--spacing-2);
+    }
+
+    .bar-group {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      position: relative;
+      margin: 0 var(--spacing-1);
+    }
+
+    .bar {
+      width: 100%;
+      background-color: var(--color-data-1);
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .bar:hover {
+      opacity: 0.8;
+    }
+
+    /* Tooltip on Hover */
+    .bar::after {
+      content: attr(data-value);
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--color-gray-900);
+      color: var(--color-white);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+      z-index: 10;
+    }
+
+    .bar:hover::after {
+      opacity: 1;
+    }
+
+    .bar-label {
+      position: absolute;
+      bottom: -24px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: var(--color-gray-500);
+      width: 100%;
+      text-align: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Grid Lines */
+    .chart-grid-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      border-top: 1px dashed var(--color-gray-200);
+      z-index: 0;
+    }
+    
+    .chart-grid-label {
+      position: absolute;
+      left: -35px;
+      top: -8px;
+      font-size: 10px;
+      color: var(--color-gray-400);
+      text-align: right;
+      width: 30px;
+    }
+
+    /* --- CHART VARIANT: PIE/DONUT (CSS-Only Mockup) --- */
+    .pie-chart-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      position: relative;
+    }
+
+    .pie-chart {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: conic-gradient(
+        var(--color-data-1) 0% 65%, 
+        var(--color-data-2) 65% 85%, 
+        var(--color-data-3) 85% 100%
+      );
+      position: relative;
+    }
+
+    .pie-chart--donut::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 140px;
+      height: 140px;
+      background: var(--color-white);
+      border-radius: 50%;
+    }
+
+    .pie-center-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 1;
+    }
+
+    .pie-metric {
+      display: block;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--color-gray-900);
+    }
+    
+    .pie-label {
+      display: block;
+      font-size: 12px;
+      color: var(--color-gray-500);
+      text-transform: uppercase;
+    }
+
+    /* --- CHART VARIANT: FUNNEL (CSS-Only Mockup) --- */
+    .funnel-chart {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      height: 100%;
+      justify-content: center;
+      padding: var(--spacing-4) 0;
+    }
+
+    .funnel-step {
+      height: 40px;
+      background-color: var(--color-data-1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--spacing-3);
+      color: white;
+      font-size: var(--font-size-sm);
+      border-radius: 4px;
+      position: relative;
+      opacity: 0.9;
+      transition: width 0.3s ease;
+    }
+    
+    .funnel-step:nth-child(2) { background-color: #6366f1; } /* Primary 500 */
+    .funnel-step:nth-child(3) { background-color: #818cf8; } /* Primary 400 */
+    .funnel-step:nth-child(4) { background-color: #a5b4fc; } /* Primary 300 */
+
+    /* --- STATES: LOADING --- */
+    .chart-loading {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--color-white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    .chart-skeleton {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      padding: 20px;
+    }
+
+    .skeleton-bar {
+      flex: 1;
+      background: var(--color-gray-100);
+      border-radius: 4px 4px 0 0;
+      animation: pulse 1.5s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.5; height: 20%; }
+      50% { opacity: 1; height: 50%; }
+      100% { opacity: 0.5; height: 20%; }
+    }
+
+    /* --- STATES: NO DATA --- */
+    .chart-empty {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-gray-500);
+      background: rgba(255,255,255,0.9);
+      z-index: 1;
+    }
+
+    .empty-icon {
+      width: 48px;
+      height: 48px;
+      margin-bottom: var(--spacing-2);
+      stroke: var(--color-gray-400);
+      stroke-width: 1.5;
+    }
+
+    /* --- LEGEND --- */
+    .chart-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--spacing-4);
+      margin-top: var(--spacing-4);
+      justify-content: center;
+      padding-top: var(--spacing-4);
+      border-top: 1px solid var(--color-gray-100);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-2);
+      font-size: var(--font-size-xs);
+      color: var(--color-gray-600);
+    }
+
+    .legend-color {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    /* =========================================
+       5. SHOWCASE LAYOUT
+       ========================================= */
+    .showcase-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .showcase-header {
+      margin-bottom: var(--spacing-8);
+      padding-bottom: var(--spacing-4);
+      border-bottom: 2px solid var(--color-gray-200);
+    }
+    
+    .showcase-title {
+      font-size: var(--font-size-2xl);
+      font-weight: 700;
+      color: var(--color-gray-900);
+      margin-bottom: var(--spacing-2);
+    }
+
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: var(--spacing-6);
+    }
+    
+    .variant-section {
+      margin-bottom: var(--spacing-8);
+    }
+    
+    .variant-label {
+      font-size: var(--font-size-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-gray-500);
+      margin-bottom: var(--spacing-2);
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      .showcase-grid {
+        grid-template-columns: 1fr;
+      }
+      .chart-controls {
+        flex-direction: column;
+        width: 100%;
+      }
+      .select-control {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="showcase-container">
+  <header class="showcase-header">
+    <h1 class="showcase-title">Analytics Chart Organism</h1>
+    <p>Visualizing product, service, and warranty data for Brand Admin Dashboards.</p>
+  </header>
+
+  <!-- =============================================
+       VARIANT 1: FREQUENT FAULT PATTERNS (BAR)
+       ============================================= -->
+  <div class="variant-section">
+    <h3 class="variant-label">Variant 1: Bar Chart (Vertical) - "Frequent Fault Patterns"</h3>
+    <article class="card chart-organism">
+      <div class="card__header">
+        <h2 class="card__title">Fault Patterns</h2>
+        <div class="chart-controls">
+          <label class="sr-only" for="range-1">Date Range</label>
+          <select id="range-1" class="select-control">
+            <option>Last 30 Days</option>
+            <option>Last 90 Days</option>
+            <option>This Year</option>
+          </select>
+          <label class="sr-only" for="category-1">Category</label>
+          <select id="category-1" class="select-control">
+            <option>All Categories</option>
+            <option>Electronics</option>
+            <option>Appliances</option>
+          </select>
+        </div>
+      </div>
+      <div class="card__body">
+        <div class="chart-area">
+          <!-- Grid Lines -->
+          <div class="chart-grid-line" style="bottom: 0%"></div>
+          <div class="chart-grid-line" style="bottom: 25%"><span class="chart-grid-label">250</span></div>
+          <div class="chart-grid-line" style="bottom: 50%"><span class="chart-grid-label">500</span></div>
+          <div class="chart-grid-line" style="bottom: 75%"><span class="chart-grid-label">750</span></div>
+          <div class="chart-grid-line" style="bottom: 100%"><span class="chart-grid-label">1k</span></div>
+
+          <!-- Bar Chart Content -->
+          <div class="bar-chart">
+            <div class="bar-group">
+              <div class="bar" style="height: 80%; background-color: var(--color-data-1);" data-value="800 Requests"></div>
+              <span class="bar-label">Screen</span>
+            </div>
+            <div class="bar-group">
+              <div class="bar" style="height: 60%; background-color: var(--color-data-1);" data-value="600 Requests"></div>
+              <span class="bar-label">Battery</span>
+            </div>
+            <div class="bar-group">
+              <div class="bar" style="height: 45%; background-color: var(--color-data-1);" data-value="450 Requests"></div>
+              <span class="bar-label">Power</span>
+            </div>
+            <div class="bar-group">
+              <div class="bar" style="height: 30%; background-color: var(--color-data-1);" data-value="300 Requests"></div>
+              <span class="bar-label">Software</span>
+            </div>
+            <div class="bar-group">
+              <div class="bar" style="height: 15%; background-color: var(--color-data-1);" data-value="150 Requests"></div>
+              <span class="bar-label">Audio</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="chart-legend">
+          <div class="legend-item">
+            <div class="legend-color" style="background: var(--color-data-1)"></div>
+            <span>Service Requests</span>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <div class="showcase-grid">
+    <!-- =============================================
+         VARIANT 2: WARRANTY STATUS (DONUT)
+         ============================================= -->
+    <div class="variant-section">
+      <h3 class="variant-label">Variant 2: Donut Chart - "Warranty Status"</h3>
+      <article class="card chart-organism">
+        <div class="card__header">
+          <h2 class="card__title">Warranty Status</h2>
+          <div class="chart-controls">
+            <select class="select-control" aria-label="Product Type">
+              <option>All Products</option>
+            </select>
+          </div>
+        </div>
+        <div class="card__body">
+          <div class="chart-area">
+            <div class="pie-chart-wrapper">
+              <div class="pie-chart pie-chart--donut"></div>
+              <div class="pie-center-text">
+                <span class="pie-metric">1,240</span>
+                <span class="pie-label">Total</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="chart-legend">
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--color-data-1)"></div>
+              <span>Active (65%)</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--color-data-2)"></div>
+              <span>Expiring Soon (20%)</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--color-data-3)"></div>
+              <span>Expired (15%)</span>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <!-- =============================================
+         VARIANT 3: ONBOARDING FUNNEL
+         ============================================= -->
+    <div class="variant-section">
+      <h3 class="variant-label">Variant 3: Funnel Chart - "Onboarding Funnel"</h3>
+      <article class="card chart-organism">
+        <div class="card__header">
+          <h2 class="card__title">Service Center Onboarding</h2>
+        </div>
+        <div class="card__body">
+          <div class="chart-area" style="height: 250px;">
+            <div class="funnel-chart">
+              <div class="funnel-step" style="width: 100%">
+                <span>Application Started</span>
+                <span>150</span>
+              </div>
+              <div class="funnel-step" style="width: 80%">
+                <span>Documents Submitted</span>
+                <span>120</span>
+              </div>
+              <div class="funnel-step" style="width: 60%">
+                <span>In Review</span>
+                <span>90</span>
+              </div>
+              <div class="funnel-step" style="width: 40%">
+                <span>Approved</span>
+                <span>60</span>
+              </div>
+            </div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item">
+              <span>Conversion Rate: <strong>40%</strong></span>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <!-- =============================================
+       STATES: LOADING & EMPTY
+       ============================================= -->
+  <div class="showcase-grid">
+    <div class="variant-section">
+      <h3 class="variant-label">State: Loading</h3>
+      <article class="card chart-organism">
+        <div class="card__header">
+          <h2 class="card__title">Service Request Volume</h2>
+        </div>
+        <div class="card__body">
+          <div class="chart-area">
+            <div class="chart-loading">
+              <div class="chart-skeleton">
+                <div class="skeleton-bar" style="animation-delay: 0s"></div>
+                <div class="skeleton-bar" style="animation-delay: 0.2s"></div>
+                <div class="skeleton-bar" style="animation-delay: 0.4s"></div>
+                <div class="skeleton-bar" style="animation-delay: 0.6s"></div>
+                <div class="skeleton-bar" style="animation-delay: 0.8s"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div class="variant-section">
+      <h3 class="variant-label">State: No Data</h3>
+      <article class="card chart-organism">
+        <div class="card__header">
+          <h2 class="card__title">Geographic Distribution</h2>
+        </div>
+        <div class="card__body">
+          <div class="chart-area">
+            <div class="chart-empty">
+              <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p>No data available for this period.</p>
+              <button class="btn btn--secondary btn--sm" style="margin-top: 12px">Reset Filters</button>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

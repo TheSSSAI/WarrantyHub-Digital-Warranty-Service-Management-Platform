@@ -1,0 +1,3 @@
+"environment_name","environment_type","deployment_frequency","data_refresh_frequency","infrastructure_stack","service_dependencies","monitoring_tools","access_control","backup_strategy","disaster_recovery","cost_optimization","maintenance_window"
+"Dev (AKS)","Ephemeral","Per Commit","Daily (Seeded)","AKS; PostgreSQL (Dev SKU); Redis","Mocks for Email/SMS; Real Azure AD B2C (Dev Tenant)","Azure Monitor","Developers","None","Rebuild via Terraform","Spot Instances; Nightly Shutdown","Ad-hoc"
+"Staging (AKS)","Persistent","Daily","Weekly (Anonymized Prod)","AKS (Prod-like); PostgreSQL (HA); Redis (HA)","Full Integrations","Azure Monitor; Application Insights","QA; Product Owners","Daily Snapshots","Tested Monthly","Reserved Instances","Planned"

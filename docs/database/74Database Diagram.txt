@@ -1,0 +1,1 @@
+This diagram illustrates the structure of the AuditRecord entity within the OpenSearch-based AuditDB. It is a single-entity design focused on storing detailed audit trail information, optimized for searching and analysis. Each record has a unique identifier and captures who performed what action, on which entity, from where, and when, along with the specific changes made.

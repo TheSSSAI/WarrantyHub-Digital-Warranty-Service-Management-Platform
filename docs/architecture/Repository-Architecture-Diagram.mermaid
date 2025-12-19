@@ -1,0 +1,175 @@
+graph TD
+    subgraph "Architectural Layers"
+        direction TB
+
+        subgraph "_"[ ]
+            direction LR
+            subgraph "Presentation Layer (Clients)"
+                direction TB
+                repo_webapp["REPO-FE-002<br>warranty-hub-webapp<br>(Next.js)"]
+                repo_mobile["REPO-FE-003<br>warranty-hub-mobile<br>(React Native)"]
+            end
+
+            subgraph "Gateway Layer"
+                direction TB
+                repo_gateway["REPO-GW-013<br>api-gateway<br>(Azure APIM Config)"]
+            end
+        end
+
+        subgraph "Service Layer (Microservices)"
+            direction RL
+            subgraph "Core Business Services"
+                repo_product["REPO-BS-002<br>product-service"]
+                repo_servicereq["REPO-BS-004<br>service-request-service"]
+            end
+            subgraph "Supporting Services"
+                repo_identity["REPO-BS-001<br>identity-service"]
+                repo_servicecenter["REPO-BS-003<br>service-center-service"]
+                repo_reporting["REPO-BS-007<br>reporting-service"]
+            end
+            subgraph "Real-time & Async Services"
+                repo_geo["REPO-BS-005<br>geolocation-service"]
+                repo_notify["REPO-BS-006<br>notification-service"]
+                repo_audit["REPO-BW-008<br>audit-service"]
+                repo_async["REPO-BW-009<br>async-processors-service"]
+            end
+        end
+
+        subgraph "Shared Libraries (Packages)"
+            direction LR
+            repo_contracts["REPO-CL-010<br>warranty-hub-contracts<br>(OpenAPI, Schemas)"]
+            repo_shared_nestjs["REPO-SL-011<br>warranty-hub-nestjs-shared<br>(NPM Package)"]
+            repo_shared_ui["REPO-SL-012<br>warranty-hub-web-ui-components<br>(NPM Package)"]
+        end
+
+        subgraph "Infrastructure Layer"
+            direction TB
+            repo_infra["REPO-IN-004<br>warranty-hub-infrastructure<br>(Terraform)"]
+        end
+    end
+
+    %% Dependencies
+    repo_webapp --> repo_gateway
+    repo_mobile --> repo_gateway
+    repo_mobile -.-> repo_geo
+    repo_mobile -.-> repo_servicereq
+    repo_gateway --> repo_identity
+    repo_gateway --> repo_product
+    repo_gateway --> repo_servicereq
+    repo_gateway --> repo_servicecenter
+    repo_gateway --> repo_reporting
+
+    repo_servicereq --> repo_product
+    repo_servicereq --> repo_servicecenter
+
+    %% Shared Library Dependencies
+    repo_webapp --> repo_shared_ui
+    repo_webapp --> repo_contracts
+    repo_mobile --> repo_contracts
+
+    repo_identity --> repo_shared_nestjs
+    repo_product --> repo_shared_nestjs
+    repo_servicereq --> repo_shared_nestjs
+    repo_servicecenter --> repo_shared_nestjs
+    repo_geo --> repo_shared_nestjs
+    repo_notify --> repo_shared_nestjs
+    repo_reporting --> repo_shared_nestjs
+    repo_audit --> repo_shared_nestjs
+    repo_async --> repo_shared_nestjs
+
+    repo_identity --> repo_contracts
+    repo_product --> repo_contracts
+    repo_servicereq --> repo_contracts
+    repo_servicecenter --> repo_contracts
+    repo_geo --> repo_contracts
+    repo_notify --> repo_contracts
+    repo_reporting --> repo_contracts
+    repo_audit --> repo_contracts
+    repo_async --> repo_contracts
+
+    classDef client fill:#D5E8D4,stroke:#82B366,stroke-width:2px;
+    classDef gateway fill:#DAE8FC,stroke:#6C8EBF,stroke-width:2px;
+    classDef service fill:#F8CECC,stroke:#B85450,stroke-width:2px;
+    classDef shared fill:#FFF2CC,stroke:#D6B656,stroke-width:2px;
+    classDef infra fill:#E1D5E7,stroke:#9673A6,stroke-width:2px;
+
+    class repo_webapp,repo_mobile client;
+    class repo_gateway gateway;
+    class repo_identity,repo_product,repo_servicereq,repo_servicecenter,repo_geo,repo_notify,repo_reporting,repo_audit,repo_async service;
+    class repo_contracts,repo_shared_nestjs,repo_shared_ui shared;
+    class repo_infra infra;
+end
+
+
+
+graph TD
+    subgraph "External Users"
+        actor_consumer[Consumer]
+        actor_technician[Technician]
+        actor_admin[Brand/Super Admin]
+    end
+
+    subgraph "Client Applications"
+        mobile_app["Mobile App<br>(React Native)"]
+        web_app["Web App<br>(Next.js)"]
+    end
+
+    subgraph "Cloud Platform (Microsoft Azure)"
+        api_gateway["API Gateway<br>(Azure APIM)"]
+        
+        subgraph "Backend Microservices (on AKS)"
+            product_svc["Product Service"]
+            servicereq_svc["Service Request Service"]
+            geo_svc["Geolocation Service"]
+            notify_svc["Notification Service"]
+            other_svcs["Other Services..."]
+        end
+
+        subgraph "Asynchronous Infrastructure"
+            service_bus["Azure Service Bus<br>(Topics & Queues)"]
+            async_workers["Async Workers<br>(OCR, Scheduled)"]
+        end
+
+        subgraph "Persistence Layer"
+            postgres_db["PostgreSQL DB<br>w/ Read Replica"]
+            redis_cache["Redis Cache"]
+            blob_storage["Blob Storage"]
+        end
+
+        subgraph "External Integrations"
+            fcm["Firebase Cloud Messaging (FCM)"]
+            ocr_svc["Azure AI Document Intelligence"]
+        end
+    end
+
+    %% Flows
+    actor_consumer --> mobile_app
+    actor_technician --> mobile_app
+    actor_admin --> web_app
+    actor_consumer --> web_app
+
+    mobile_app -- "HTTPS/REST" --> api_gateway
+    web_app -- "HTTPS/REST" --> api_gateway
+
+    api_gateway -- "Routes REST Traffic" --> product_svc
+    api_gateway -- "Routes REST Traffic" --> servicereq_svc
+    api_gateway -- "Routes REST Traffic" --> other_svcs
+
+    mobile_app -- "WSS (Chat)" --> servicereq_svc
+    mobile_app -- "WSS (GPS)" --> geo_svc
+
+    product_svc -- "Publishes 'InvoiceUploaded' event" --> service_bus
+    servicereq_svc -- "Publishes 'StatusChanged' event" --> service_bus
+    async_workers -- "Consumes 'InvoiceUploaded' event" --> service_bus
+    notify_svc -- "Consumes 'StatusChanged' event" --> service_bus
+
+    product_svc -- "R/W" --> postgres_db
+    servicereq_svc -- "R/W" --> postgres_db
+    other_svcs -- "R/W" --> postgres_db
+    product_svc -- "Caches Brand/Model Data" --> redis_cache
+    geo_svc -- "Stores Live Locations" --> redis_cache
+    product_svc -- "Stores Invoices" --> blob_storage
+
+    notify_svc -- "Sends Push Notification" --> fcm
+    async_workers -- "Processes Invoice" --> ocr_svc
+end

@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice Vault - Consumer Portal</title>
+  <style>
+    /* -----------------------------------------------------------------------------
+     * DESIGN SYSTEM TOKENS
+     * ----------------------------------------------------------------------------- */
+    :root {
+      /* Colors */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      --color-primary-800: #3730a3;
+      
+      --color-secondary-50: #f8fafc;
+      --color-secondary-200: #e2e8f0;
+      --color-secondary-500: #64748b;
+      --color-secondary-900: #0f172a;
+
+      --color-neutral-white: #ffffff;
+      --color-neutral-gray-50: #f9fafb;
+      --color-neutral-gray-100: #f3f4f6;
+      --color-neutral-gray-200: #e5e7eb;
+      --color-neutral-gray-300: #d1d5db;
+      --color-neutral-gray-400: #9ca3af;
+      --color-neutral-gray-500: #6b7280;
+      --color-neutral-gray-700: #374151;
+      --color-neutral-gray-900: #111827;
+
+      --color-success-bg: #ecfdf5;
+      --color-success-text: #065f46;
+      
+      --color-overlay-backdrop: rgba(17, 24, 39, 0.75);
+
+      /* Typography */
+      --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-family-mono: 'JetBrains Mono', monospace;
+
+      /* Spacing */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-6: 24px;
+      --space-8: 32px;
+
+      /* Radii */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-full: 9999px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      
+      /* Layout */
+      --container-width-desktop: 1140px;
+      --header-height: 64px;
+    }
+
+    /* -----------------------------------------------------------------------------
+     * RESET & BASE STYLES
+     * ----------------------------------------------------------------------------- */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family-primary);
+      background-color: var(--color-neutral-gray-50);
+      color: var(--color-neutral-gray-900);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+
+    input {
+      font: inherit;
+    }
+
+    /* -----------------------------------------------------------------------------
+     * UTILITIES & LAYOUT
+     * ----------------------------------------------------------------------------- */
+    .container {
+      max-width: var(--container-width-desktop);
+      margin: 0 auto;
+      padding: 0 var(--space-4);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .icon {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* -----------------------------------------------------------------------------
+     * COMPONENTS: NAVIGATION
+     * ----------------------------------------------------------------------------- */
+    .app-header {
+      background-color: var(--color-neutral-white);
+      border-bottom: 1px solid var(--color-neutral-gray-200);
+      height: var(--header-height);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .app-header__content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 100%;
+    }
+
+    .app-logo {
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--color-primary-600);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      background-color: var(--color-primary-100);
+      color: var(--color-primary-700);
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    /* -----------------------------------------------------------------------------
+     * COMPONENT: BUTTONS
+     * ----------------------------------------------------------------------------- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      padding: 10px 20px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn--primary {
+      background-color: var(--color-primary-600);
+      color: var(--color-neutral-white);
+    }
+
+    .btn--primary:hover {
+      background-color: var(--color-primary-700);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn--primary:focus-visible {
+      outline: 2px solid var(--color-primary-600);
+      outline-offset: 2px;
+    }
+
+    .btn--secondary {
+      background-color: var(--color-neutral-white);
+      border: 1px solid var(--color-neutral-gray-300);
+      color: var(--color-neutral-gray-700);
+    }
+
+    .btn--secondary:hover {
+      background-color: var(--color-neutral-gray-50);
+      border-color: var(--color-neutral-gray-400);
+    }
+
+    .btn--icon-only {
+      padding: 8px;
+      border-radius: var(--radius-md);
+      color: var(--color-neutral-gray-500);
+    }
+    
+    .btn--icon-only:hover {
+      background-color: var(--color-neutral-gray-100);
+      color: var(--color-neutral-gray-900);
+    }
+
+    /* -----------------------------------------------------------------------------
+     * COMPONENT: INPUTS & SEARCH
+     * ----------------------------------------------------------------------------- */
+    .search-bar {
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .search-bar__input {
+      width: 100%;
+      padding: 10px 12px 10px 40px;
+      border: 1px solid var(--color-neutral-gray-300);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      color: var(--color-neutral-gray-900);
+      transition: border-color 0.2s;
+    }
+
+    .search-bar__input:focus {
+      outline: none;
+      border-color: var(--color-primary-600);
+      box-shadow: 0 0 0 3px var(--color-primary-100);
+    }
+
+    .search-bar__icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--color-neutral-gray-400);
+      pointer-events: none;
+    }
+
+    /* -----------------------------------------------------------------------------
+     * COMPONENT: UPLOAD ZONE
+     * ----------------------------------------------------------------------------- */
+    .upload-zone {
+      margin-top: var(--space-6);
+      background-color: var(--color-neutral-white);
+      border: 2px dashed var(--color-neutral-gray-300);
+      border-radius: var(--radius-lg);
+      padding: var(--space-8);
+      text-align: center;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .upload-zone:hover, .upload-zone.is-dragover {
+      border-color: var(--color-primary-600);
+      background-color: var(--color-primary-50);
+    }
+
+    .upload-zone__content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .upload-zone__icon {
+      width: 48px;
+      height: 48px;
+      color: var(--color-primary-600);
+      background-color: var(--color-primary-50);
+      padding: 10px;
+      border-radius: var(--radius-full);
+      margin-bottom: var(--space-2);
+    }
+
+    .upload-zone__title {
+      font-weight: 600;
+      color: var(--color-neutral-gray-900);
+    }
+
+    .upload-zone__text {
+      color: var(--color-neutral-gray-500);
+      font-size: 14px;
+    }
+
+    .upload-input {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    /* -----------------------------------------------------------------------------
+     * COMPONENT: TOOLBAR
+     * ----------------------------------------------------------------------------- */
+    .vault-toolbar {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      margin: var(--space-8) 0 var(--space-6);
+    }
+
+    @media (min-width: 768px) {
+      .vault-toolbar {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .vault-toolbar__actions {
+      display: flex;
+      gap: var(--space-2);
+    }
+
+    /* -----------------------------------------------------------------------------
+     * COMPONENT: DOCUMENT GRID
+     * ----------------------------------------------------------------------------- */
+    .document-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+      margin-bottom: var(--space-8);
+    }
+
+    @media (min-width: 640px) {
+      .document-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .document-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    /* -----------------------------------------------------------------------------
+     * COMPONENT: DOCUMENT CARD
+     * ----------------------------------------------------------------------------- */
+    .doc-card {
+      background: var(--color-neutral-white);
+      border: 1px solid var(--color-neutral-gray-200);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .doc-card:hover {
+      border-color: var(--color-neutral-gray-300);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .doc-card:focus-within {
+      ring: 2px solid var(--color-primary-600);
+    }
+
+    .doc-card__preview {
+      aspect-ratio: 4/3;
+      background-color: var(--color-neutral-gray-100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid var(--color-neutral-gray-100);
+      position: relative;
+    }
+
+    .doc-card__img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .doc-card__icon {
+      width: 48px;
+      height: 48px;
+      color: var(--color-neutral-gray-400);
+    }
+
+    .doc-card__type-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .doc-card__body {
+      padding: var(--space-4);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+
+    .doc-card__title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-neutral-gray-900);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .doc-card__subtitle {
+      font-size: 14px;
+      color: var(--color-secondary-500);
+    }
+
+    .doc-card__meta {
+      margin-top: auto;
+      padding-top: var(--space-3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--color-neutral-gray-500);
+    }
+
+    .doc-card__actions {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .doc-card:hover .doc-card__actions,
+    .doc-card__actions:focus-within {
+      opacity: 1;
+    }
+    
+    /* Mobile optimization: always show actions or use a dedicated menu button */
+    @media (max-width: 768px) {
+      .doc-card__actions {
+        opacity: 1;
+      }
+    }
+
+    .action-menu-btn {
+      background: var(--color-neutral-white);
+      border: 1px solid var(--color-neutral-gray-200);
+      border-radius: var(--radius-md);
+      padding: 4px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* -----------------------------------------------------------------------------
+     * COMPONENT: PREVIEW MODAL
+     * ----------------------------------------------------------------------------- */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: var(--color-overlay-backdrop);
+      z-index: 100;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: var(--space-4);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-backdrop[aria-hidden="false"] {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal {
+      background-color: var(--color-neutral-white);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 900px;
+      height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+    }
+
+    .modal__header {
+      padding: var(--space-4) var(--space-6);
+      border-bottom: 1px solid var(--color-neutral-gray-200);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal__title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--color-neutral-gray-900);
+    }
+
+    .modal__content {
+      flex: 1;
+      background-color: var(--color-neutral-gray-100);
+      padding: var(--space-6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: auto;
+    }
+
+    .modal__preview-img {
+      max-width: 100%;
+      max-height: 100%;
+      box-shadow: var(--shadow-md);
+    }
+
+    .modal__footer {
+      padding: var(--space-4) var(--space-6);
+      border-top: 1px solid var(--color-neutral-gray-200);
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-3);
+    }
+
+    /* -----------------------------------------------------------------------------
+     * STATES & FEEDBACK
+     * ----------------------------------------------------------------------------- */
+    .state-empty {
+      text-align: center;
+      padding: 64px 0;
+    }
+
+    .state-empty__icon {
+      width: 64px;
+      height: 64px;
+      color: var(--color-neutral-gray-300);
+      margin-bottom: var(--space-4);
+    }
+
+    .upload-progress {
+      display: none; /* Hidden by default */
+      margin-top: var(--space-4);
+      background: var(--color-neutral-gray-100);
+      border-radius: var(--radius-full);
+      height: 6px;
+      overflow: hidden;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .upload-progress__bar {
+      background: var(--color-primary-600);
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="container app-header__content">
+      <a href="#" class="app-logo">
+        <svg class="icon" viewBox="0 0 24 24">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+        <span>Warrantify</span>
+      </a>
+      
+      <div class="user-profile">
+        <button class="btn btn--icon-only" aria-label="Notifications">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </button>
+        <div class="avatar">JD</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    
+    <!-- Upload Zone -->
+    <div class="upload-zone" id="dropZone">
+      <input type="file" class="upload-input" id="fileInput" multiple accept="image/*,.pdf" aria-label="Upload invoice">
+      <div class="upload-zone__content">
+        <div class="upload-zone__icon">
+          <svg class="icon" style="width: 24px; height: 24px;" viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+          </svg>
+        </div>
+        <h3 class="upload-zone__title">Upload New Invoice</h3>
+        <p class="upload-zone__text">Drag and drop file here or click to browse</p>
+        <p class="caption" style="color: var(--color-neutral-gray-500); margin-top: 4px;">Supports JPG, PNG, PDF (Max 10MB)</p>
+      </div>
+      
+      <!-- Upload Progress State (Hidden by default) -->
+      <div class="upload-progress" id="uploadProgress">
+        <div class="upload-progress__bar" style="width: 45%"></div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="vault-toolbar">
+      <div class="search-bar">
+        <svg class="icon search-bar__icon" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="search" class="search-bar__input" placeholder="Search by product, brand or date..." aria-label="Search invoices">
+      </div>
+      
+      <div class="vault-toolbar__actions">
+        <button class="btn btn--secondary">
+          <svg class="icon" viewBox="0 0 24 24">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+          </svg>
+          Filter
+        </button>
+        <button class="btn btn--secondary">
+          <svg class="icon" viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Add Manual
+        </button>
+      </div>
+    </div>
+
+    <!-- Document Grid -->
+    <div class="document-grid" id="documentGrid">
+      
+      <!-- Card 1: Image Invoice -->
+      <article class="doc-card" tabindex="0">
+        <div class="doc-card__preview">
+          <span class="doc-card__type-badge">IMG</span>
+          <!-- Placeholder image for demo -->
+          <svg class="doc-card__icon" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+        </div>
+        <div class="doc-card__body">
+          <h3 class="doc-card__title">MacBook Pro 16"</h3>
+          <p class="doc-card__subtitle">Apple Store</p>
+          <div class="doc-card__meta">
+            <span>Oct 24, 2023</span>
+            <span>$2,499.00</span>
+          </div>
+        </div>
+        <div class="doc-card__actions">
+          <button class="action-menu-btn" aria-label="Actions" onclick="openPreview('MacBook Pro 16\'')">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </article>
+
+      <!-- Card 2: PDF Invoice -->
+      <article class="doc-card" tabindex="0">
+        <div class="doc-card__preview">
+          <span class="doc-card__type-badge" style="background-color: #ef4444;">PDF</span>
+          <svg class="doc-card__icon" viewBox="0 0 24 24">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+        </div>
+        <div class="doc-card__body">
+          <h3 class="doc-card__title">Aeron Chair</h3>
+          <p class="doc-card__subtitle">Herman Miller</p>
+          <div class="doc-card__meta">
+            <span>Sep 12, 2023</span>
+            <span>$1,250.00</span>
+          </div>
+        </div>
+        <div class="doc-card__actions">
+          <button class="action-menu-btn" aria-label="Actions" onclick="openPreview('Aeron Chair')">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </article>
+
+      <!-- Card 3 -->
+      <article class="doc-card" tabindex="0">
+        <div class="doc-card__preview">
+           <span class="doc-card__type-badge">IMG</span>
+           <svg class="doc-card__icon" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+        </div>
+        <div class="doc-card__body">
+          <h3 class="doc-card__title">UltraSharp Monitor</h3>
+          <p class="doc-card__subtitle">Dell</p>
+          <div class="doc-card__meta">
+            <span>Aug 05, 2023</span>
+            <span>$450.00</span>
+          </div>
+        </div>
+        <div class="doc-card__actions">
+          <button class="action-menu-btn" aria-label="Actions" onclick="openPreview('UltraSharp Monitor')">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </article>
+
+       <!-- Card 4 -->
+       <article class="doc-card" tabindex="0">
+        <div class="doc-card__preview">
+           <span class="doc-card__type-badge" style="background-color: #ef4444;">PDF</span>
+           <svg class="doc-card__icon" viewBox="0 0 24 24">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+        </div>
+        <div class="doc-card__body">
+          <h3 class="doc-card__title">MX Master 3S</h3>
+          <p class="doc-card__subtitle">Logitech</p>
+          <div class="doc-card__meta">
+            <span>Jul 15, 2023</span>
+            <span>$99.00</span>
+          </div>
+        </div>
+        <div class="doc-card__actions">
+          <button class="action-menu-btn" aria-label="Actions" onclick="openPreview('MX Master 3S')">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </article>
+
+    </div>
+
+    <!-- Empty State (Hidden by default for this mockup) -->
+    <!-- 
+    <div class="state-empty">
+      <svg class="state-empty__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+        <polyline points="13 2 13 9 20 9"></polyline>
+      </svg>
+      <h3>No Invoices Found</h3>
+      <p style="color: var(--color-neutral-gray-500);">Upload your first invoice to get started.</p>
+    </div>
+    -->
+
+  </main>
+
+  <!-- Preview Modal -->
+  <div class="modal-backdrop" id="previewModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <header class="modal__header">
+        <h2 class="modal__title" id="modalTitle">Invoice Preview</h2>
+        <button class="btn btn--icon-only" aria-label="Close modal" onclick="closePreview()">
+          <svg class="icon" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </header>
+      
+      <div class="modal__content">
+        <!-- Placeholder for actual document content (image/pdf) -->
+        <div style="text-align: center; color: var(--color-neutral-gray-500);">
+          <svg class="icon" style="width: 64px; height: 64px; margin-bottom: 16px;" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <p>Document Preview</p>
+        </div>
+      </div>
+
+      <footer class="modal__footer">
+        <button class="btn btn--secondary">
+          <svg class="icon" viewBox="0 0 24 24" style="margin-right: 8px;">
+             <circle cx="18" cy="5" r="3"></circle>
+             <circle cx="6" cy="12" r="3"></circle>
+             <circle cx="18" cy="19" r="3"></circle>
+             <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+             <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+          </svg>
+          Share
+        </button>
+        <button class="btn btn--primary">
+          <svg class="icon" viewBox="0 0 24 24" style="margin-right: 8px;">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Download
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    // Simple interactions for the mockup
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const modal = document.getElementById('previewModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const uploadProgress = document.getElementById('uploadProgress');
+
+    // Modal Handling
+    function openPreview(docName) {
+      modalTitle.textContent = docName;
+      modal.setAttribute('aria-hidden', 'false');
+      // In a real app, we would focus the first interactive element inside
+    }
+
+    function closePreview() {
+      modal.setAttribute('aria-hidden', 'true');
+    }
+
+    // Close modal on backdrop click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closePreview();
+      }
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') {
+        closePreview();
+      }
+    });
+
+    // Drag & Drop visual feedback
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('is-dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('is-dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('is-dragover');
+      // Simulate file upload start
+      uploadProgress.style.display = 'block';
+      setTimeout(() => {
+        uploadProgress.style.display = 'none';
+        alert('Demo: Invoice uploaded successfully');
+      }, 1500);
+    });
+
+    fileInput.addEventListener('change', () => {
+       if(fileInput.files.length > 0) {
+         uploadProgress.style.display = 'block';
+         setTimeout(() => {
+            uploadProgress.style.display = 'none';
+            alert('Demo: Invoice uploaded successfully');
+         }, 1500);
+       }
+    });
+  </script>
+</body>
+</html>

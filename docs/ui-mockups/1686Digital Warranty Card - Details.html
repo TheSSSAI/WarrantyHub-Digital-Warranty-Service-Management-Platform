@@ -1,0 +1,739 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Warranty Card - Component Specifications</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            line-height: 1.6;
+            color: #2d3748;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        
+        .component-type-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 8px;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .section h2 {
+            color: #1e293b;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #4f46e5;
+            display: inline-block;
+        }
+        
+        .section h3 {
+            color: #4f46e5;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 20px 0 12px 0;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .info-card {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .info-card h4 {
+            color: #374151;
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
+        
+        .info-card p {
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .variations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+        
+        .variation-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .variation-name {
+            font-weight: 600;
+            color: #4f46e5;
+            margin-bottom: 8px;
+        }
+        
+        .variation-code {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            color: #1e293b;
+            overflow-x: auto;
+            margin: 8px 0;
+            border-left: 4px solid #4f46e5;
+        }
+        
+        .variation-description {
+            font-size: 13px;
+            color: #64748b;
+            font-style: italic;
+        }
+        
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        
+        .feature-category {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .feature-category h4 {
+            color: #374151;
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        
+        .feature-category ul {
+            list-style: none;
+        }
+        
+        .feature-category li {
+            padding: 6px 0;
+            color: #4b5563;
+            font-size: 14px;
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        .feature-category li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        .tokens-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 8px;
+        }
+        
+        .token {
+            background: #f0f9ff;
+            color: #0369a1;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            border: 1px solid #bae6fd;
+            text-align: center;
+        }
+        
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin: 16px 0;
+            line-height: 1.4;
+        }
+        
+        .stats-bar {
+            background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+        
+        .stat {
+            flex: 1;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Digital Warranty Card</h1>
+            <div class="component-type-badge">organism Component</div>
+        </div>
+        <div class="stats-bar">
+            <div class="stat">
+                <span class="stat-number">0</span>
+                <span class="stat-label">Variations</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">6</span>
+                <span class="stat-label">Design Tokens</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">3</span>
+                <span class="stat-label">Breakpoints</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">5</span>
+                <span class="stat-label">A11y Features</span>
+            </div>
+        </div><div class="content">
+        <div class="section">
+            <h2>Component Information</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h4>Component Id</h4>
+                    <p>ORG-DATA-001</p>
+                </div>
+                <div class="info-card">
+                    <h4>Component Name</h4>
+                    <p>Digital Warranty Card</p>
+                </div>
+                <div class="info-card">
+                    <h4>Component Type</h4>
+                    <p>organism</p>
+                </div>
+                <div class="info-card">
+                    <h4>Description</h4>
+                    <p>A comprehensive card component displaying product warranty status, key details (serial, dates), and primary actions. Acts as the central hub for product management.</p>
+                </div>
+                <div class="info-card">
+                    <h4>Design System Alignment</h4>
+                    <p>Utilizes Card, Status Badge, and Button molecules. Consumes color semantic tokens for status states and spacing tokens for internal layout.</p>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <h2>Design Tokens Used</h2>
+            <div class="tokens-grid"><div class="token">--color-primary-600</div><div class="token">--radius-lg</div><div class="token">--shadow-md</div><div class="token">--color-success-bg</div><div class="token">--color-warning-bg</div><div class="token">--color-error-bg</div>
+            </div>
+        </div>
+        <div class="section">
+            <h2>Responsive Specifications</h2>
+            <div class="feature-list">
+                <div class="feature-category">
+                    <h4>Mobile Adaptations</h4>
+                    <ul><li>Header elements stack vertically</li><li>Action buttons take full width</li><li>Meta data stacks for readability</li><li>Minimum touch targets of 44px maintained</li>
+                    </ul>
+                </div>
+                <div class="feature-category">
+                    <h4>Tablet Adaptations</h4>
+                    <ul><li>Grid layout for dates</li><li>Buttons share rows</li>
+                    </ul>
+                </div>
+                <div class="feature-category">
+                    <h4>Desktop Enhancements</h4>
+                    <ul><li>Hover effects on card and buttons</li><li>Horizontal layout for meta data</li><li>Tooltip visibility on status badges</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <h2>Accessibility Features</h2>
+            <div class="feature-list">
+                <div class="feature-category">
+                    <h4>Keyboard Support</h4><p>Logical tab order through actions</p>
+                </div>
+                <div class="feature-category">
+                    <h4>Screen Reader Support</h4><p>Status badges use hidden text for context, semantic article tags used for card structure</p>
+                </div>
+                <div class="feature-category">
+                    <h4>Focus Management</h4><p>Visible focus ring on all interactive elements</p>
+                </div>
+                <div class="feature-category">
+                    <h4>Aria Attributes</h4><ul><li>aria-labelledby</li><li>aria-label for icon buttons</li><li>role='article'</li></ul>
+                </div>
+                <div class="feature-category">
+                    <h4>Color Contrast</h4><p>Status text meets 4.5:1 ratio against badge background</p>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <h2>CSS Implementation</h2>
+            <div class="code-block">/* Digital Warranty Card Organism */
+
+/* Design System Tokens (Scoped) */
+:root {
+  --card-padding: var(--spacing-6);
+  --card-radius: var(--radius-lg);
+  --card-border: 1px solid var(--color-gray-200);
+  --card-shadow: var(--shadow-md);
+  
+  /* Status Colors */
+  --status-active-bg: var(--color-success-bg);
+  --status-active-text: var(--color-success-text);
+  --status-active-border: var(--color-success-main);
+  
+  --status-warning-bg: var(--color-warning-bg);
+  --status-warning-text: var(--color-warning-text);
+  --status-warning-border: var(--color-warning-main);
+  
+  --status-expired-bg: var(--color-error-bg);
+  --status-expired-text: var(--color-error-text);
+  --status-expired-border: var(--color-error-main);
+}
+
+.warranty-card {
+  background: var(--color-white);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  border: var(--card-border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  height: 100%;
+}
+
+.warranty-card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+/* --- Header Section --- */
+.warranty-card__header {
+  padding: var(--spacing-4) var(--spacing-6);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.warranty-card__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.warranty-card__brand-logo {
+  width: 32px;
+  height: 32px;
+  background: var(--color-gray-100);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--color-primary-700);
+  font-size: 12px;
+}
+
+.warranty-card__brand-name {
+  font-weight: 600;
+  color: var(--color-gray-700);
+  font-size: var(--font-size-sm);
+}
+
+/* --- Status Badges (Molecular reuse) --- */
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-badge::before {
+  content: &#039;&#039;;
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+.warranty-card--active .status-badge {
+  background-color: var(--status-active-bg);
+  color: var(--status-active-text);
+  border: 1px solid var(--status-active-border);
+}
+
+.warranty-card--expiring .status-badge {
+  background-color: var(--status-warning-bg);
+  color: var(--status-warning-text);
+  border: 1px solid var(--status-warning-border);
+}
+
+.warranty-card--expired .status-badge {
+  background-color: var(--status-expired-bg);
+  color: var(--status-expired-text);
+  border: 1px solid var(--status-expired-border);
+}
+
+/* --- Body Section --- */
+.warranty-card__body {
+  padding: var(--spacing-6);
+  flex: 1;
+}
+
+.warranty-card__product {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+}
+
+.warranty-card__image {
+  width: 80px;
+  height: 80px;
+  background: var(--color-gray-50);
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  border: 1px solid var(--color-gray-200);
+}
+
+.warranty-card__details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.warranty-card__title {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-1);
+  line-height: 1.3;
+}
+
+.warranty-card__model {
+  color: var(--color-gray-500);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-2);
+}
+
+.warranty-card__meta {
+  display: flex;
+  gap: var(--spacing-6);
+  margin-top: var(--spacing-2);
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.meta-item__label {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--color-gray-500);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.meta-item__value {
+  font-family: var(--font-family-mono, monospace);
+  font-size: 13px;
+  color: var(--color-gray-700);
+  background: var(--color-gray-50);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--color-gray-200);
+}
+
+/* --- Dates Grid --- */
+.warranty-card__dates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-4);
+  padding: var(--spacing-4);
+  background: var(--color-gray-50);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-6);
+}
+
+.date-block__label {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  margin-bottom: 4px;
+}
+
+.date-block__value {
+  font-weight: 600;
+  color: var(--color-gray-900);
+  font-size: var(--font-size-sm);
+}
+
+.warranty-card--expiring .date-block__value--expiry {
+  color: var(--color-warning-text);
+}
+
+.warranty-card--expired .date-block__value--expiry {
+  color: var(--color-error-text);
+}
+
+/* --- Actions Footer --- */
+.warranty-card__footer {
+  padding: var(--spacing-4) var(--spacing-6);
+  background: var(--color-white);
+  border-top: 1px solid var(--color-gray-100);
+  display: flex;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+/* Button Molecule (Local implementation for standalone) */
+.wc-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.wc-btn--primary {
+  background: var(--color-primary-600);
+  color: white;
+}
+.wc-btn--primary:hover { background: var(--color-primary-700); }
+
+.wc-btn--secondary {
+  background: white;
+  border-color: var(--color-gray-300);
+  color: var(--color-gray-700);
+}
+.wc-btn--secondary:hover { background: var(--color-gray-50); }
+
+.wc-btn--ghost {
+  background: transparent;
+  color: var(--color-gray-500);
+  padding: 8px;
+  flex: 0 0 auto;
+}
+.wc-btn--ghost:hover { color: var(--color-primary-600); background: var(--color-primary-50); }
+
+/* --- Loading State --- */
+.warranty-card--loading .warranty-card__image,
+.warranty-card--loading .warranty-card__title,
+.warranty-card--loading .status-badge,
+.warranty-card--loading .date-block__value {
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  color: transparent !important;
+  border-color: transparent;
+}
+.warranty-card--loading .warranty-card__image { border: none; }
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* --- Responsive --- */
+@media (max-width: 480px) {
+  .warranty-card__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+  }
+  .status-badge { align-self: flex-start; }
+  
+  .warranty-card__product {
+    grid-template-columns: 1fr;
+  }
+  .warranty-card__image {
+    width: 64px;
+    height: 64px;
+  }
+  
+  .warranty-card__meta {
+    flex-direction: column;
+    gap: var(--spacing-2);
+  }
+  
+  .warranty-card__footer {
+    flex-direction: column;
+  }
+  .wc-btn { width: 100%; }
+}</div>
+        </div>
+        <div class="section">
+            <h2>Implementation Notes</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h4>Embedded Css Architecture</h4>
+                    <p>BEM naming convention, scoped CSS variables for theming</p>
+                </div>
+                <div class="info-card">
+                    <h4>Component Organization</h4>
+                    <p>Header (Status), Body (Product), Dates (Grid), Footer (Actions)</p>
+                </div>
+                <div class="info-card">
+                    <h4>Responsive Design</h4>
+                    <p>Container queries simulated via flex/grid wrapping logic</p>
+                </div>
+                <div class="info-card">
+                    <h4>Accessibility Compliance</h4>
+                    <p>Native button elements, proper heading hierarchy</p>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <h2>Usage Guidelines</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h4>When To Use</h4><p>On the main dashboard list or detailed product view page</p>
+                </div>
+                <div class="info-card">
+                    <h4>Content Guidelines</h4><p>Dates should be localized. Serial numbers should be monospace.</p>
+                </div>
+                <div class="info-card">
+                    <h4>Placement Rules</h4><p>Grid on desktop, Stack on mobile</p>
+                </div>
+                <div class="info-card">
+                    <h4>Customization Options</h4><ul><li style="list-style: disc; margin-left: 16px; padding-left: 0;">Add .warranty-card--active/expired/expiring classes to parent</li><li style="list-style: disc; margin-left: 16px; padding-left: 0;">Toggle loading state with .warranty-card--loading</li></ul>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <h2>Testing Recommendations</h2>
+            <div class="feature-list">
+                <div class="feature-category">
+                    <h4>Browser Testing</h4><p>Verify flexbox behavior on Safari vs Chrome</p>
+                </div>
+                <div class="feature-category">
+                    <h4>Device Testing</h4><p>Check stacked layout on iPhone SE/Pixel 4a</p>
+                </div>
+                <div class="feature-category">
+                    <h4>Accessibility Testing</h4><ul><li>Verify status badge announcements</li><li>Check contrast of warning/error text</li></ul>
+                </div>
+                <div class="feature-category">
+                    <h4>Performance Testing</h4><p>Ensure shimmer animation doesn't cause layout thrashing</p>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+</body>
+</html>

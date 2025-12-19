@@ -1,0 +1,60 @@
+stateDiagram-v2
+    direction LR
+
+    %% Styles
+    classDef initial fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef active fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef warning fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#f57f17
+    classDef terminal fill:#f5f5f5,stroke:#616161,stroke-width:2px,color:#212121
+    classDef system fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+
+    [*] --> Requested: User Creates Request
+    
+    state "Active Service Workflow" as ActiveService {
+        direction TB
+        Requested --> Acknowledged: SC Admin Acknowledges
+        Acknowledged --> TechnicianAssigned: SC Admin Assigns Tech
+        TechnicianAssigned --> TechnicianAssigned: SC Admin Re-assigns
+        TechnicianAssigned --> TechnicianOnTheWay: Tech Starts Travel
+        TechnicianOnTheWay --> WorkInProgress: Tech Starts Work
+        WorkInProgress --> Resolved: Tech Completes Job
+        
+        note right of TechnicianAssigned
+            User can cancel only before
+            Technician is 'On The Way'
+        end note
+    }
+
+    state "Exception & Resolution" as Exceptions {
+        direction TB
+        Resolved --> Disputed: User Disputes\n(within 7 days)
+        Disputed --> Closed: Brand Admin Upholds Resolution
+        Disputed --> Acknowledged: Brand Admin Re-opens Ticket
+    }
+
+    state "System Hold" as SystemHold {
+        state "Paused" as PausedState
+        note right of PausedState
+            Triggered by Product Ownership Transfer.
+            Restores to previous state upon completion.
+        end note
+    }
+
+    %% Transitions to Terminal States
+    ActiveService --> Cancelled: User Cancels\n(Requested/Acknowledged/Assigned)
+    Resolved --> Closed: SC Admin Closes\n(or 7-day auto-close)
+    
+    %% Global Transitions
+    ActiveService --> PausedState: System Event (Transfer Initiated)
+    PausedState --> ActiveService: System Event (Transfer Resolved)
+
+    %% End States
+    Closed --> [*]
+    Cancelled --> [*]
+
+    %% Class Assignments
+    class Requested initial
+    class Acknowledged,TechnicianAssigned,TechnicianOnTheWay,WorkInProgress,Resolved active
+    class Disputed,PausedState warning
+    class Closed,Cancelled terminal
+    class SystemHold system

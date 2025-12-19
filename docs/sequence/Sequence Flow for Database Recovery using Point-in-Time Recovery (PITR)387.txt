@@ -1,0 +1,931 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-RF-002
+
+## 1.2 Name
+
+Database Recovery using Point-in-Time Recovery (PITR)
+
+## 1.3 Description
+
+After a destructive data corruption event, an Operations Team Member uses Azure's managed service to restore the database to a new instance from a specific point in time before the incident.
+
+## 1.4 Type
+
+🔹 RecoveryFlow
+
+## 1.5 Purpose
+
+To recover from catastrophic data loss or corruption by leveraging automated backups, ensuring the system can meet its Recovery Point Objective (RPO) and Recovery Time Objective (RTO). Based on US-132.
+
+## 1.6 Complexity
+
+High
+
+## 1.7 Priority
+
+🚨 Critical
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+*No items available*
+
+## 1.10 Key Interactions
+
+- A critical data corruption issue is identified in the production database.
+- The Operations Team declares a major incident and decides to perform a PITR.
+- The operator places the application into maintenance mode.
+- In the Azure Portal, the operator selects the PostgreSQL instance and initiates the 'Restore' workflow.
+- The operator specifies a restore timestamp (e.g., 10 minutes before the incident occurred).
+- Azure provisions a new database instance (`mydb-restored`) and restores data from automated transaction log backups.
+- Once the new database is available, the operator updates the application's secret (in Azure Key Vault) with the new connection string.
+- The operator triggers a rolling restart of the application pods to pick up the new secret.
+- The operator brings the application out of maintenance mode and performs data validation.
+
+## 1.11 Triggers
+
+- Detection of widespread data corruption or a destructive change that cannot be reverted.
+
+## 1.12 Outcomes
+
+- The database state is restored to a point before the incident.
+- The system is brought back online with data integrity restored.
+- Data loss within the RPO window (e.g., transactions in the last 5-15 minutes) has occurred and must be communicated.
+
+## 1.13 Business Rules
+
+- PITR is the approved method for recovering from destructive database changes.
+- The Recovery Point Objective (RPO) is less than 15 minutes.
+- The Recovery Time Objective (RTO) is less than 4 hours.
+
+## 1.14 Error Scenarios
+
+- Automated backups were not enabled or have been failing.
+- The chosen restore point is incorrect, requiring the process to be repeated.
+- Application secrets management is manual and error-prone, delaying the cutover.
+
+## 1.15 Integration Points
+
+- Azure Portal
+- Azure Database for PostgreSQL
+- Azure Key Vault
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-RF-002
+
+## 2.2 Name
+
+Database Recovery Flow using Azure Point-in-Time Recovery (PITR)
+
+## 2.3 Description
+
+A detailed sequence for an Operations Team Member to execute a database recovery from a catastrophic data corruption event. The flow leverages Azure's managed PITR feature to restore the database to a new instance from a point in time before the incident, followed by re-configuring the application services to use the restored database. This sequence is a direct implementation of the procedure defined in US-132.
+
+## 2.4 Participants
+
+### 2.4.1 Human Actor
+
+#### 2.4.1.1 Repository Id
+
+ops_team_member
+
+#### 2.4.1.2 Display Name
+
+Operations Team Member
+
+#### 2.4.1.3 Type
+
+🔹 Human Actor
+
+#### 2.4.1.4 Technology
+
+Azure CLI, Azure Portal, kubectl
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #9063CD |
+| Stereotype | SRE/DevOps |
+
+### 2.4.2.0 ObservabilityPlatform
+
+#### 2.4.2.1 Repository Id
+
+monitoring_system
+
+#### 2.4.2.2 Display Name
+
+Monitoring System
+
+#### 2.4.2.3 Type
+
+🔹 ObservabilityPlatform
+
+#### 2.4.2.4 Technology
+
+Azure Monitor, Grafana, Alertmanager
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #2ECC71 |
+| Stereotype | Alerting |
+
+### 2.4.3.0 Gateway
+
+#### 2.4.3.1 Repository Id
+
+api-gateway-001
+
+#### 2.4.3.2 Display Name
+
+API Gateway
+
+#### 2.4.3.3 Type
+
+🔹 Gateway
+
+#### 2.4.3.4 Technology
+
+YARP on .NET 8 / Azure APIM
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #F39C12 |
+| Stereotype | Gateway |
+
+### 2.4.4.0 CloudProviderUI
+
+#### 2.4.4.1 Repository Id
+
+azure_portal
+
+#### 2.4.4.2 Display Name
+
+Azure Management Plane
+
+#### 2.4.4.3 Type
+
+🔹 CloudProviderUI
+
+#### 2.4.4.4 Technology
+
+Azure Portal, Azure Resource Manager API
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #3498DB |
+| Stereotype | Cloud Console |
+
+### 2.4.5.0 ManagedDatabase
+
+#### 2.4.5.1 Repository Id
+
+azure_db_postgresql
+
+#### 2.4.5.2 Display Name
+
+Azure DB for PostgreSQL
+
+#### 2.4.5.3 Type
+
+🔹 ManagedDatabase
+
+#### 2.4.5.4 Technology
+
+PostgreSQL 16 (PaaS)
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #34495E |
+| Stereotype | Primary DB |
+
+### 2.4.6.0 SecretStore
+
+#### 2.4.6.1 Repository Id
+
+azure_key_vault
+
+#### 2.4.6.2 Display Name
+
+Azure Key Vault
+
+#### 2.4.6.3 Type
+
+🔹 SecretStore
+
+#### 2.4.6.4 Technology
+
+Azure Key Vault Service
+
+#### 2.4.6.5 Order
+
+6
+
+#### 2.4.6.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #1ABC9C |
+| Stereotype | Security |
+
+### 2.4.7.0 AutomationServer
+
+#### 2.4.7.1 Repository Id
+
+cicd_pipeline
+
+#### 2.4.7.2 Display Name
+
+CI/CD Pipeline
+
+#### 2.4.7.3 Type
+
+🔹 AutomationServer
+
+#### 2.4.7.4 Technology
+
+GitHub Actions
+
+#### 2.4.7.5 Order
+
+7
+
+#### 2.4.7.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #8E44AD |
+| Stereotype | CI/CD |
+
+### 2.4.8.0 ContainerOrchestrator
+
+#### 2.4.8.1 Repository Id
+
+aks_platform
+
+#### 2.4.8.2 Display Name
+
+Azure Kubernetes Service
+
+#### 2.4.8.3 Type
+
+🔹 ContainerOrchestrator
+
+#### 2.4.8.4 Technology
+
+Kubernetes 1.29.x
+
+#### 2.4.8.5 Order
+
+8
+
+#### 2.4.8.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #2980B9 |
+| Stereotype | Orchestrator |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Notification
+
+#### 2.5.1.1 Source Id
+
+monitoring_system
+
+#### 2.5.1.2 Target Id
+
+ops_team_member
+
+#### 2.5.1.3 Message
+
+1. [Trigger] Fire Critical Alert: Data Corruption Detected / High DB Error Rate
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Notification
+
+#### 2.5.1.6 Is Synchronous
+
+❌ No
+
+#### 2.5.1.7 Return Message
+
+
+
+#### 2.5.1.8 Has Return
+
+❌ No
+
+#### 2.5.1.9 Is Activation
+
+❌ No
+
+#### 2.5.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | PagerDuty/Slack Webhook |
+| Method | POST |
+| Parameters | Alert payload with details on metric threshold bre... |
+| Authentication | Webhook Secret |
+| Error Handling | Alertmanager retries on failure. |
+| Performance | Latency < 5s |
+
+### 2.5.2.0 Decision
+
+#### 2.5.2.1 Source Id
+
+ops_team_member
+
+#### 2.5.2.2 Target Id
+
+ops_team_member
+
+#### 2.5.2.3 Message
+
+2. Investigate, confirm corruption, and declare Major Incident. Decision: Execute PITR.
+
+#### 2.5.2.4 Sequence Number
+
+2
+
+#### 2.5.2.5 Type
+
+🔹 Decision
+
+#### 2.5.2.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7 Return Message
+
+
+
+#### 2.5.2.8 Has Return
+
+❌ No
+
+#### 2.5.2.9 Is Activation
+
+✅ Yes
+
+### 2.5.3.0 API Call
+
+#### 2.5.3.1 Source Id
+
+ops_team_member
+
+#### 2.5.3.2 Target Id
+
+api-gateway-001
+
+#### 2.5.3.3 Message
+
+3. Enable Maintenance Mode
+
+#### 2.5.3.4 Sequence Number
+
+3
+
+#### 2.5.3.5 Type
+
+🔹 API Call
+
+#### 2.5.3.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7 Return Message
+
+HTTP 200 OK
+
+#### 2.5.3.8 Has Return
+
+✅ Yes
+
+#### 2.5.3.9 Is Activation
+
+❌ No
+
+#### 2.5.3.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS |
+| Method | POST /admin/maintenance |
+| Parameters | Body: { "enabled": true, "message": "System is dow... |
+| Authentication | Requires Admin Role JWT |
+| Error Handling | Retry on 5xx errors. If API is down, manual block ... |
+| Performance | Latency < 1s |
+
+### 2.5.4.0 User Interaction
+
+#### 2.5.4.1 Source Id
+
+ops_team_member
+
+#### 2.5.4.2 Target Id
+
+azure_portal
+
+#### 2.5.4.3 Message
+
+4. Initiate Database Restore Workflow
+
+#### 2.5.4.4 Sequence Number
+
+4
+
+#### 2.5.4.5 Type
+
+🔹 User Interaction
+
+#### 2.5.4.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7 Return Message
+
+Displays restore configuration UI
+
+#### 2.5.4.8 Has Return
+
+✅ Yes
+
+#### 2.5.4.9 Is Activation
+
+✅ Yes
+
+#### 2.5.4.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS (Azure Portal) |
+| Method | Navigate to Azure DB for PostgreSQL instance -> Ov... |
+| Parameters | None |
+| Authentication | Azure AD MFA with appropriate RBAC permissions (e.... |
+| Error Handling | UI displays error if user lacks permissions. |
+| Performance | UI load time < 5s |
+
+### 2.5.5.0 Asynchronous Operation
+
+#### 2.5.5.1 Source Id
+
+azure_portal
+
+#### 2.5.5.2 Target Id
+
+azure_db_postgresql
+
+#### 2.5.5.3 Message
+
+5. [Long-Running] Provision new DB instance from backup
+
+#### 2.5.5.4 Sequence Number
+
+5
+
+#### 2.5.5.5 Type
+
+🔹 Asynchronous Operation
+
+#### 2.5.5.6 Is Synchronous
+
+❌ No
+
+#### 2.5.5.7 Return Message
+
+Operation Succeeded (after ~30-180 mins)
+
+#### 2.5.5.8 Has Return
+
+✅ Yes
+
+#### 2.5.5.9 Is Activation
+
+✅ Yes
+
+#### 2.5.5.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Azure Resource Manager API |
+| Method | Microsoft.DBforPostgreSQL/flexibleServers/restore |
+| Parameters | { restorePointInTime: 'YYYY-MM-DDTHH:MM:SSZ', sour... |
+| Authentication | Managed by Azure Fabric |
+| Error Handling | Azure Portal displays progress and any failure rea... |
+| Performance | Depends on DB size. Must complete within RTO of 4 ... |
+
+### 2.5.6.0 API Call
+
+#### 2.5.6.1 Source Id
+
+ops_team_member
+
+#### 2.5.6.2 Target Id
+
+azure_key_vault
+
+#### 2.5.6.3 Message
+
+6. Update Database Connection String Secret
+
+#### 2.5.6.4 Sequence Number
+
+6
+
+#### 2.5.6.5 Type
+
+🔹 API Call
+
+#### 2.5.6.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7 Return Message
+
+HTTP 200 OK
+
+#### 2.5.6.8 Has Return
+
+✅ Yes
+
+#### 2.5.6.9 Is Activation
+
+❌ No
+
+#### 2.5.6.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Azure Key Vault REST API (via Azure CLI/Portal) |
+| Method | az keyvault secret set |
+| Parameters | --vault-name <kv-name> --name <db-connection-strin... |
+| Authentication | Azure AD with 'Key Vault Secrets Officer' role |
+| Error Handling | CLI/Portal will report errors (e.g., permissions, ... |
+| Performance | Latency < 2s |
+
+### 2.5.7.0 CI/CD Trigger
+
+#### 2.5.7.1 Source Id
+
+ops_team_member
+
+#### 2.5.7.2 Target Id
+
+cicd_pipeline
+
+#### 2.5.7.3 Message
+
+7. Trigger Application Rolling Restart
+
+#### 2.5.7.4 Sequence Number
+
+7
+
+#### 2.5.7.5 Type
+
+🔹 CI/CD Trigger
+
+#### 2.5.7.6 Is Synchronous
+
+❌ No
+
+#### 2.5.7.7 Return Message
+
+Workflow run started successfully
+
+#### 2.5.7.8 Has Return
+
+✅ Yes
+
+#### 2.5.7.9 Is Activation
+
+✅ Yes
+
+#### 2.5.7.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | GitHub API |
+| Method | POST /repos/{owner}/{repo}/actions/workflows/{work... |
+| Parameters | Workflow trigger payload specifying a restart acti... |
+| Authentication | GitHub PAT or App registration |
+| Error Handling | GitHub UI shows workflow failure reasons. |
+| Performance | Pipeline execution time should be < 10 minutes. |
+
+### 2.5.8.0 Deployment
+
+#### 2.5.8.1 Source Id
+
+cicd_pipeline
+
+#### 2.5.8.2 Target Id
+
+aks_platform
+
+#### 2.5.8.3 Message
+
+8. Execute Rolling Restart of application pods
+
+#### 2.5.8.4 Sequence Number
+
+8
+
+#### 2.5.8.5 Type
+
+🔹 Deployment
+
+#### 2.5.8.6 Is Synchronous
+
+❌ No
+
+#### 2.5.8.7 Return Message
+
+Pods successfully restarted
+
+#### 2.5.8.8 Has Return
+
+✅ Yes
+
+#### 2.5.8.9 Is Activation
+
+✅ Yes
+
+#### 2.5.8.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Kubernetes API |
+| Method | kubectl rollout restart deployment/<app-deployment... |
+| Parameters | None |
+| Authentication | Service Principal with AKS Contributor role |
+| Error Handling | Kubernetes events will show pod startup failures (... |
+| Performance | Dependent on number of pods and startup time. |
+
+### 2.5.9.0 API Call
+
+#### 2.5.9.1 Source Id
+
+aks_platform
+
+#### 2.5.9.2 Target Id
+
+azure_key_vault
+
+#### 2.5.9.3 Message
+
+9. New pods fetch updated secret
+
+#### 2.5.9.4 Sequence Number
+
+9
+
+#### 2.5.9.5 Type
+
+🔹 API Call
+
+#### 2.5.9.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.9.7 Return Message
+
+Returns secret value
+
+#### 2.5.9.8 Has Return
+
+✅ Yes
+
+#### 2.5.9.9 Is Activation
+
+❌ No
+
+#### 2.5.9.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Azure Key Vault API |
+| Method | GetSecret |
+| Parameters | Secret Name |
+| Authentication | Pod Managed Identity with permissions to Key Vault |
+| Error Handling | Pod will fail to start if it cannot access the sec... |
+| Performance | Latency < 100ms |
+
+### 2.5.10.0 API Call
+
+#### 2.5.10.1 Source Id
+
+ops_team_member
+
+#### 2.5.10.2 Target Id
+
+api-gateway-001
+
+#### 2.5.10.3 Message
+
+10. Disable Maintenance Mode
+
+#### 2.5.10.4 Sequence Number
+
+10
+
+#### 2.5.10.5 Type
+
+🔹 API Call
+
+#### 2.5.10.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.10.7 Return Message
+
+HTTP 200 OK
+
+#### 2.5.10.8 Has Return
+
+✅ Yes
+
+#### 2.5.10.9 Is Activation
+
+❌ No
+
+#### 2.5.10.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS |
+| Method | POST /admin/maintenance |
+| Parameters | Body: { "enabled": false } |
+| Authentication | Requires Admin Role JWT |
+| Error Handling | Retry on 5xx errors. |
+| Performance | Latency < 1s |
+
+### 2.5.11.0 Monitoring
+
+#### 2.5.11.1 Source Id
+
+ops_team_member
+
+#### 2.5.11.2 Target Id
+
+monitoring_system
+
+#### 2.5.11.3 Message
+
+11. Validate System Health and Data Integrity
+
+#### 2.5.11.4 Sequence Number
+
+11
+
+#### 2.5.11.5 Type
+
+🔹 Monitoring
+
+#### 2.5.11.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.11.7 Return Message
+
+Dashboards show healthy state
+
+#### 2.5.11.8 Has Return
+
+✅ Yes
+
+#### 2.5.11.9 Is Activation
+
+❌ No
+
+#### 2.5.11.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS (Grafana UI) |
+| Method | Review dashboards for DB connection count, API err... |
+| Parameters | Perform smoke tests on critical user flows (e.g., ... |
+| Authentication | Grafana login |
+| Error Handling | If validation fails, re-enable maintenance mode an... |
+| Performance | N/A |
+
+## 2.6.0.0 Notes
+
+### 2.6.1.0 Content
+
+#### 2.6.1.1 Content
+
+RPO (Recovery Point Objective): < 15 minutes. Data loss between the last backup and the time of the incident is expected and must be communicated.
+
+#### 2.6.1.2 Position
+
+top-right
+
+#### 2.6.1.3 Participant Id
+
+azure_db_postgresql
+
+#### 2.6.1.4 Sequence Number
+
+5
+
+### 2.6.2.0 Content
+
+#### 2.6.2.1 Content
+
+RTO (Recovery Time Objective): < 4 hours. The entire process from incident declaration to system validation must be completed within this window.
+
+#### 2.6.2.2 Position
+
+bottom-left
+
+#### 2.6.2.3 Participant Id
+
+ops_team_member
+
+#### 2.6.2.4 Sequence Number
+
+11
+
+### 2.6.3.0 Content
+
+#### 2.6.3.1 Content
+
+Post-Incident Communication: Operations must inform stakeholders of the recovery, the data loss window (RPO), and any features that may need manual data re-entry.
+
+#### 2.6.3.2 Position
+
+bottom-right
+
+#### 2.6.3.3 Participant Id
+
+ops_team_member
+
+#### 2.6.3.4 Sequence Number
+
+11
+
+## 2.7.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | The Operations Team Member requires high-privilege... |
+| Performance Targets | The end-to-end RTO of < 4 hours is the primary per... |
+| Error Handling Strategy | The primary failure scenario is an unsuccessful re... |
+| Testing Considerations | This entire recovery flow MUST be tested quarterly... |
+| Monitoring Requirements | During the recovery, the operator must monitor the... |
+| Deployment Considerations | This is a manual recovery process, not a deploymen... |
+

@@ -1,0 +1,3 @@
+"gate_id","gate_name","sprint","gate_type","criteria","responsible_team","gate_date","approval_required","approver","bypass_criteria","automation_level","tools_used","success_metrics"
+"QG-001","Infrastructure Validation","Sprint 1","Security","Terraform plans clean; RBAC verified; Networking isolated","DevOps","2024-01-10","true","security.architect@company.com","None","Fully Automated","Checkov,Terraform","0 High/Critical security issues"
+"QG-002","Spatial Query Performance","Sprint 1","Performance","Routing query P95 < 250ms with 10k polygons","Backend Nest","2024-01-18","true","tech.lead@company.com","Performance regression < 10%","Partially Automated","k6,pgbench","Query execution time"

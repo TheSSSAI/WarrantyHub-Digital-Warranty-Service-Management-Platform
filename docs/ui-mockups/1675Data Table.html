@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Table Component</title>
+    <style>
+        /* =========================================
+           1. DESIGN TOKENS (Design System)
+           ========================================= */
+        :root {
+            /* Colors: Primary (Indigo) */
+            --color-primary-50: #eef2ff;
+            --color-primary-100: #e0e7ff;
+            --color-primary-500: #6366f1;
+            --color-primary-600: #4f46e5;
+            --color-primary-700: #4338ca;
+            
+            /* Colors: Neutrals */
+            --color-white: #ffffff;
+            --color-gray-50: #f9fafb;
+            --color-gray-100: #f3f4f6;
+            --color-gray-200: #e5e7eb;
+            --color-gray-300: #d1d5db;
+            --color-gray-400: #9ca3af;
+            --color-gray-500: #6b7280;
+            --color-gray-600: #4b5563;
+            --color-gray-700: #374151;
+            --color-gray-800: #1f2937;
+            --color-gray-900: #111827;
+
+            /* Colors: Semantic */
+            --color-success-bg: #d1e7dd;
+            --color-success-text: #0f5132;
+            --color-warning-bg: #fff3cd;
+            --color-warning-text: #664d03;
+            --color-error-bg: #f8d7da;
+            --color-error-text: #842029;
+            
+            /* Typography */
+            --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-size-xs: 12px;
+            --font-size-sm: 14px;
+            --font-size-md: 16px;
+            
+            /* Spacing */
+            --spacing-1: 4px;
+            --spacing-2: 8px;
+            --spacing-3: 12px;
+            --spacing-4: 16px;
+            --spacing-6: 24px;
+            
+            /* Radius */
+            --radius-md: 6px;
+            --radius-lg: 8px;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            
+            /* Focus */
+            --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.3);
+            --transition-fast: 150ms ease-in-out;
+        }
+
+        /* =========================================
+           2. RESET & BASE STYLES
+           ========================================= */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family-base);
+            color: var(--color-gray-900);
+            background-color: var(--color-gray-50);
+            line-height: 1.5;
+            padding: var(--spacing-6);
+        }
+
+        /* =========================================
+           3. ATOMIC COMPONENTS (Dependencies)
+           ========================================= */
+        
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            gap: var(--spacing-2);
+        }
+        .btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+        
+        .btn--primary { background: var(--color-primary-600); color: white; }
+        .btn--primary:hover { background: var(--color-primary-700); }
+        
+        .btn--secondary { background: white; border-color: var(--color-gray-300); color: var(--color-gray-700); }
+        .btn--secondary:hover { background: var(--color-gray-50); }
+        
+        .btn--icon { padding: 6px; border-radius: var(--radius-md); background: transparent; color: var(--color-gray-500); }
+        .btn--icon:hover { background: var(--color-gray-100); color: var(--color-gray-900); }
+
+        /* Inputs */
+        .input {
+            padding: 8px 12px;
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+            width: 100%;
+            max-width: 300px;
+        }
+        .input:focus { outline: none; border-color: var(--color-primary-600); box-shadow: var(--focus-ring); }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: var(--font-size-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .badge--success { background: var(--color-success-bg); color: var(--color-success-text); }
+        .badge--warning { background: var(--color-warning-bg); color: var(--color-warning-text); }
+        .badge--error { background: var(--color-error-bg); color: var(--color-error-text); }
+        .badge--neutral { background: var(--color-gray-100); color: var(--color-gray-700); }
+
+        /* Checkbox */
+        .checkbox {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--color-gray-300);
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+            background: white;
+            transition: var(--transition-fast);
+        }
+        .checkbox:checked {
+            background-color: var(--color-primary-600);
+            border-color: var(--color-primary-600);
+        }
+        .checkbox:checked::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 1px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+        .checkbox:focus-visible { box-shadow: var(--focus-ring); }
+
+        /* Pagination */
+        .pagination { display: flex; align-items: center; gap: var(--spacing-2); }
+        .pagination__text { font-size: var(--font-size-sm); color: var(--color-gray-600); margin: 0 var(--spacing-4); }
+
+        /* Icons */
+        .icon { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        
+        /* Avatar */
+        .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--color-gray-200); display: flex; align-items: center; justify-content: center; font-size: var(--font-size-xs); font-weight: 600; color: var(--color-gray-600); }
+        .avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+
+        /* =========================================
+           4. ORGANISM: DATA TABLE
+           ========================================= */
+        
+        .data-table-organism {
+            background: var(--color-white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--color-gray-200);
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            overflow: hidden; /* Contains child borders */
+        }
+
+        /* --- Toolbar Section --- */
+        .dt-toolbar {
+            padding: var(--spacing-4);
+            border-bottom: 1px solid var(--color-gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--spacing-4);
+            background: var(--color-white);
+        }
+
+        .dt-toolbar__group {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-3);
+            flex-grow: 1;
+        }
+
+        .dt-toolbar__search {
+            position: relative;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .dt-toolbar__search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-gray-400);
+            pointer-events: none;
+        }
+
+        .dt-toolbar__search .input {
+            padding-left: 36px;
+        }
+
+        /* --- Table Section --- */
+        .dt-container {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--font-size-sm);
+        }
+
+        /* Header Styles */
+        .data-table__thead {
+            background-color: var(--color-gray-50);
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+
+        .data-table__th {
+            padding: var(--spacing-3) var(--spacing-4);
+            text-align: left;
+            font-weight: 600;
+            color: var(--color-gray-600);
+            white-space: nowrap;
+            transition: background-color 0.2s;
+        }
+
+        .data-table__th--checkbox { width: 48px; text-align: center; padding-right: 0; }
+        .data-table__th--actions { width: 64px; text-align: right; }
+
+        .data-table__th--sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .data-table__th--sortable:hover {
+            background-color: var(--color-gray-100);
+            color: var(--color-gray-900);
+        }
+
+        .data-table__sort-indicator {
+            display: inline-flex;
+            margin-left: 4px;
+            vertical-align: middle;
+            color: var(--color-gray-400);
+        }
+
+        /* Body Styles */
+        .data-table__tbody {
+            background-color: var(--color-white);
+        }
+
+        .data-table__tr {
+            border-bottom: 1px solid var(--color-gray-100);
+            transition: background-color 0.15s ease;
+        }
+
+        .data-table__tr:last-child {
+            border-bottom: none;
+        }
+
+        .data-table__tr:hover {
+            background-color: var(--color-gray-50);
+        }
+
+        .data-table__tr--selected {
+            background-color: var(--color-primary-50) !important;
+        }
+
+        .data-table__td {
+            padding: var(--spacing-4);
+            color: var(--color-gray-700);
+            vertical-align: middle;
+        }
+
+        .data-table__td--checkbox { text-align: center; padding-right: 0; }
+        .data-table__td--primary { font-weight: 500; color: var(--color-gray-900); }
+        .data-table__td--actions { text-align: right; }
+        
+        .data-table__cell-content {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-3);
+        }
+
+        .data-table__subtext {
+            display: block;
+            font-size: var(--font-size-xs);
+            color: var(--color-gray-500);
+            margin-top: 2px;
+        }
+
+        /* --- Footer/Pagination Section --- */
+        .dt-footer {
+            padding: var(--spacing-3) var(--spacing-4);
+            border-top: 1px solid var(--color-gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--color-gray-50);
+            flex-wrap: wrap;
+            gap: var(--spacing-4);
+        }
+
+        /* --- Empty State --- */
+        .dt-empty {
+            padding: var(--spacing-8);
+            text-align: center;
+            color: var(--color-gray-500);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--spacing-3);
+        }
+        .dt-empty__icon { width: 48px; height: 48px; color: var(--color-gray-300); }
+
+        /* --- Loading State --- */
+        .skeleton {
+            background: linear-gradient(90deg, var(--color-gray-100) 25%, var(--color-gray-200) 50%, var(--color-gray-100) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 4px;
+            height: 16px;
+            width: 100%;
+        }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        /* =========================================
+           5. RESPONSIVE ADAPTATIONS (Mobile Card View)
+           ========================================= */
+        @media (max-width: 768px) {
+            .dt-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .dt-toolbar__search { max-width: 100%; }
+            .dt-toolbar__group { width: 100%; overflow-x: auto; padding-bottom: 4px; }
+
+            .data-table__thead {
+                display: none; /* Hide headers on mobile */
+            }
+
+            .data-table, .data-table__tbody, .data-table__tr, .data-table__td {
+                display: block;
+                width: 100%;
+            }
+
+            .data-table__tr {
+                margin-bottom: var(--spacing-4);
+                border: 1px solid var(--color-gray-200);
+                border-radius: var(--radius-md);
+                box-shadow: var(--shadow-sm);
+                overflow: hidden;
+            }
+
+            .data-table__tr:last-child { margin-bottom: 0; }
+
+            .data-table__td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                text-align: right;
+                border-bottom: 1px solid var(--color-gray-100);
+                padding: var(--spacing-3);
+            }
+
+            .data-table__td:last-child { border-bottom: none; }
+
+            /* Add labels via data-label attribute */
+            .data-table__td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: var(--color-gray-600);
+                font-size: var(--font-size-xs);
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                margin-right: var(--spacing-4);
+                text-align: left;
+            }
+
+            /* Special handling for checkbox row on mobile */
+            .data-table__td--checkbox {
+                background-color: var(--color-gray-50);
+                justify-content: flex-start;
+                padding: var(--spacing-2) var(--spacing-3);
+            }
+            .data-table__td--checkbox::before { display: none; }
+            .data-table__td--checkbox::after {
+                content: "Select Item";
+                margin-left: var(--spacing-2);
+                color: var(--color-gray-600);
+                font-size: var(--font-size-sm);
+            }
+
+            .data-table__td--actions {
+                justify-content: flex-end;
+                background-color: var(--color-gray-50);
+            }
+            .data-table__td--actions::before { display: none; }
+
+            .dt-footer {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        /* Showcase Layout */
+        .showcase-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .showcase-section {
+            margin-bottom: 60px;
+        }
+        .showcase-title {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            margin-bottom: var(--spacing-4);
+            padding-bottom: var(--spacing-2);
+            border-bottom: 2px solid var(--color-primary-600);
+        }
+        .showcase-desc {
+            margin-bottom: var(--spacing-6);
+            color: var(--color-gray-600);
+        }
+    </style>
+</head>
+<body>
+
+<div class="showcase-container">
+    
+    <!-- VARIANT 1: Comprehensive Data Table -->
+    <section class="showcase-section">
+        <h2 class="showcase-title">1. Comprehensive Data Table</h2>
+        <p class="showcase-desc">Full-featured table with sorting, filtering, selection, and responsive card transformation. Used for Service Center Technician Management.</p>
+        
+        <div class="data-table-organism">
+            <!-- Toolbar -->
+            <div class="dt-toolbar">
+                <div class="dt-toolbar__search">
+                    <svg class="icon dt-toolbar__search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" class="input" placeholder="Search technicians...">
+                </div>
+                <div class="dt-toolbar__group">
+                    <button class="btn btn--secondary">
+                        <svg class="icon" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                        Filter
+                    </button>
+                    <button class="btn btn--secondary">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Export
+                    </button>
+                    <button class="btn btn--primary">
+                        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Add Technician
+                    </button>
+                </div>
+            </div>
+
+            <!-- Table Wrapper -->
+            <div class="dt-container">
+                <table class="data-table" role="grid">
+                    <thead class="data-table__thead">
+                        <tr>
+                            <th class="data-table__th data-table__th--checkbox">
+                                <input type="checkbox" class="checkbox" aria-label="Select all rows">
+                            </th>
+                            <th class="data-table__th data-table__th--sortable" aria-sort="descending" scope="col">
+                                Technician
+                                <span class="data-table__sort-icon">↓</span>
+                            </th>
+                            <th class="data-table__th data-table__th--sortable" scope="col">
+                                Status
+                                <span class="data-table__sort-icon">↕</span>
+                            </th>
+                            <th class="data-table__th data-table__th--sortable" scope="col">
+                                Workload
+                                <span class="data-table__sort-icon">↕</span>
+                            </th>
+                            <th class="data-table__th data-table__th--sortable" scope="col">
+                                Last Active
+                                <span class="data-table__sort-icon">↕</span>
+                            </th>
+                            <th class="data-table__th data-table__th--actions" scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="data-table__tbody">
+                        <!-- Row 1: Active -->
+                        <tr class="data-table__tr">
+                            <td class="data-table__td data-table__td--checkbox">
+                                <input type="checkbox" class="checkbox" aria-label="Select Alex Morgan">
+                            </td>
+                            <td class="data-table__td data-table__td--primary" data-label="Technician">
+                                <div class="data-table__cell-content">
+                                    <div class="avatar">AM</div>
+                                    <div>
+                                        Alex Morgan
+                                        <span class="data-table__subtext">ID: TECH-001</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="data-table__td" data-label="Status">
+                                <span class="badge badge--success">Available</span>
+                            </td>
+                            <td class="data-table__td" data-label="Workload">
+                                3 Tickets
+                            </td>
+                            <td class="data-table__td" data-label="Last Active">
+                                2 mins ago
+                            </td>
+                            <td class="data-table__td data-table__td--actions">
+                                <button class="btn btn--icon" aria-label="Edit Technician">
+                                    <svg class="icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Row 2: Selected State -->
+                        <tr class="data-table__tr data-table__tr--selected">
+                            <td class="data-table__td data-table__td--checkbox">
+                                <input type="checkbox" class="checkbox" checked aria-label="Select Sarah Connor">
+                            </td>
+                            <td class="data-table__td data-table__td--primary" data-label="Technician">
+                                <div class="data-table__cell-content">
+                                    <div class="avatar"><img src="https://ui-avatars.com/api/?name=Sarah+Connor&background=random" alt="SC"></div>
+                                    <div>
+                                        Sarah Connor
+                                        <span class="data-table__subtext">ID: TECH-042</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="data-table__td" data-label="Status">
+                                <span class="badge badge--warning">On Job</span>
+                            </td>
+                            <td class="data-table__td" data-label="Workload">
+                                5 Tickets
+                            </td>
+                            <td class="data-table__td" data-label="Last Active">
+                                1 hour ago
+                            </td>
+                            <td class="data-table__td data-table__td--actions">
+                                <button class="btn btn--icon" aria-label="Edit Technician">
+                                    <svg class="icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Row 3: Inactive -->
+                        <tr class="data-table__tr">
+                            <td class="data-table__td data-table__td--checkbox">
+                                <input type="checkbox" class="checkbox" aria-label="Select John Wick">
+                            </td>
+                            <td class="data-table__td data-table__td--primary" data-label="Technician">
+                                <div class="data-table__cell-content">
+                                    <div class="avatar">JW</div>
+                                    <div>
+                                        John Wick
+                                        <span class="data-table__subtext">ID: TECH-999</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="data-table__td" data-label="Status">
+                                <span class="badge badge--neutral">Offline</span>
+                            </td>
+                            <td class="data-table__td" data-label="Workload">
+                                0 Tickets
+                            </td>
+                            <td class="data-table__td" data-label="Last Active">
+                                2 days ago
+                            </td>
+                            <td class="data-table__td data-table__td--actions">
+                                <button class="btn btn--icon" aria-label="Edit Technician">
+                                    <svg class="icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Footer -->
+            <div class="dt-footer">
+                <div class="pagination__text">Showing 1-3 of 48 technicians</div>
+                <div class="pagination">
+                    <button class="btn btn--secondary btn--icon" disabled aria-label="Previous Page">
+                        <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    </button>
+                    <button class="btn btn--secondary btn--icon" aria-label="Next Page">
+                        <svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- VARIANT 2: Loading State -->
+    <section class="showcase-section">
+        <h2 class="showcase-title">2. Loading State</h2>
+        <p class="showcase-desc">Skeleton loading representation while fetching data.</p>
+        
+        <div class="data-table-organism">
+            <div class="dt-container">
+                <table class="data-table">
+                    <thead class="data-table__thead">
+                        <tr>
+                            <th class="data-table__th" style="width: 40%">Technician</th>
+                            <th class="data-table__th" style="width: 20%">Status</th>
+                            <th class="data-table__th" style="width: 40%">Last Active</th>
+                        </tr>
+                    </thead>
+                    <tbody class="data-table__tbody">
+                        <tr class="data-table__tr">
+                            <td class="data-table__td"><div class="skeleton" style="width: 60%"></div></td>
+                            <td class="data-table__td"><div class="skeleton" style="width: 40%"></div></td>
+                            <td class="data-table__td"><div class="skeleton" style="width: 30%"></div></td>
+                        </tr>
+                        <tr class="data-table__tr">
+                            <td class="data-table__td"><div class="skeleton" style="width: 50%"></div></td>
+                            <td class="data-table__td"><div class="skeleton" style="width: 40%"></div></td>
+                            <td class="data-table__td"><div class="skeleton" style="width: 35%"></div></td>
+                        </tr>
+                        <tr class="data-table__tr">
+                            <td class="data-table__td"><div class="skeleton" style="width: 70%"></div></td>
+                            <td class="data-table__td"><div class="skeleton" style="width: 40%"></div></td>
+                            <td class="data-table__td"><div class="skeleton" style="width: 45%"></div></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- VARIANT 3: Empty State -->
+    <section class="showcase-section">
+        <h2 class="showcase-title">3. Empty State</h2>
+        <p class="showcase-desc">State when no data matches criteria or list is initially empty.</p>
+        
+        <div class="data-table-organism">
+            <div class="dt-toolbar">
+                <div class="dt-toolbar__search">
+                     <input type="text" class="input" placeholder="Search..." value="NonExistentUser">
+                </div>
+            </div>
+            <div class="dt-container">
+                <table class="data-table">
+                    <thead class="data-table__thead">
+                        <tr>
+                            <th class="data-table__th">Name</th>
+                            <th class="data-table__th">Role</th>
+                            <th class="data-table__th">Status</th>
+                        </tr>
+                    </thead>
+                </table>
+                <div class="dt-empty">
+                    <svg class="dt-empty__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <h4>No results found</h4>
+                    <p style="color: var(--color-gray-500); font-size: var(--font-size-sm);">No technicians match your search criteria. Try adjusting your filters.</p>
+                    <button class="btn btn--secondary" style="margin-top: 8px;">Clear Filters</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Usage Guidelines Section embedded -->
+    <section class="showcase-section" style="background: white; padding: 24px; border-radius: 8px; border: 1px solid var(--color-gray-200); margin-top: 48px;">
+        <h3>Usage Guidelines</h3>
+        <ul style="padding-left: 20px; line-height: 1.8; color: var(--color-gray-700);">
+            <li>Use the <strong>Comprehensive Data Table</strong> for main dashboard views where sorting and actions are required.</li>
+            <li>On mobile devices (< 768px), the table automatically transforms into a <strong>Card View</strong>. Data labels are generated via CSS content property.</li>
+            <li>Always include <strong>Pagination</strong> for datasets larger than 20 rows to ensure performance.</li>
+            <li>Use the <strong>Skeleton</strong> loading state during API fetches to prevent layout shift.</li>
+            <li>Ensure <code>aria-label</code> is populated for all icon-only buttons for accessibility.</li>
+        </ul>
+    </section>
+
+</div>
+
+</body>
+</html>

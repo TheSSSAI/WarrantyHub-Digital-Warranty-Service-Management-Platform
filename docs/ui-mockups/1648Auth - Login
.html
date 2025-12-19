@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Auth - Login</title>
+  <style>
+    /* 
+     * CSS RESET & BASE STYLES 
+     */
+    :root {
+      /* Color Palette - Primary */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-500: #6366f1;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      --color-primary-800: #3730a3;
+
+      /* Color Palette - Neutrals */
+      --color-white: #ffffff;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-700: #374151;
+      --color-gray-900: #111827;
+
+      /* Color Palette - Semantic */
+      --color-error-bg: #f8d7da;
+      --color-error-text: #842029;
+      --color-error-main: #dc3545;
+
+      /* Typography */
+      --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-size-h1: clamp(28px, 5vw, 32px);
+      --font-size-body: 16px;
+      --font-size-sm: 14px;
+      --font-size-caption: 12px;
+
+      /* Spacing */
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --spacing-xxl: 48px;
+
+      /* UI Elements */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --focus-ring: 0 0 0 3px var(--color-primary-100);
+      --transition-base: all 0.2s ease-in-out;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family-primary);
+      font-size: var(--font-size-body);
+      color: var(--color-gray-900);
+      background-color: var(--color-gray-50);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 
+     * LAYOUT STRUCTURE 
+     */
+    .screen-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-md);
+      width: 100%;
+    }
+
+    .auth-card {
+      background: var(--color-white);
+      width: 100%;
+      max-width: 440px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: var(--spacing-xl);
+      margin: 0 auto;
+    }
+
+    /* Mobile Adaptation */
+    @media (max-width: 640px) {
+      .screen-container {
+        padding: var(--spacing-md);
+        justify-content: flex-start;
+        padding-top: var(--spacing-xxl);
+      }
+      
+      .auth-card {
+        box-shadow: none;
+        background: transparent;
+        padding: 0;
+      }
+
+      body {
+        background-color: var(--color-white);
+      }
+    }
+
+    /* 
+     * COMPONENT: HEADER 
+     */
+    .auth-header {
+      text-align: center;
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .brand-logo {
+      width: 48px;
+      height: 48px;
+      background: var(--color-primary-600);
+      border-radius: var(--radius-md);
+      margin: 0 auto var(--spacing-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 24px;
+    }
+
+    .auth-title {
+      font-size: var(--font-size-h1);
+      font-weight: 700;
+      color: var(--color-gray-900);
+      margin-bottom: var(--spacing-xs);
+      letter-spacing: -0.02em;
+    }
+
+    .auth-subtitle {
+      color: var(--color-gray-500);
+      font-size: var(--font-size-sm);
+    }
+
+    /* 
+     * COMPONENT: FORM ELEMENTS 
+     */
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-lg);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
+      position: relative;
+    }
+
+    .form-label {
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+      color: var(--color-gray-700);
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-body);
+      color: var(--color-gray-900);
+      background-color: var(--color-white);
+      transition: var(--transition-base);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--color-primary-600);
+      box-shadow: var(--focus-ring);
+    }
+
+    .form-input::placeholder {
+      color: var(--color-gray-400);
+    }
+
+    .form-input:disabled {
+      background-color: var(--color-gray-50);
+      cursor: not-allowed;
+      color: var(--color-gray-500);
+    }
+
+    /* Error State */
+    .form-group.has-error .form-input {
+      border-color: var(--color-error-main);
+      background-color: #fff8f8;
+    }
+
+    .form-group.has-error .form-input:focus {
+      box-shadow: 0 0 0 3px var(--color-error-bg);
+    }
+
+    .error-message {
+      font-size: var(--font-size-caption);
+      color: var(--color-error-main);
+      display: none;
+      margin-top: 4px;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .form-group.has-error .error-message {
+      display: flex;
+    }
+
+    /* Password Toggle */
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      color: var(--color-gray-500);
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .password-toggle:hover {
+      color: var(--color-gray-700);
+    }
+
+    /* 
+     * COMPONENT: ACTIONS 
+     */
+    .form-actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+      margin-top: var(--spacing-sm);
+    }
+
+    .forgot-password {
+      align-self: flex-end;
+      font-size: var(--font-size-sm);
+      color: var(--color-primary-600);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .forgot-password:hover {
+      color: var(--color-primary-700);
+      text-decoration: underline;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 12px 24px;
+      background-color: var(--color-primary-600);
+      color: var(--color-white);
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition-base);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 48px; /* Minimum touch target */
+    }
+
+    .btn-primary:hover {
+      background-color: var(--color-primary-700);
+      box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+    }
+
+    .btn-primary:focus {
+      outline: none;
+      box-shadow: var(--focus-ring);
+    }
+
+    .btn-primary:active {
+      background-color: var(--color-primary-800);
+      transform: scale(0.99);
+    }
+
+    .btn-primary:disabled {
+      background-color: var(--color-gray-300);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Loading Spinner */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: var(--color-white);
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      display: none;
+    }
+
+    .btn-primary.is-loading .spinner {
+      display: block;
+    }
+    
+    .btn-primary.is-loading span {
+      display: none;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Footer Links */
+    .auth-footer {
+      text-align: center;
+      margin-top: var(--spacing-lg);
+      font-size: var(--font-size-sm);
+      color: var(--color-gray-500);
+    }
+
+    .auth-link {
+      color: var(--color-primary-600);
+      text-decoration: none;
+      font-weight: 600;
+      margin-left: 4px;
+    }
+
+    .auth-link:hover {
+      color: var(--color-primary-700);
+      text-decoration: underline;
+    }
+
+    /* 
+     * GLOBAL ALERT 
+     */
+    .global-alert {
+      background-color: var(--color-error-bg);
+      border-left: 4px solid var(--color-error-main);
+      color: var(--color-error-text);
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      margin-bottom: var(--spacing-lg);
+      font-size: var(--font-size-sm);
+      display: none;
+      align-items: flex-start;
+      gap: 12px;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .global-alert.is-visible {
+      display: flex;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 
+     * CONTROL PANEL (For Demo Only)
+     */
+    .demo-controls {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(255,255,255,0.9);
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 1000;
+    }
+    
+    .demo-controls button {
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+    
+    .variant-container {
+        border-top: 1px solid #ccc;
+        margin-top: 40px;
+        padding-top: 20px;
+        width: 100%;
+        max-width: 800px;
+    }
+
+    .variant-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .variant-desc {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="screen-container">
+    
+    <div class="auth-card">
+      <!-- Header -->
+      <header class="auth-header">
+        <div class="brand-logo" aria-hidden="true">W</div>
+        <h1 class="auth-title">Welcome back</h1>
+        <p class="auth-subtitle">Please enter your details to sign in</p>
+      </header>
+
+      <!-- Global Error Alert -->
+      <div class="global-alert" id="globalAlert" role="alert">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <span>Invalid email or password. Please try again.</span>
+      </div>
+
+      <!-- Login Form -->
+      <form class="auth-form" id="loginForm" novalidate>
+        
+        <!-- Email Input -->
+        <div class="form-group" id="emailGroup">
+          <label for="email" class="form-label">Email address</label>
+          <div class="input-wrapper">
+            <input type="email" id="email" name="email" class="form-input" placeholder="Enter your email" required autocomplete="email">
+          </div>
+          <div class="error-message" id="emailError">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+            <span>Please enter a valid email address.</span>
+          </div>
+        </div>
+
+        <!-- Password Input -->
+        <div class="form-group" id="passwordGroup">
+          <label for="password" class="form-label">Password</label>
+          <div class="input-wrapper">
+            <input type="password" id="password" name="password" class="form-input" placeholder="Enter your password" required autocomplete="current-password">
+            <button type="button" class="password-toggle" id="passwordToggle" aria-label="Show password">
+              <!-- Eye Icon -->
+              <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <!-- Eye Off Icon (Hidden by default) -->
+              <svg class="eye-off-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </button>
+          </div>
+          <div class="error-message" id="passwordError">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+            <span>Password is required.</span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="form-actions">
+          <a href="#" class="forgot-password">Forgot password?</a>
+          <button type="submit" class="btn-primary" id="submitBtn">
+            <div class="spinner"></div>
+            <span>Sign in</span>
+          </button>
+        </div>
+      </form>
+
+      <!-- Footer -->
+      <div class="auth-footer">
+        Don't have an account? 
+        <a href="#" class="auth-link">Sign up</a>
+      </div>
+    </div>
+    
+     <div class="variant-container">
+        <div class="variant-title">Variant: Default State</div>
+        <div class="variant-desc">The initial state of the login screen, clean with focused inputs ready for user interaction.</div>
+        
+         <div class="variant-title">Variant: Loading State</div>
+        <div class="variant-desc">Triggered upon form submission. Input fields are disabled, and the primary button shows a spinner to indicate processing.</div>
+
+         <div class="variant-title">Variant: Error State</div>
+        <div class="variant-desc">Displays validation errors for individual fields (e.g., invalid email) and global API errors (e.g., invalid credentials) using red semantic colors.</div>
+    </div>
+
+  </div>
+
+  <!-- Demo Controls -->
+  <div class="demo-controls">
+    <strong>Demo Controls</strong>
+    <button onclick="toggleState('default')">Reset to Default</button>
+    <button onclick="toggleState('loading')">Simulate Loading</button>
+    <button onclick="toggleState('error')">Simulate Error</button>
+    <button onclick="toggleState('fieldError')">Simulate Field Error</button>
+  </div>
+
+  <script>
+    // Elements
+    const form = document.getElementById('loginForm');
+    const emailGroup = document.getElementById('emailGroup');
+    const passwordGroup = document.getElementById('passwordGroup');
+    const submitBtn = document.getElementById('submitBtn');
+    const inputs = document.querySelectorAll('.form-input');
+    const passwordToggle = document.getElementById('passwordToggle');
+    const passwordInput = document.getElementById('password');
+    const globalAlert = document.getElementById('globalAlert');
+
+    // Password Visibility Toggle
+    passwordToggle.addEventListener('click', () => {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      
+      const eyeIcon = passwordToggle.querySelector('.eye-icon');
+      const eyeOffIcon = passwordToggle.querySelector('.eye-off-icon');
+      
+      if (type === 'text') {
+        eyeIcon.style.display = 'none';
+        eyeOffIcon.style.display = 'block';
+        passwordToggle.setAttribute('aria-label', 'Hide password');
+      } else {
+        eyeIcon.style.display = 'block';
+        eyeOffIcon.style.display = 'none';
+        passwordToggle.setAttribute('aria-label', 'Show password');
+      }
+    });
+
+    // Form Submission Handling
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      // Basic client-side validation simulation
+      let isValid = true;
+      resetErrors();
+
+      // Email Validation
+      const emailValue = document.getElementById('email').value;
+      if (!emailValue || !emailValue.includes('@')) {
+        emailGroup.classList.add('has-error');
+        isValid = false;
+      }
+
+      // Password Validation
+      const passwordValue = document.getElementById('password').value;
+      if (!passwordValue) {
+        passwordGroup.classList.add('has-error');
+        isValid = false;
+      }
+
+      if (isValid) {
+        toggleState('loading');
+        
+        // Simulate API call
+        setTimeout(() => {
+          toggleState('default');
+          alert('Login Logic Triggered!');
+        }, 2000);
+      }
+    });
+
+    // State Management for Demo
+    function resetErrors() {
+      emailGroup.classList.remove('has-error');
+      passwordGroup.classList.remove('has-error');
+      globalAlert.classList.remove('is-visible');
+    }
+
+    function toggleState(state) {
+      resetErrors();
+      
+      switch(state) {
+        case 'default':
+          submitBtn.classList.remove('is-loading');
+          submitBtn.disabled = false;
+          inputs.forEach(input => input.disabled = false);
+          break;
+          
+        case 'loading':
+          submitBtn.classList.add('is-loading');
+          submitBtn.disabled = true;
+          inputs.forEach(input => input.disabled = true);
+          break;
+          
+        case 'error':
+          toggleState('default');
+          globalAlert.classList.add('is-visible');
+          break;
+          
+        case 'fieldError':
+          toggleState('default');
+          emailGroup.classList.add('has-error');
+          break;
+      }
+    }
+
+    // Input Focus Effects for Mobile
+    inputs.forEach(input => {
+      input.addEventListener('focus', () => {
+        // Scroll to element on mobile to avoid keyboard overlap
+        if (window.innerWidth < 640) {
+          setTimeout(() => {
+            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 300);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

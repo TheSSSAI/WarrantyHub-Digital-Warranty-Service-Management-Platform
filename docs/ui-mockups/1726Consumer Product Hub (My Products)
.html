@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Products | Consumer Hub</title>
+  <style>
+    /* 
+      DESIGN SYSTEM TOKENS 
+      Based on provided JSON configuration
+    */
+    :root {
+      /* Colors - Primary */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-500: #6366f1;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      --color-primary-800: #3730a3;
+
+      /* Colors - Neutrals */
+      --color-white: #ffffff;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-600: #4b5563;
+      --color-gray-700: #374151;
+      --color-gray-800: #1f2937;
+      --color-gray-900: #111827;
+
+      /* Colors - Semantic */
+      --color-success-bg: #ecfdf5;
+      --color-success-text: #065f46;
+      --color-success-border: #10b981;
+      
+      --color-warning-bg: #fffbeb;
+      --color-warning-text: #92400e;
+      --color-warning-border: #f59e0b;
+      
+      --color-error-bg: #fef2f2;
+      --color-error-text: #b91c1c;
+      --color-error-border: #ef4444;
+
+      /* Typography */
+      --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-size-h1: clamp(28px, 4vw, 32px);
+      --font-size-h2: clamp(22px, 3vw, 24px);
+      --font-size-body: 16px;
+      --font-size-small: 14px;
+      --font-size-caption: 12px;
+
+      /* Spacing */
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --spacing-xxl: 48px;
+
+      /* Layout */
+      --container-max-width: 1280px;
+      --header-height-mobile: 56px;
+      --header-height-desktop: 64px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-full: 9999px;
+
+      /* Effects */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --transition-base: all 0.2s ease-in-out;
+    }
+
+    /* 
+      RESET & BASE STYLES 
+    */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family-primary);
+      font-size: var(--font-size-body);
+      line-height: 1.5;
+      color: var(--color-gray-900);
+      background-color: var(--color-gray-50);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    /* 
+      LAYOUT ORGANISMS 
+    */
+    .app-shell {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Navigation Bar */
+    .navbar {
+      background-color: var(--color-white);
+      border-bottom: 1px solid var(--color-gray-200);
+      height: var(--header-height-mobile);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 0 var(--spacing-md);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .navbar__brand {
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--color-primary-600);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .navbar__actions {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+
+    .navbar__user-avatar {
+      width: 32px;
+      height: 32px;
+      background-color: var(--color-primary-100);
+      color: var(--color-primary-700);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--font-size-small);
+      font-weight: 600;
+    }
+
+    /* Main Content Area */
+    .main-content {
+      flex: 1;
+      padding: var(--spacing-md);
+      width: 100%;
+      max-width: var(--container-max-width);
+      margin: 0 auto;
+    }
+
+    /* Toolbar Section */
+    .toolbar {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .toolbar__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .page-title {
+      font-size: var(--font-size-h1);
+      color: var(--color-gray-900);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .page-subtitle {
+      color: var(--color-gray-500);
+      font-size: var(--font-size-body);
+    }
+
+    .toolbar__controls {
+      display: flex;
+      gap: var(--spacing-sm);
+      flex-wrap: wrap;
+    }
+
+    /* Search Component */
+    .search-input-group {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 12px 10px 40px;
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-small);
+      transition: var(--transition-base);
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--color-primary-600);
+      box-shadow: 0 0 0 3px var(--color-primary-100);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--color-gray-400);
+      width: 16px;
+      height: 16px;
+    }
+
+    /* 
+      ATOMIC COMPONENTS 
+    */
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: var(--font-size-small);
+      transition: var(--transition-base);
+      border: 1px solid transparent;
+      gap: var(--spacing-sm);
+      text-decoration: none;
+    }
+
+    .btn--primary {
+      background-color: var(--color-primary-600);
+      color: var(--color-white);
+    }
+
+    .btn--primary:hover {
+      background-color: var(--color-primary-700);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn--primary:focus-visible {
+      outline: 2px solid var(--color-primary-600);
+      outline-offset: 2px;
+    }
+
+    .btn--secondary {
+      background-color: var(--color-white);
+      color: var(--color-gray-700);
+      border-color: var(--color-gray-300);
+    }
+
+    .btn--secondary:hover {
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-900);
+    }
+
+    .btn--icon {
+      padding: 10px;
+      color: var(--color-gray-500);
+      background: transparent;
+      border: 1px solid transparent;
+    }
+
+    .btn--icon:hover {
+      background-color: var(--color-gray-100);
+      color: var(--color-gray-900);
+    }
+
+    .btn--fab {
+      position: fixed;
+      bottom: var(--spacing-lg);
+      right: var(--spacing-lg);
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background-color: var(--color-primary-600);
+      color: var(--color-white);
+      box-shadow: var(--shadow-lg);
+      z-index: 50;
+      padding: 0;
+    }
+    
+    .btn--fab:hover {
+      background-color: var(--color-primary-700);
+      transform: scale(1.05);
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      font-size: var(--font-size-caption);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      border: 1px solid transparent;
+    }
+
+    .badge--success {
+      background-color: var(--color-success-bg);
+      color: var(--color-success-text);
+      border-color: var(--color-success-bg);
+    }
+
+    .badge--warning {
+      background-color: var(--color-warning-bg);
+      color: var(--color-warning-text);
+      border-color: var(--color-warning-bg);
+    }
+
+    .badge--error {
+      background-color: var(--color-error-bg);
+      color: var(--color-error-text);
+      border-color: var(--color-error-bg);
+    }
+
+    /* Offline Banner */
+    .offline-banner {
+      background-color: var(--color-gray-800);
+      color: var(--color-white);
+      padding: var(--spacing-sm) var(--spacing-md);
+      text-align: center;
+      font-size: var(--font-size-small);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-md);
+      border-radius: var(--radius-md);
+    }
+
+    /* 
+      PRODUCT GRID / LIST 
+    */
+    .product-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--spacing-md);
+    }
+
+    /* Toggle Logic for Grid/List Views via JS class */
+    .product-grid.view-list {
+      grid-template-columns: 1fr;
+    }
+
+    /* Product Card */
+    .product-card {
+      background-color: var(--color-white);
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: var(--transition-base);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .product-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--color-gray-300);
+      transform: translateY(-2px);
+    }
+    
+    .product-card:focus-within {
+      outline: 2px solid var(--color-primary-600);
+      outline-offset: 2px;
+    }
+
+    /* Grid View Styles */
+    .product-card__image-container {
+      aspect-ratio: 16/9;
+      background-color: var(--color-gray-100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid var(--color-gray-100);
+      position: relative;
+    }
+    
+    .product-card__status {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 10;
+    }
+
+    .product-card__content {
+      padding: var(--spacing-lg);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .product-card__brand {
+      font-size: var(--font-size-caption);
+      color: var(--color-gray-500);
+      margin-bottom: 4px;
+    }
+
+    .product-card__title {
+      font-size: var(--font-size-h3);
+      font-weight: 600;
+      color: var(--color-gray-900);
+      margin-bottom: var(--spacing-xs);
+      line-height: 1.3;
+    }
+
+    .product-card__meta {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: var(--spacing-md);
+      font-size: var(--font-size-small);
+      color: var(--color-gray-600);
+    }
+    
+    .meta-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .product-card__footer {
+      margin-top: auto;
+      display: flex;
+      gap: var(--spacing-sm);
+    }
+
+    .product-card__link {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1;
+      border-radius: var(--radius-lg);
+    }
+    
+    /* Ensure buttons inside card are clickable above the card link */
+    .product-card__footer .btn {
+      position: relative;
+      z-index: 2;
+    }
+
+    /* List View Styles Adaptation */
+    .view-list .product-card {
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .view-list .product-card__image-container {
+      width: 120px;
+      height: 100%;
+      aspect-ratio: auto;
+      border-bottom: none;
+      border-right: 1px solid var(--color-gray-100);
+    }
+    
+    .view-list .product-card__content {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: var(--spacing-md);
+    }
+    
+    .view-list .product-card__info {
+      flex: 1;
+    }
+    
+    .view-list .product-card__footer {
+      margin-top: 0;
+    }
+
+    /* Skeleton Loading State */
+    .skeleton {
+      background: linear-gradient(90deg, var(--color-gray-100) 25%, var(--color-gray-200) 50%, var(--color-gray-100) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .product-card.skeleton-card .product-card__title {
+      height: 24px;
+      width: 70%;
+      background-color: var(--color-gray-200);
+      color: transparent;
+    }
+    
+    .product-card.skeleton-card .product-card__brand {
+      height: 16px;
+      width: 40%;
+      margin-bottom: 8px;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: var(--spacing-xxl) var(--spacing-md);
+      background-color: var(--color-white);
+      border-radius: var(--radius-lg);
+      border: 1px dashed var(--color-gray-300);
+      display: none; /* Hidden by default */
+      flex-direction: column;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+    
+    .empty-state.active {
+      display: flex;
+    }
+
+    .empty-state__icon {
+      width: 64px;
+      height: 64px;
+      color: var(--color-gray-400);
+      margin-bottom: var(--spacing-sm);
+    }
+    
+    /* Utility Classes */
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    
+    .hidden {
+      display: none !important;
+    }
+
+    /* 
+      RESPONSIVE MEDIA QUERIES 
+    */
+    @media (min-width: 768px) {
+      .navbar {
+        height: var(--header-height-desktop);
+      }
+      
+      .toolbar {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+      
+      .toolbar__header {
+        align-items: center;
+      }
+
+      .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .btn--fab {
+        display: none; /* Hide FAB on larger screens, show static button */
+      }
+      
+      .desktop-add-btn {
+        display: inline-flex !important;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .product-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      
+      .view-list .product-card__image-container {
+        width: 180px;
+      }
+    }
+
+    /* Mobile specific adjustments for View Toggle (List is default on mobile often, but Grid requested) */
+    @media (max-width: 767px) {
+      .view-toggle {
+        display: none; /* Simplify toolbar on mobile */
+      }
+      
+      .desktop-add-btn {
+        display: none !important;
+      }
+      
+      .view-list .product-card {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .view-list .product-card__image-container {
+        width: 100%;
+        height: 180px;
+      }
+      
+      .view-list .product-card__content {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    
+    <!-- Navigation Bar -->
+    <header class="navbar" role="banner">
+      <div class="navbar__brand">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+        <span>Warrantify</span>
+      </div>
+      <div class="navbar__actions">
+        <button class="btn btn--icon" aria-label="Notifications">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </button>
+        <div class="navbar__user-avatar" role="img" aria-label="User Profile">JD</div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content" role="main">
+      
+      <!-- Offline Indicator (Hidden by default) -->
+      <section id="offline-banner" class="offline-banner hidden" aria-live="polite">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="1" y1="1" x2="23" y2="23"></line>
+          <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
+          <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
+          <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
+          <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
+          <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+          <line x1="12" y1="20" x2="12.01" y2="20"></line>
+        </svg>
+        <span>You are currently offline. Showing cached data.</span>
+      </section>
+
+      <!-- Toolbar -->
+      <section class="toolbar">
+        <div class="toolbar__header">
+          <div>
+            <h1 class="page-title">My Products</h1>
+            <p class="page-subtitle">Manage your registered devices and warranties</p>
+          </div>
+          <button class="btn btn--primary desktop-add-btn" onclick="toggleEmptyState()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Add Product
+          </button>
+        </div>
+        
+        <div class="toolbar__controls">
+          <div class="search-input-group">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" class="search-input" placeholder="Search products..." aria-label="Search products">
+          </div>
+          
+          <button class="btn btn--secondary btn--icon" aria-label="Filter products">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+          </button>
+          
+          <div class="view-toggle">
+            <button class="btn btn--secondary btn--icon" aria-label="Grid View" onclick="setGridView()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+            </button>
+            <button class="btn btn--secondary btn--icon" aria-label="List View" onclick="setListView()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Empty State (Toggled via JS for demo) -->
+      <section id="empty-state" class="empty-state">
+        <div class="empty-state__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+        </div>
+        <h3>No Products Registered</h3>
+        <p style="color: var(--color-gray-500); max-width: 400px;">
+          You haven't registered any products yet. Add your first product to track warranties and request service.
+        </p>
+        <button class="btn btn--primary">
+          Register New Product
+        </button>
+      </section>
+
+      <!-- Product Grid -->
+      <section id="product-list" class="product-grid" aria-label="Registered Products List">
+        
+        <!-- Product Card 1: Active Warranty -->
+        <article class="product-card">
+          <a href="#" class="product-card__link" aria-label="View details for Sony Bravia X90J"></a>
+          <div class="product-card__status">
+            <span class="badge badge--success">Active</span>
+          </div>
+          <div class="product-card__image-container">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-gray-400)" stroke-width="1.5">
+              <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+              <polyline points="17 2 12 7 7 2"></polyline>
+            </svg>
+          </div>
+          <div class="product-card__content">
+            <div class="product-card__info">
+              <div class="product-card__brand">Sony</div>
+              <h3 class="product-card__title">Bravia X90J 55" 4K Smart TV</h3>
+              <div class="product-card__meta">
+                <div class="meta-row">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  <span>Expires: Dec 24, 2025</span>
+                </div>
+                <div class="meta-row">
+                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+                   <span>SN: 890234823</span>
+                </div>
+              </div>
+            </div>
+            <footer class="product-card__footer">
+              <button class="btn btn--secondary" style="flex: 1">View Details</button>
+              <button class="btn btn--primary" style="flex: 1">Request Service</button>
+            </footer>
+          </div>
+        </article>
+
+        <!-- Product Card 2: Expiring Soon -->
+        <article class="product-card">
+          <a href="#" class="product-card__link" aria-label="View details for Dyson V15 Detect"></a>
+          <div class="product-card__status">
+            <span class="badge badge--warning">Expiring Soon</span>
+          </div>
+          <div class="product-card__image-container">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-gray-400)" stroke-width="1.5">
+               <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </div>
+          <div class="product-card__content">
+            <div class="product-card__info">
+              <div class="product-card__brand">Dyson</div>
+              <h3 class="product-card__title">V15 Detect Cordless Vacuum</h3>
+              <div class="product-card__meta">
+                <div class="meta-row">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  <span style="color: var(--color-warning-text); font-weight: 600;">Expires: Oct 15, 2023</span>
+                </div>
+                 <div class="meta-row">
+                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+                   <span>SN: DY-99283-X</span>
+                </div>
+              </div>
+            </div>
+            <footer class="product-card__footer">
+              <button class="btn btn--secondary" style="flex: 1">Extend Warranty</button>
+            </footer>
+          </div>
+        </article>
+
+        <!-- Product Card 3: Expired -->
+        <article class="product-card">
+          <a href="#" class="product-card__link" aria-label="View details for MacBook Pro M1"></a>
+          <div class="product-card__status">
+            <span class="badge badge--error">Expired</span>
+          </div>
+          <div class="product-card__image-container">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-gray-400)" stroke-width="1.5">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+          </div>
+          <div class="product-card__content">
+            <div class="product-card__info">
+              <div class="product-card__brand">Apple</div>
+              <h3 class="product-card__title">MacBook Pro 13" M1 Chip</h3>
+              <div class="product-card__meta">
+                <div class="meta-row">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  <span>Expired: Jan 10, 2023</span>
+                </div>
+                 <div class="meta-row">
+                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+                   <span>SN: C02F8273</span>
+                </div>
+              </div>
+            </div>
+            <footer class="product-card__footer">
+              <button class="btn btn--secondary" style="width: 100%">View Service History</button>
+            </footer>
+          </div>
+        </article>
+        
+        <!-- Skeleton Card (Loading State Demo) -->
+        <article class="product-card skeleton-card">
+           <div class="product-card__image-container skeleton"></div>
+           <div class="product-card__content">
+             <div class="skeleton product-card__brand"></div>
+             <div class="skeleton product-card__title"></div>
+             <div class="skeleton product-card__title" style="width: 50%"></div>
+             <div style="margin-top: 24px; display: flex; gap: 8px;">
+               <div class="skeleton" style="height: 36px; flex: 1"></div>
+               <div class="skeleton" style="height: 36px; flex: 1"></div>
+             </div>
+           </div>
+        </article>
+
+      </section>
+
+    </main>
+
+    <!-- Mobile Floating Action Button -->
+    <button class="btn btn--fab" aria-label="Add New Product" onclick="toggleEmptyState()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    </button>
+
+  </div>
+
+  <script>
+    // Simple state toggle functions for demonstration
+    function setGridView() {
+      const grid = document.getElementById('product-list');
+      grid.classList.remove('view-list');
+    }
+
+    function setListView() {
+      const grid = document.getElementById('product-list');
+      grid.classList.add('view-list');
+    }
+
+    function toggleEmptyState() {
+      const list = document.getElementById('product-list');
+      const empty = document.getElementById('empty-state');
+      
+      if (list.style.display === 'none') {
+        list.style.display = 'grid';
+        empty.classList.remove('active');
+      } else {
+        list.style.display = 'none';
+        empty.classList.add('active');
+      }
+    }
+    
+    // Simulate offline mode toggle for demo
+    // In production this would react to navigator.onLine
+    setInterval(() => {
+      // Just a placeholder to show where logic goes
+    }, 1000);
+  </script>
+</body>
+</html>

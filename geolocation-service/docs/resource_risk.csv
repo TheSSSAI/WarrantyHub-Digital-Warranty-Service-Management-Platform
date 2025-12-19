@@ -1,0 +1,3 @@
+"risk_id","risk_category","description","probability","impact","affected_tasks","affected_timeline","mitigation_strategy","contingency_plan","monitoring_trigger","cost_impact","resolution_timeline"
+"RISK-RES-001","Capacity Overload","Backend developer utilization is >90% if Redis task is not offloaded","High","High","[""TASK-SR-002"",""TASK-RT-002""]","1","Reassign TASK-RT-001 to DevOps Engineer","Push Routing Service to Sprint 3","Sprint 1 velocity < 80%","","Immediate"
+"RISK-RES-002","Skill Single Point of Failure","Only one resource knows WatermelonDB sync patterns","Medium","Critical","[""TASK-MOB-002""]","2","Mandatory detailed documentation of Sync Logic","Engage contractor with Offline-First experience","Mobile dev unavailable for >2 days","5000","1 week"

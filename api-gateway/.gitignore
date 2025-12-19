@@ -1,0 +1,32 @@
+# Azure API Management Artifacts
+apim-artifacts/publish/
+.publish/
+
+# Environment Configuration
+*.local.settings.json
+.env
+.env.*
+
+# Editor Directories
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS Generated
+.DS_Store
+Thumbs.db
+
+# Build Outputs
+bin/
+obj/
+build/
+dist/
+
+# Logs
+*.log
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup

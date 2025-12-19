@@ -1,0 +1,3 @@
+"dependency_id","from_task","to_task","dependency_type","description","critical_path","lead_time_days","responsible_team","coordination_required","risk_level","mitigation_plan","status","resolution_date","impact_if_delayed","escalation_required"
+"DEP-001","TASK-INFRA-001","TASK-INFRA-003","Technical","AKS VNet required for Postgres Private Endpoint","true","1","DevOps","","Low","Plan module dependencies carefully","Active","2024-06-03","DB provisioning blocked",""
+"DEP-002","TASK-MOB-001","TASK-MOB-002","Technical","Local DB Schema required before building Sync Service","true","2","Mobile","","High","Prototype schema early","Active","2024-06-05","Offline feature blocked",""

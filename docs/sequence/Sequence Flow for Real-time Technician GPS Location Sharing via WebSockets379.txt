@@ -1,0 +1,790 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-SI-001
+
+## 1.2 Name
+
+Real-time Technician GPS Location Sharing via WebSockets
+
+## 1.3 Description
+
+A technician on their way to a job activates 'Travel Mode' in their mobile app. The app establishes a WebSocket connection and pushes GPS updates to a dedicated service, which then broadcasts the location to the customer's app in real-time.
+
+## 1.4 Type
+
+🔹 ServiceInteraction
+
+## 1.5 Purpose
+
+To provide customers with transparency and an accurate ETA by showing the technician's live location on a map, meeting the <2 second latency requirement of REQ-PERF-002.
+
+## 1.6 Complexity
+
+High
+
+## 1.7 Priority
+
+🔴 High
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- mobile-client-013
+- geolocation-service-007
+
+## 1.10 Key Interactions
+
+- The Technician's mobile client activates 'Travel Mode' and establishes a persistent WebSocket connection to the GeolocationService's SignalR Hub.
+- The Customer's mobile client, viewing the service request, also establishes a WebSocket connection, subscribing to updates for a specific job ID.
+- The Technician's client periodically (e.g., every 5 seconds) sends GPS coordinate updates over the WebSocket.
+- The GeolocationService receives the update and immediately broadcasts it to all clients in the SignalR group for that job ID (i.e., the customer).
+- The Customer's client receives the new coordinates and updates the technician's marker on the map.
+
+## 1.11 Triggers
+
+- Technician enables 'Travel Mode' for an assigned job.
+
+## 1.12 Outcomes
+
+- The customer can see the technician's location moving on a map in their app.
+- An updated ETA can be calculated and displayed (as in SEQ-IF-002).
+- Location sharing stops when the technician deactivates the mode.
+
+## 1.13 Business Rules
+
+- Location data is only shared when 'Travel Mode' is explicitly activated by the technician for a specific job.
+- Location data history is purged 24 hours after job completion.
+- The end-to-end latency of an update must be less than 2 seconds (REQ-PERF-002).
+
+## 1.14 Error Scenarios
+
+- Technician's device loses GPS signal or internet connectivity.
+- WebSocket connection is dropped and needs to be re-established.
+- Geolocation service is unable to broadcast the update due to a Redis backplane issue.
+
+## 1.15 Integration Points
+
+- Device GPS Hardware
+- Mapbox or Google Maps SDK (for map rendering)
+- Azure Cache for Redis (as a SignalR backplane for scaling)
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-SI-001
+
+## 2.2 Name
+
+Implementation: Real-time Technician GPS Location Sharing via WebSockets
+
+## 2.3 Description
+
+This sequence details the technical implementation of real-time location sharing. It covers the WebSocket connection establishment, authentication, subscription to a job-specific channel (SignalR Group), periodic pushing of GPS coordinates from the technician, and the real-time broadcasting of these coordinates to the subscribed customer. The architecture relies on ASP.NET Core SignalR with an Azure Cache for Redis backplane to ensure scalability and meet the strict <2 second end-to-end latency requirement (REQ-PERF-002).
+
+## 2.4 Participants
+
+### 2.4.1 Client (Flutter)
+
+#### 2.4.1.1 Repository Id
+
+mobile-client-013
+
+#### 2.4.1.2 Display Name
+
+Mobile Client (Technician/Customer)
+
+#### 2.4.1.3 Type
+
+🔹 Client (Flutter)
+
+#### 2.4.1.4 Technology
+
+Flutter 3.19+, Dart 3.x, signalr_core
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #4CAF50 |
+| Stereotype | Client |
+
+### 2.4.2.0 Microservice (.NET)
+
+#### 2.4.2.1 Repository Id
+
+geolocation-service-007
+
+#### 2.4.2.2 Display Name
+
+Geolocation Service
+
+#### 2.4.2.3 Type
+
+🔹 Microservice (.NET)
+
+#### 2.4.2.4 Technology
+
+.NET 8, ASP.NET Core 8, SignalR
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #2196F3 |
+| Stereotype | WebSocket Hub |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 User Action
+
+#### 2.5.1.1 Source Id
+
+mobile-client-013
+
+#### 2.5.1.2 Target Id
+
+mobile-client-013
+
+#### 2.5.1.3 Message
+
+Technician activates 'Travel Mode' for an assigned job.
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 User Action
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Has Return
+
+❌ No
+
+#### 2.5.1.8 Is Activation
+
+✅ Yes
+
+### 2.5.2.0 HTTP Request
+
+#### 2.5.2.1 Source Id
+
+mobile-client-013
+
+#### 2.5.2.2 Target Id
+
+geolocation-service-007
+
+#### 2.5.2.3 Message
+
+Initiate SignalR connection (Negotiation).
+
+#### 2.5.2.4 Sequence Number
+
+2
+
+#### 2.5.2.5 Type
+
+🔹 HTTP Request
+
+#### 2.5.2.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7 Return Message
+
+200 OK with connection details (connectionId, availableTransports).
+
+#### 2.5.2.8 Has Return
+
+✅ Yes
+
+#### 2.5.2.9 Is Activation
+
+❌ No
+
+#### 2.5.2.10 Technical Details
+
+##### 2.5.2.10.1 Protocol
+
+HTTP/1.1
+
+##### 2.5.2.10.2 Method
+
+POST /hubs/location/negotiate
+
+##### 2.5.2.10.3 Parameters
+
+Request body may be empty or contain negotiation details.
+
+##### 2.5.2.10.4 Authentication
+
+Bearer <Technician's JWT> in Authorization header. JWT contains user role ('Technician') and user ID.
+
+##### 2.5.2.10.5 Error Handling
+
+401 Unauthorized if JWT is invalid/expired. 503 Service Unavailable if service is down.
+
+##### 2.5.2.10.6 Performance
+
+###### 2.5.2.10.6.1 Latency
+
+<100ms
+
+### 2.5.3.0.0.0 WebSocket Handshake
+
+#### 2.5.3.1.0.0 Source Id
+
+mobile-client-013
+
+#### 2.5.3.2.0.0 Target Id
+
+geolocation-service-007
+
+#### 2.5.3.3.0.0 Message
+
+Establish persistent WebSocket connection.
+
+#### 2.5.3.4.0.0 Sequence Number
+
+3
+
+#### 2.5.3.5.0.0 Type
+
+🔹 WebSocket Handshake
+
+#### 2.5.3.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7.0.0 Return Message
+
+Connection established.
+
+#### 2.5.3.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.3.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.3.10.0.0 Technical Details
+
+##### 2.5.3.10.1.0 Protocol
+
+WSS (Secure WebSocket)
+
+##### 2.5.3.10.2.0 Method
+
+Upgrade connection from HTTP.
+
+##### 2.5.3.10.3.0 Parameters
+
+Connection ID from negotiation response and JWT are passed as query parameters (e.g., wss://.../hubs/location?id=<connectionId>&access_token=<jwt>).
+
+##### 2.5.3.10.4.0 Authentication
+
+Service validates the JWT from the query string upon connection.
+
+##### 2.5.3.10.5.0 Error Handling
+
+Connection fails if JWT is invalid. Client-side SDK handles automatic reconnection attempts with exponential backoff.
+
+##### 2.5.3.10.6.0 Performance
+
+###### 2.5.3.10.6.1 Latency
+
+Connection setup time < 500ms
+
+### 2.5.4.0.0.0 WebSocket RPC
+
+#### 2.5.4.1.0.0 Source Id
+
+mobile-client-013
+
+#### 2.5.4.2.0.0 Target Id
+
+geolocation-service-007
+
+#### 2.5.4.3.0.0 Message
+
+Invoke Hub Method: StartSharingLocation(jobId)
+
+#### 2.5.4.4.0.0 Sequence Number
+
+4
+
+#### 2.5.4.5.0.0 Type
+
+🔹 WebSocket RPC
+
+#### 2.5.4.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7.0.0 Return Message
+
+Hub method completes (or throws RpcException).
+
+#### 2.5.4.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.4.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.4.10.0.0 Technical Details
+
+##### 2.5.4.10.1.0 Protocol
+
+WebSocket (SignalR)
+
+##### 2.5.4.10.2.0 Method
+
+StartSharingLocation
+
+##### 2.5.4.10.3.0 Parameters
+
+| Property | Value |
+|----------|-------|
+| Job Id | string (UUID) |
+
+##### 2.5.4.10.4.0 Authentication
+
+On the server, the Hub method verifies that the authenticated user (from JWT claims) is the technician assigned to the provided 'jobId'.
+
+##### 2.5.4.10.5.0 Error Handling
+
+Throws RpcException if user is not authorized for the job, which is propagated back to the calling client. This action adds the technician's ConnectionId to a SignalR Group named after the 'jobId'.
+
+##### 2.5.4.10.6.0 Performance
+
+###### 2.5.4.10.6.1 Latency
+
+<50ms
+
+### 2.5.5.0.0.0 User Action
+
+#### 2.5.5.1.0.0 Source Id
+
+mobile-client-013
+
+#### 2.5.5.2.0.0 Target Id
+
+mobile-client-013
+
+#### 2.5.5.3.0.0 Message
+
+Customer views the active service request details page.
+
+#### 2.5.5.4.0.0 Sequence Number
+
+5
+
+#### 2.5.5.5.0.0 Type
+
+🔹 User Action
+
+#### 2.5.5.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7.0.0 Has Return
+
+❌ No
+
+#### 2.5.5.8.0.0 Is Activation
+
+✅ Yes
+
+### 2.5.6.0.0.0 WebSocket Handshake
+
+#### 2.5.6.1.0.0 Source Id
+
+mobile-client-013
+
+#### 2.5.6.2.0.0 Target Id
+
+geolocation-service-007
+
+#### 2.5.6.3.0.0 Message
+
+Establish WebSocket connection for customer (Steps 2 & 3 repeated).
+
+#### 2.5.6.4.0.0 Sequence Number
+
+6
+
+#### 2.5.6.5.0.0 Type
+
+🔹 WebSocket Handshake
+
+#### 2.5.6.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7.0.0 Return Message
+
+Connection established.
+
+#### 2.5.6.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.6.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.6.10.0.0 Technical Details
+
+##### 2.5.6.10.1.0 Protocol
+
+WSS (Secure WebSocket)
+
+##### 2.5.6.10.2.0 Method
+
+Same negotiation and connection process as sequence 2 & 3, but with the Customer's JWT.
+
+##### 2.5.6.10.3.0 Parameters
+
+Connection ID and customer's JWT.
+
+##### 2.5.6.10.4.0 Authentication
+
+Service validates the customer's JWT.
+
+##### 2.5.6.10.5.0 Error Handling
+
+Client SDK handles reconnection.
+
+##### 2.5.6.10.6.0 Performance
+
+###### 2.5.6.10.6.1 Latency
+
+Connection setup time < 500ms
+
+### 2.5.7.0.0.0 WebSocket RPC
+
+#### 2.5.7.1.0.0 Source Id
+
+mobile-client-013
+
+#### 2.5.7.2.0.0 Target Id
+
+geolocation-service-007
+
+#### 2.5.7.3.0.0 Message
+
+Invoke Hub Method: SubscribeToJobUpdates(jobId)
+
+#### 2.5.7.4.0.0 Sequence Number
+
+7
+
+#### 2.5.7.5.0.0 Type
+
+🔹 WebSocket RPC
+
+#### 2.5.7.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.7.7.0.0 Return Message
+
+Hub method completes (or throws RpcException).
+
+#### 2.5.7.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.7.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.7.10.0.0 Technical Details
+
+##### 2.5.7.10.1.0 Protocol
+
+WebSocket (SignalR)
+
+##### 2.5.7.10.2.0 Method
+
+SubscribeToJobUpdates
+
+##### 2.5.7.10.3.0 Parameters
+
+| Property | Value |
+|----------|-------|
+| Job Id | string (UUID) |
+
+##### 2.5.7.10.4.0 Authentication
+
+On the server, the Hub method verifies that the authenticated user is the customer associated with the provided 'jobId'.
+
+##### 2.5.7.10.5.0 Error Handling
+
+Throws RpcException if user is not authorized. This action adds the customer's ConnectionId to the same SignalR Group for the 'jobId'.
+
+##### 2.5.7.10.6.0 Performance
+
+###### 2.5.7.10.6.1 Latency
+
+<50ms
+
+### 2.5.8.0.0.0 WebSocket RPC
+
+#### 2.5.8.1.0.0 Source Id
+
+mobile-client-013
+
+#### 2.5.8.2.0.0 Target Id
+
+geolocation-service-007
+
+#### 2.5.8.3.0.0 Message
+
+Periodically invoke Hub Method: SendLocationUpdate(locationData)
+
+#### 2.5.8.4.0.0 Sequence Number
+
+8
+
+#### 2.5.8.5.0.0 Type
+
+🔹 WebSocket RPC
+
+#### 2.5.8.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.8.7.0.0 Return Message
+
+No direct return value (fire-and-forget).
+
+#### 2.5.8.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.8.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.8.10.0.0 Technical Details
+
+##### 2.5.8.10.1.0 Protocol
+
+WebSocket (SignalR)
+
+##### 2.5.8.10.2.0 Method
+
+SendLocationUpdate
+
+##### 2.5.8.10.3.0 Parameters
+
+| Property | Value |
+|----------|-------|
+| Location Data | {'jobId': 'string', 'latitude': 'double', 'longitude': 'double', 'timestamp': 'ISO 8601 string'} |
+
+##### 2.5.8.10.4.0 Authentication
+
+Implicitly authenticated by the established connection. The server retrieves the 'jobId' from the payload or session state.
+
+##### 2.5.8.10.5.0 Error Handling
+
+If the technician's device loses GPS or internet, this call will fail or not be made. The client UI should reflect a 'last seen' status.
+
+##### 2.5.8.10.6.0 Performance
+
+###### 2.5.8.10.6.1 Throughput
+
+Typically 1 message every 2-5 seconds per active technician.
+
+#### 2.5.8.11.0.0 Nested Interactions
+
+- {'sourceId': 'geolocation-service-007', 'targetId': 'geolocation-service-007', 'message': "Broadcast 'OnLocationUpdated' to all clients in the job-specific SignalR group via Redis backplane.", 'sequenceNumber': 9, 'type': 'Internal Broadcast', 'isSynchronous': False, 'hasReturn': False, 'isActivation': False, 'technicalDetails': {'protocol': 'SignalR Group Broadcast', 'method': 'Clients.Group(jobId).SendAsync("OnLocationUpdated", locationData)', 'parameters': "Client-side method name ('OnLocationUpdated') and the locationData payload.", 'authentication': 'N/A (internal).', 'errorHandling': 'If the Redis backplane is down, the broadcast may only reach clients connected to the same server instance or fail entirely. This is a critical failure and must be monitored.', 'performance': {'latency': 'Broadcast latency across the backplane should be < 20ms.'}}}
+
+### 2.5.9.0.0.0 WebSocket Push
+
+#### 2.5.9.1.0.0 Source Id
+
+geolocation-service-007
+
+#### 2.5.9.2.0.0 Target Id
+
+mobile-client-013
+
+#### 2.5.9.3.0.0 Message
+
+Push 'OnLocationUpdated' message to Customer's client.
+
+#### 2.5.9.4.0.0 Sequence Number
+
+10
+
+#### 2.5.9.5.0.0 Type
+
+🔹 WebSocket Push
+
+#### 2.5.9.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.9.7.0.0 Has Return
+
+❌ No
+
+#### 2.5.9.8.0.0 Is Activation
+
+❌ No
+
+#### 2.5.9.9.0.0 Technical Details
+
+##### 2.5.9.9.1.0 Protocol
+
+WebSocket (SignalR)
+
+##### 2.5.9.9.2.0 Method
+
+OnLocationUpdated
+
+##### 2.5.9.9.3.0 Parameters
+
+The 'locationData' payload.
+
+##### 2.5.9.9.4.0 Authentication
+
+N/A (received over an authenticated connection).
+
+##### 2.5.9.9.5.0 Error Handling
+
+Client-side handler updates the map marker. If message is not received, the marker remains stale.
+
+##### 2.5.9.9.6.0 Performance
+
+###### 2.5.9.9.6.1 Latency
+
+End-to-end from step 8 to UI update must be < 2000ms (REQ-PERF-002).
+
+### 2.5.10.0.0.0 UI Update
+
+#### 2.5.10.1.0.0 Source Id
+
+mobile-client-013
+
+#### 2.5.10.2.0.0 Target Id
+
+mobile-client-013
+
+#### 2.5.10.3.0.0 Message
+
+Customer's app UI updates technician's position on the map.
+
+#### 2.5.10.4.0.0 Sequence Number
+
+11
+
+#### 2.5.10.5.0.0 Type
+
+🔹 UI Update
+
+#### 2.5.10.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.10.7.0.0 Has Return
+
+❌ No
+
+#### 2.5.10.8.0.0 Is Activation
+
+❌ No
+
+## 2.6.0.0.0.0 Notes
+
+### 2.6.1.0.0.0 Content
+
+#### 2.6.1.1.0.0 Content
+
+The entire sequence is latency-sensitive (REQ-PERF-002). Use of WebSockets is mandatory. The Azure Cache for Redis backplane for SignalR is critical for achieving scalability and reliability.
+
+#### 2.6.1.2.0.0 Position
+
+top
+
+#### 2.6.1.3.0.0 Participant Id
+
+*Not specified*
+
+#### 2.6.1.4.0.0 Sequence Number
+
+*Not specified*
+
+### 2.6.2.0.0.0 Content
+
+#### 2.6.2.1.0.0 Content
+
+The Flutter client must use a robust SignalR client library that supports automatic reconnection with configurable backoff strategies to handle transient network issues common on mobile devices.
+
+#### 2.6.2.2.0.0 Position
+
+bottom
+
+#### 2.6.2.3.0.0 Participant Id
+
+mobile-client-013
+
+#### 2.6.2.4.0.0 Sequence Number
+
+3
+
+### 2.6.3.0.0.0 Content
+
+#### 2.6.3.1.0.0 Content
+
+Authorization logic within the SignalR Hub is critical. It must prevent a user from subscribing to or publishing updates for a job they are not associated with. This is enforced by validating claims from the JWT against database records on every sensitive hub method invocation.
+
+#### 2.6.3.2.0.0 Position
+
+bottom
+
+#### 2.6.3.3.0.0 Participant Id
+
+geolocation-service-007
+
+#### 2.6.3.4.0.0 Sequence Number
+
+4
+
+## 2.7.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | All SignalR hub connections MUST be authenticated ... |
+| Performance Targets | The P99 end-to-end latency for a GPS update (from ... |
+| Error Handling Strategy | Client-side: Implement automatic reconnection logi... |
+| Testing Considerations | End-to-end testing must simulate two separate clie... |
+| Monitoring Requirements | Key metrics to monitor for the Geolocation Service... |
+| Deployment Considerations | The Geolocation Service deployment on AKS must hav... |
+

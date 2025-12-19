@@ -1,0 +1,224 @@
+openapi: 3.0.1
+info:
+  title: Service Request API
+  description: Manages the lifecycle of service requests, including creation, assignment, status updates, and chat.
+  version: '1.0'
+servers:
+  - url: https://api.warrantyhub.com/v1/requests
+paths:
+  /tickets:
+    post:
+      summary: Create Service Request
+      operationId: CreateServiceRequest
+      tags:
+        - Tickets
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTicketRequest'
+      responses:
+        '201':
+          description: Ticket Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceTicket'
+    get:
+      summary: List Service Requests
+      operationId: ListServiceRequests
+      tags:
+        - Tickets
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of tickets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServiceTicket'
+  /tickets/{id}:
+    get:
+      summary: Get Ticket Details
+      operationId: GetTicketDetails
+      tags:
+        - Tickets
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Ticket Details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceTicket'
+  /tickets/{id}/status:
+    patch:
+      summary: Update Ticket Status
+      operationId: UpdateTicketStatus
+      tags:
+        - Tickets
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [Created, Assigned, InProgress, Completed, Closed, Cancelled]
+                notes:
+                  type: string
+      responses:
+        '200':
+          description: Status Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceTicket'
+  /tickets/{id}/assign:
+    post:
+      summary: Assign Technician
+      operationId: AssignTechnician
+      tags:
+        - Dispatch
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                technicianId:
+                  type: string
+      responses:
+        '200':
+          description: Technician Assigned
+  /tickets/{id}/messages:
+    get:
+      summary: Get Chat History
+      operationId: GetChatHistory
+      tags:
+        - Chat
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Chat History
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatMessage'
+    post:
+      summary: Send Chat Message
+      operationId: SendChatMessage
+      tags:
+        - Chat
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+      responses:
+        '201':
+          description: Message Sent
+components:
+  schemas:
+    CreateTicketRequest:
+      type: object
+      required:
+        - userProductId
+        - issueDescription
+      properties:
+        userProductId:
+          type: string
+          format: uuid
+        issueDescription:
+          type: string
+        preferredDate:
+          type: string
+          format: date-time
+    ServiceTicket:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        createdDate:
+          type: string
+          format: date-time
+        description:
+          type: string
+        technician:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+    ChatMessage:
+      type: object
+      properties:
+        id:
+          type: string
+        senderId:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - BearerAuth: []

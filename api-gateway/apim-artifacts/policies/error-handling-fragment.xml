@@ -1,0 +1,55 @@
+<!--
+    IMPORTANT: This fragment standardizes error responses to RFC 7807 Problem Details format.
+    It masks internal backend errors for security.
+-->
+<fragment>
+    <choose>
+        <!-- If the error originated from the backend -->
+        <when condition="@(context.LastError.Source == "backend")">
+            <set-header name="Content-Type" exists-action="override">
+                <value>application/problem+json</value>
+            </set-header>
+            <set-body>@{
+                return new JObject(
+                    new JProperty("type", "https://warrantyhub.com/errors/backend-failure"),
+                    new JProperty("title", "Backend Service Unavailable"),
+                    new JProperty("status", 502),
+                    new JProperty("detail", "The backend service responsible for processing the request is temporarily unavailable."),
+                    new JProperty("instance", context.Request.Url.Path),
+                    new JProperty("traceId", context.RequestId)
+                ).ToString();
+            }</set-body>
+        </when>
+        <!-- If the error is an authorization failure -->
+        <when condition="@(context.Response.StatusCode == 401)">
+            <set-header name="Content-Type" exists-action="override">
+                <value>application/problem+json</value>
+            </set-header>
+            <set-body>@{
+                return new JObject(
+                    new JProperty("type", "https://warrantyhub.com/errors/unauthorized"),
+                    new JProperty("title", "Unauthorized"),
+                    new JProperty("status", 401),
+                    new JProperty("detail", "You must provide a valid authentication token to access this resource."),
+                    new JProperty("traceId", context.RequestId)
+                ).ToString();
+            }</set-body>
+        </when>
+        <!-- Generic Gateway Error -->
+        <otherwise>
+            <set-header name="Content-Type" exists-action="override">
+                <value>application/problem+json</value>
+            </set-header>
+            <set-body>@{
+                return new JObject(
+                    new JProperty("type", "https://warrantyhub.com/errors/gateway-error"),
+                    new JProperty("title", context.LastError.Reason),
+                    new JProperty("status", context.Response.StatusCode),
+                    new JProperty("detail", context.LastError.Message),
+                    new JProperty("instance", context.Request.Url.Path),
+                    new JProperty("traceId", context.RequestId)
+                ).ToString();
+            }</set-body>
+        </otherwise>
+    </choose>
+</fragment>

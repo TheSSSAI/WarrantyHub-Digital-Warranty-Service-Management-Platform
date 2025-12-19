@@ -1,0 +1,118 @@
+openapi: 3.0.1
+info:
+  title: Identity & User Service API
+  description: Manages user profiles, roles, and administrative user management. Authentication is handled by B2C, this service manages the extended profile data.
+  version: '1.0'
+servers:
+  - url: https://api.warrantyhub.com/v1/identity
+paths:
+  /users/me:
+    get:
+      summary: Get Current User Profile
+      operationId: GetCurrentUser
+      tags:
+        - User
+      responses:
+        '200':
+          description: Current User Profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+    put:
+      summary: Update Current User Profile
+      operationId: UpdateCurrentUser
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfileUpdate'
+      responses:
+        '200':
+          description: Updated Profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+  /admin/users:
+    get:
+      summary: List Users (Admin)
+      operationId: ListUsers
+      tags:
+        - Admin
+      parameters:
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [Consumer, Technician, Admin, ServiceCenter]
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserProfile'
+  /admin/users/{id}/role:
+    patch:
+      summary: Update User Role (Admin)
+      operationId: UpdateUserRole
+      tags:
+        - Admin
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  type: string
+      responses:
+        '204':
+          description: Role Updated
+components:
+  schemas:
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          type: string
+        phoneNumber:
+          type: string
+    UserProfileUpdate:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phoneNumber:
+          type: string
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - BearerAuth: []

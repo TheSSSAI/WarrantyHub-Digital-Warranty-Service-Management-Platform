@@ -1,0 +1,43 @@
+# Compiled output
+dist
+dist-server
+/out-tsc
+/bazel-out
+
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Testing
+coverage
+.nyc_output
+reports
+junit.xml
+
+# IDEs and Editors
+.idea
+.vscode
+*.swp
+*.swo
+.DS_Store
+
+# Environment variables
+.env
+.env.test
+.env.production
+
+# NestJS
+.nest-cli.json
+
+# Terraform
+.terraform
+*.tfstate
+*.tfstate.backup
+
+# Docker
+docker-compose.override.yml
+
+# OS
+Thumbs.db

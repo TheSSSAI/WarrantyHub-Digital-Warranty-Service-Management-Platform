@@ -1,0 +1,4 @@
+"dependency_id","from_task","to_task","dependency_type","description","critical_path","lead_time_days","responsible_team","coordination_required","risk_level","mitigation_plan","status","resolution_date","impact_if_delayed","escalation_required"
+"DEP-001","TASK-INFRA-001","TASK-INFRA-002","Technical","Cluster networking required for DB VNet integration","true","","DevOps","","Low","Execute sequentially in pipeline","Active","2024-01-10","Database provisioning blocked",""
+"DEP-002","TASK-INFRA-002","TASK-BE-001","Technical","Database required for API persistence","true","1","Backend Nest","true","Low","Use local Docker DB for dev","Active","2024-01-11","API deployment blocked",""
+"DEP-003","TASK-NET-001","TASK-MOB-002","Technical","SignalR Hub required for Mobile Client to connect","true","","Mobile","true","Medium","Mock SignalR server for mobile dev","Active","2024-01-16","Mobile location feature delayed",""

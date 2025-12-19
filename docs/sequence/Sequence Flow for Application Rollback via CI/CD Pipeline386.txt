@@ -1,0 +1,952 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-RF-001
+
+## 1.2 Name
+
+Application Rollback via CI/CD Pipeline
+
+## 1.3 Description
+
+Following a problematic deployment, an Operations Team Member initiates a rollback by re-running the deployment pipeline with the image tag of the previous stable version, causing a rolling update to the old version.
+
+## 1.4 Type
+
+🔹 RecoveryFlow
+
+## 1.5 Purpose
+
+To provide a rapid, reliable method for restoring service after a faulty deployment, minimizing Mean Time To Recovery (MTTR) and user impact. Based on US-132.
+
+## 1.6 Complexity
+
+Medium
+
+## 1.7 Priority
+
+🚨 Critical
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+*No items available*
+
+## 1.10 Key Interactions
+
+- A deployment of ProductService v1.1 completes.
+- Monitoring systems detect a spike in 5xx errors and trigger a critical PagerDuty alert.
+- The on-call SRE investigates and decides to roll back to v1.0.
+- The SRE identifies the v1.0 image tag from Azure Container Registry (ACR) or the CI/CD job history.
+- The SRE triggers the GitHub Actions deployment workflow, providing the `v1.0` image tag as a manual input parameter.
+- The pipeline generates the Kubernetes manifest pointing to the old image and applies it to the AKS cluster using `kubectl apply`.
+- AKS initiates a rolling update, terminating the faulty v1.1 pods and replacing them with new pods running the stable v1.0 image.
+- The SRE validates the system's health via Grafana dashboards and health checks.
+
+## 1.11 Triggers
+
+- A critical alert (e.g., high error rate, SLO breach) immediately following a new deployment.
+
+## 1.12 Outcomes
+
+- The application is restored to its last known stable state.
+- The incident is resolved, and monitoring metrics return to normal.
+- A blameless post-mortem is scheduled to analyze the failure.
+
+## 1.13 Business Rules
+
+- A rollback must be initiated if critical SLOs are breached post-deployment.
+- All rollbacks must be followed by a blameless post-mortem.
+- The rollback procedure must be documented and tested (US-132).
+
+## 1.14 Error Scenarios
+
+- The previous container image has been pruned from ACR.
+- The CI/CD pipeline fails during the rollback deployment.
+- The rollback does not fix the issue, indicating a problem with a dependency or a destructive database migration.
+
+## 1.15 Integration Points
+
+- GitHub Actions
+- Azure Container Registry
+- Azure Kubernetes Service
+- Monitoring System (Grafana/Alertmanager)
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-RF-001
+
+## 2.2 Name
+
+Implementation: Application Rollback via CI/CD Pipeline
+
+## 2.3 Description
+
+A detailed technical sequence for restoring a microservice to its last known stable version following a critical deployment failure. An SRE, alerted by monitoring, triggers a parameterized CI/CD pipeline to redeploy the previous container image, leveraging the orchestrator's rolling update strategy to minimize downtime. This sequence is based on the recovery procedure defined in US-132.
+
+## 2.4 Participants
+
+### 2.4.1 Human Actor
+
+#### 2.4.1.1 Repository Id
+
+Operations-SRE
+
+#### 2.4.1.2 Display Name
+
+Operations SRE
+
+#### 2.4.1.3 Type
+
+🔹 Human Actor
+
+#### 2.4.1.4 Technology
+
+kubectl CLI, GitHub UI, Grafana UI
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #90CAF9 |
+| Stereotype | User |
+
+### 2.4.2.0 System
+
+#### 2.4.2.1 Repository Id
+
+Monitoring-System
+
+#### 2.4.2.2 Display Name
+
+Monitoring System
+
+#### 2.4.2.3 Type
+
+🔹 System
+
+#### 2.4.2.4 Technology
+
+Prometheus, Alertmanager
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #FFAB91 |
+| Stereotype | Observability |
+
+### 2.4.3.0 Service
+
+#### 2.4.3.1 Repository Id
+
+REPO-BS-003
+
+#### 2.4.3.2 Display Name
+
+ProductService
+
+#### 2.4.3.3 Type
+
+🔹 Service
+
+#### 2.4.3.4 Technology
+
+.NET 8, ASP.NET Core
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #A5D6A7 |
+| Stereotype | Microservice |
+
+### 2.4.4.0 System
+
+#### 2.4.4.1 Repository Id
+
+Grafana-Dashboard
+
+#### 2.4.4.2 Display Name
+
+Grafana Dashboard
+
+#### 2.4.4.3 Type
+
+🔹 System
+
+#### 2.4.4.4 Technology
+
+Grafana
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #FFCC80 |
+| Stereotype | UI |
+
+### 2.4.5.0 Infrastructure
+
+#### 2.4.5.1 Repository Id
+
+ACR-Registry
+
+#### 2.4.5.2 Display Name
+
+Azure Container Registry
+
+#### 2.4.5.3 Type
+
+🔹 Infrastructure
+
+#### 2.4.5.4 Technology
+
+Azure Container Registry
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #80DEEA |
+| Stereotype | Registry |
+
+### 2.4.6.0 CI/CD Pipeline
+
+#### 2.4.6.1 Repository Id
+
+REPO-CICD-014
+
+#### 2.4.6.2 Display Name
+
+GitHub Actions CI/CD
+
+#### 2.4.6.3 Type
+
+🔹 CI/CD Pipeline
+
+#### 2.4.6.4 Technology
+
+GitHub Actions
+
+#### 2.4.6.5 Order
+
+6
+
+#### 2.4.6.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #CFD8DC |
+| Stereotype | Pipeline |
+
+### 2.4.7.0 Orchestrator
+
+#### 2.4.7.1 Repository Id
+
+AKS-Cluster
+
+#### 2.4.7.2 Display Name
+
+Azure Kubernetes Service
+
+#### 2.4.7.3 Type
+
+🔹 Orchestrator
+
+#### 2.4.7.4 Technology
+
+Kubernetes 1.29
+
+#### 2.4.7.5 Order
+
+7
+
+#### 2.4.7.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | node |
+| Color | #B39DDB |
+| Stereotype | Platform |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Telemetry
+
+#### 2.5.1.1 Source Id
+
+REPO-BS-003
+
+#### 2.5.1.2 Target Id
+
+Monitoring-System
+
+#### 2.5.1.3 Message
+
+1. [Post-Deployment] ProductService v1.1 pods emit metrics (e.g., HTTP 5xx error rate).
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Telemetry
+
+#### 2.5.1.6 Is Synchronous
+
+❌ No
+
+#### 2.5.1.7 Has Return
+
+❌ No
+
+#### 2.5.1.8 Is Activation
+
+❌ No
+
+#### 2.5.1.9 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Prometheus Scrape |
+| Method | GET /metrics |
+| Parameters | Prometheus endpoint exposed by the service. |
+| Authentication | ServiceMonitor RBAC in AKS. |
+| Error Handling | Scrape failures are logged by Prometheus. |
+| Performance | Scrape interval: 30s. |
+
+### 2.5.2.0 Internal Processing
+
+#### 2.5.2.1 Source Id
+
+Monitoring-System
+
+#### 2.5.2.2 Target Id
+
+Monitoring-System
+
+#### 2.5.2.3 Message
+
+2. Evaluate alert rule: `rate(http_requests_total{status=~'5..'}[5m]) > 0.02`.
+
+#### 2.5.2.4 Sequence Number
+
+2
+
+#### 2.5.2.5 Type
+
+🔹 Internal Processing
+
+#### 2.5.2.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7 Has Return
+
+❌ No
+
+#### 2.5.2.8 Is Activation
+
+✅ Yes
+
+#### 2.5.2.9 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | PromQL |
+| Method | Rule Evaluation |
+| Parameters | Alerting rule defined in Alertmanager configuratio... |
+| Authentication | N/A |
+| Error Handling | N/A |
+| Performance | Evaluation interval: 1m. |
+
+### 2.5.3.0 Notification
+
+#### 2.5.3.1 Source Id
+
+Monitoring-System
+
+#### 2.5.3.2 Target Id
+
+Operations-SRE
+
+#### 2.5.3.3 Message
+
+3. Fire critical PagerDuty alert: 'High 5xx Error Rate on ProductService'.
+
+#### 2.5.3.4 Sequence Number
+
+3
+
+#### 2.5.3.5 Type
+
+🔹 Notification
+
+#### 2.5.3.6 Is Synchronous
+
+❌ No
+
+#### 2.5.3.7 Has Return
+
+❌ No
+
+#### 2.5.3.8 Is Activation
+
+❌ No
+
+#### 2.5.3.9 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS/Webhook |
+| Method | POST |
+| Parameters | JSON payload containing alert details, severity, a... |
+| Authentication | PagerDuty Integration Key. |
+| Error Handling | Alertmanager will retry on failure. |
+| Performance | Sub-second. |
+
+### 2.5.4.0 User Interaction
+
+#### 2.5.4.1 Source Id
+
+Operations-SRE
+
+#### 2.5.4.2 Target Id
+
+Grafana-Dashboard
+
+#### 2.5.4.3 Message
+
+4. Investigate incident by accessing ProductService dashboard.
+
+#### 2.5.4.4 Sequence Number
+
+4
+
+#### 2.5.4.5 Type
+
+🔹 User Interaction
+
+#### 2.5.4.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7 Return Message
+
+5. Display dashboards with correlated metrics (error rate, latency, deployment annotations).
+
+#### 2.5.4.8 Has Return
+
+✅ Yes
+
+#### 2.5.4.9 Is Activation
+
+✅ Yes
+
+#### 2.5.4.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS |
+| Method | GET |
+| Parameters | URL to the specific Grafana dashboard. |
+| Authentication | Azure AD SSO. |
+| Error Handling | Standard browser error handling. |
+| Performance | Dashboard load time < 5s. |
+
+### 2.5.5.0 Manual Query
+
+#### 2.5.5.1 Source Id
+
+Operations-SRE
+
+#### 2.5.5.2 Target Id
+
+ACR-Registry
+
+#### 2.5.5.3 Message
+
+6. Decide to rollback; identify previous stable image tag (v1.0).
+
+#### 2.5.5.4 Sequence Number
+
+6
+
+#### 2.5.5.5 Type
+
+🔹 Manual Query
+
+#### 2.5.5.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7 Return Message
+
+7. Return list of available image tags for the repository.
+
+#### 2.5.5.8 Has Return
+
+✅ Yes
+
+#### 2.5.5.9 Is Activation
+
+❌ No
+
+#### 2.5.5.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Azure CLI / Azure Portal |
+| Method | `az acr repository show-tags` |
+| Parameters | Repository: `product-service` |
+| Authentication | Azure AD credentials. |
+| Error Handling | CLI will report error if repository not found or a... |
+| Performance | < 5s. |
+
+### 2.5.6.0 Manual Trigger
+
+#### 2.5.6.1 Source Id
+
+Operations-SRE
+
+#### 2.5.6.2 Target Id
+
+REPO-CICD-014
+
+#### 2.5.6.3 Message
+
+8. Trigger 'Deploy to Production' workflow with manual parameters.
+
+#### 2.5.6.4 Sequence Number
+
+8
+
+#### 2.5.6.5 Type
+
+🔹 Manual Trigger
+
+#### 2.5.6.6 Is Synchronous
+
+❌ No
+
+#### 2.5.6.7 Has Return
+
+❌ No
+
+#### 2.5.6.8 Is Activation
+
+✅ Yes
+
+#### 2.5.6.9 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS/GitHub API |
+| Method | workflow_dispatch event |
+| Parameters | Inputs: `{ "imageTag": "v1.0" }` |
+| Authentication | GitHub credentials with repository write/actions p... |
+| Error Handling | GitHub UI provides immediate feedback on trigger f... |
+| Performance | Sub-second. |
+
+#### 2.5.6.10 Nested Interactions
+
+##### 2.5.6.10.1 Internal Processing
+
+###### 2.5.6.10.1.1 Source Id
+
+REPO-CICD-014
+
+###### 2.5.6.10.1.2 Target Id
+
+REPO-CICD-014
+
+###### 2.5.6.10.1.3 Message
+
+8.1. Generate Kubernetes manifest using `v1.0` image tag.
+
+###### 2.5.6.10.1.4 Sequence Number
+
+8.1
+
+###### 2.5.6.10.1.5 Type
+
+🔹 Internal Processing
+
+###### 2.5.6.10.1.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.6.10.1.7 Has Return
+
+❌ No
+
+###### 2.5.6.10.1.8 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | File System/Templating |
+| Method | Replace placeholder in `deployment.yaml` template. |
+| Parameters | Image: `myregistry.azurecr.io/product-service:v1.0... |
+| Authentication | N/A |
+| Error Handling | Workflow fails if template or variable is missing. |
+| Performance | < 10s. |
+
+##### 2.5.6.10.2.0 Orchestration Command
+
+###### 2.5.6.10.2.1 Source Id
+
+REPO-CICD-014
+
+###### 2.5.6.10.2.2 Target Id
+
+AKS-Cluster
+
+###### 2.5.6.10.2.3 Message
+
+8.2. Apply updated manifest to cluster.
+
+###### 2.5.6.10.2.4 Sequence Number
+
+8.2
+
+###### 2.5.6.10.2.5 Type
+
+🔹 Orchestration Command
+
+###### 2.5.6.10.2.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.6.10.2.7 Return Message
+
+8.3. Acknowledge manifest application.
+
+###### 2.5.6.10.2.8 Has Return
+
+✅ Yes
+
+###### 2.5.6.10.2.9 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | kubectl CLI / Kubernetes API |
+| Method | `kubectl apply -f deployment.yaml` |
+| Parameters | YAML manifest content. |
+| Authentication | Azure Service Principal with AKS Cluster Admin rol... |
+| Error Handling | Command fails with non-zero exit code if API serve... |
+| Performance | < 15s. |
+
+###### 2.5.6.10.2.10 Nested Interactions
+
+####### 2.5.6.10.2.10.1 Image Pull
+
+######## 2.5.6.10.2.10.1.1 Source Id
+
+AKS-Cluster
+
+######## 2.5.6.10.2.10.1.2 Target Id
+
+ACR-Registry
+
+######## 2.5.6.10.2.10.1.3 Message
+
+8.2.1. Pull `product-service:v1.0` image.
+
+######## 2.5.6.10.2.10.1.4 Sequence Number
+
+8.21
+
+######## 2.5.6.10.2.10.1.5 Type
+
+🔹 Image Pull
+
+######## 2.5.6.10.2.10.1.6 Is Synchronous
+
+✅ Yes
+
+######## 2.5.6.10.2.10.1.7 Return Message
+
+8.2.2. Image layers returned.
+
+######## 2.5.6.10.2.10.1.8 Has Return
+
+✅ Yes
+
+######## 2.5.6.10.2.10.1.9 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Docker Registry API v2 |
+| Method | PULL |
+| Parameters | Image name and tag. |
+| Authentication | Kubelet identity / AKS-ACR integration. |
+| Error Handling | Pod status becomes `ImagePullBackOff` if image is ... |
+| Performance | Depends on image size and network. |
+
+####### 2.5.6.10.2.10.2.0 Lifecycle Management
+
+######## 2.5.6.10.2.10.2.1 Source Id
+
+AKS-Cluster
+
+######## 2.5.6.10.2.10.2.2 Target Id
+
+REPO-BS-003
+
+######## 2.5.6.10.2.10.2.3 Message
+
+8.2.3. Initiate rolling update: Create new v1.0 pods, wait for readiness, then terminate old v1.1 pods.
+
+######## 2.5.6.10.2.10.2.4 Sequence Number
+
+8.23
+
+######## 2.5.6.10.2.10.2.5 Type
+
+🔹 Lifecycle Management
+
+######## 2.5.6.10.2.10.2.6 Is Synchronous
+
+❌ No
+
+######## 2.5.6.10.2.10.2.7 Has Return
+
+❌ No
+
+######## 2.5.6.10.2.10.2.8 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Kubernetes Control Plane |
+| Method | RollingUpdate Strategy |
+| Parameters | Defined in Deployment spec: `maxSurge`, `maxUnavai... |
+| Authentication | N/A |
+| Error Handling | Deployment pauses if new pods fail readiness probe... |
+| Performance | Depends on pod startup time and readiness probe co... |
+
+### 2.5.7.0.0.0.0.0 Notification
+
+#### 2.5.7.1.0.0.0.0 Source Id
+
+REPO-CICD-014
+
+#### 2.5.7.2.0.0.0.0 Target Id
+
+Operations-SRE
+
+#### 2.5.7.3.0.0.0.0 Message
+
+9. Report workflow completion status.
+
+#### 2.5.7.4.0.0.0.0 Sequence Number
+
+9
+
+#### 2.5.7.5.0.0.0.0 Type
+
+🔹 Notification
+
+#### 2.5.7.6.0.0.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.7.7.0.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.7.8.0.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.7.9.0.0.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | GitHub UI/Email |
+| Method | Workflow run status update. |
+| Parameters | Success/Failure status with link to logs. |
+| Authentication | N/A |
+| Error Handling | N/A |
+| Performance | Immediate. |
+
+### 2.5.8.0.0.0.0.0 User Interaction
+
+#### 2.5.8.1.0.0.0.0 Source Id
+
+Operations-SRE
+
+#### 2.5.8.2.0.0.0.0 Target Id
+
+Grafana-Dashboard
+
+#### 2.5.8.3.0.0.0.0 Message
+
+10. Validate system health post-rollback.
+
+#### 2.5.8.4.0.0.0.0 Sequence Number
+
+10
+
+#### 2.5.8.5.0.0.0.0 Type
+
+🔹 User Interaction
+
+#### 2.5.8.6.0.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.8.7.0.0.0.0 Return Message
+
+11. Display dashboards showing error rates returning to baseline.
+
+#### 2.5.8.8.0.0.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.8.9.0.0.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.8.10.0.0.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS |
+| Method | GET |
+| Parameters | Refresh dashboard. |
+| Authentication | Azure AD SSO. |
+| Error Handling | Standard browser error handling. |
+| Performance | Dashboard load time < 5s. |
+
+### 2.5.9.0.0.0.0.0 Health Check
+
+#### 2.5.9.1.0.0.0.0 Source Id
+
+Operations-SRE
+
+#### 2.5.9.2.0.0.0.0 Target Id
+
+REPO-BS-003
+
+#### 2.5.9.3.0.0.0.0 Message
+
+12. Perform smoke test by hitting health check endpoint.
+
+#### 2.5.9.4.0.0.0.0 Sequence Number
+
+12
+
+#### 2.5.9.5.0.0.0.0 Type
+
+🔹 Health Check
+
+#### 2.5.9.6.0.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.9.7.0.0.0.0 Return Message
+
+13. Return `HTTP 200 OK` with `Healthy` status.
+
+#### 2.5.9.8.0.0.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.9.9.0.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.9.10.0.0.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS |
+| Method | GET /health |
+| Parameters | N/A |
+| Authentication | N/A (public endpoint) |
+| Error Handling | An unhealthy status or non-200 response indicates ... |
+| Performance | < 100ms. |
+
+## 2.6.0.0.0.0.0.0 Notes
+
+### 2.6.1.0.0.0.0.0 Content
+
+#### 2.6.1.1.0.0.0.0 Content
+
+Business Rule BR-002: A blameless post-mortem must be scheduled after this incident is resolved to determine the root cause of the v1.1 deployment failure.
+
+#### 2.6.1.2.0.0.0.0 Position
+
+bottom
+
+#### 2.6.1.3.0.0.0.0 Participant Id
+
+*Not specified*
+
+#### 2.6.1.4.0.0.0.0 Sequence Number
+
+13
+
+### 2.6.2.0.0.0.0.0 Content
+
+#### 2.6.2.1.0.0.0.0 Content
+
+The entire rollback process must adhere to the RTO of < 4 hours, with an internal target of < 30 minutes for this automated application rollback scenario.
+
+#### 2.6.2.2.0.0.0.0 Position
+
+top
+
+#### 2.6.2.3.0.0.0.0 Participant Id
+
+*Not specified*
+
+#### 2.6.2.4.0.0.0.0 Sequence Number
+
+1
+
+## 2.7.0.0.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | The `workflow_dispatch` trigger in GitHub Actions ... |
+| Performance Targets | The end-to-end time from SRE decision to system st... |
+| Error Handling Strategy | - **Image Pruned from ACR**: The pipeline will fai... |
+| Testing Considerations | This entire rollback procedure must be documented ... |
+| Monitoring Requirements | Grafana dashboards MUST have deployment annotation... |
+| Deployment Considerations | The application deployment strategy in AKS must be... |
+

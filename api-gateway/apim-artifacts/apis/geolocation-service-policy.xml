@@ -1,0 +1,54 @@
+<!-- 
+    Policy Definition for Geolocation Service
+    Dependency Level: 2
+    
+    Architectural Analysis:
+    - Inherits from Global Policy (Level 1) via <base />.
+    - Configures WebSocket/SignalR support for Real-time Tracking (REQ-PERF-002, REQ-FUNC-009).
+    - Uses Named Values (Level 0) for backend routing.
+    - Disables buffering to support low-latency streaming.
+-->
+<policies>
+    <inbound>
+        <!-- Inherit global policies (Auth, Logging) -->
+        <base />
+
+        <!-- 
+             Route to the internal Geolocation Service WebSocket URL.
+             Dependency: Named Value 'geolocation-service-ws-url' defined in Level 0.
+             Note: WSS protocol is handled by APIM's protocol upgrade mechanism.
+        -->
+        <set-backend-service base-url="{{geolocation-service-ws-url}}" />
+
+        <!--
+             WebSocket Specific Headers:
+             Ensure proper upgrade headers are passed if not automatically handled by the client.
+             Security: The global <validate-jwt> (Level 1) protects the initial handshake.
+        -->
+        <set-header name="X-Forwarded-For" exists-action="override">
+            <value>@(context.Request.IpAddress)</value>
+        </set-header>
+    </inbound>
+
+    <backend>
+        <!-- 
+             Real-time Optimization:
+             1. Disable request body buffering to ensure immediate transmission of frames.
+             2. Increase timeout to allow for long-lived WebSocket connections (e.g., technician tracking session).
+             REQ-PERF-002: End-to-end latency < 2 seconds.
+        -->
+        <forward-request timeout="300" buffer-request-body="false" />
+    </backend>
+
+    <outbound>
+        <base />
+    </outbound>
+
+    <on-error>
+        <!-- 
+             WebSocket Error Handling:
+             Ensure meaningful error codes are returned if the handshake fails.
+        -->
+        <base />
+    </on-error>
+</policies>

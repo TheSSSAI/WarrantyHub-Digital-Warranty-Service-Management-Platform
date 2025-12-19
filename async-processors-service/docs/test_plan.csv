@@ -1,0 +1,2 @@
+"project_name","total_test_scenarios_estimated","automation_target_percentage","quality_confidence_score","risk_coverage_percentage","maintenance_overhead","primary_tech_stack","testing_tools_count","environments_required"
+"Warranty Platform","450","85","0.94","98","Medium","NestJS, Next.js, React Native, Azure, PostgreSQL","8","4"

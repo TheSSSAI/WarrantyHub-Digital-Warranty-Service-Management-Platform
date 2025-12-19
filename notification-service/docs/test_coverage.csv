@@ -1,0 +1,4 @@
+"component_name","business_criticality","technical_complexity","change_frequency","test_types_required","unit_test_coverage","integration_test_coverage","e2e_test_coverage","automation_percentage","manual_test_effort","automated_test_effort","total_test_cases","risk_mitigation_score","quality_confidence","maintenance_overhead","tool_compatibility","team_skill_alignment"
+"Backend API (NestJS)","Critical","High","High","[""Unit"",""Integration"",""Contract"",""Security""]","90","85","60","95","5","120","250","0.95","Very High","Low","Jest/Supertest","Excellent"
+"Technician Mobile App (React Native)","Critical","Very High","Medium","[""Unit"",""E2E"",""Offline/Sync"",""Battery""]","80","70","50","60","40","80","120","0.85","High","High","Detox/Appium","Moderate"
+"Web Portals (Next.js)","High","Medium","Medium","[""Unit"",""Component"",""E2E"",""Accessibility""]","85","80","70","90","10","60","80","0.9","High","Low","Cypress/Playwright","Good"

@@ -1,0 +1,11 @@
+erDiagram
+    AuditRecord {
+        KEYWORD auditLogId PK "Primary key for the audit log record"
+        KEYWORD userId "Identifier for the user who performed the action"
+        KEYWORD actionType "The type of action performed (e.g., CREATE, UPDATE, DELETE)"
+        KEYWORD targetEntity "The type of entity that was affected"
+        KEYWORD targetEntityId "The identifier of the entity that was affected"
+        OBJECT changeDetails "A JSON object detailing the changes made"
+        IP sourceIpAddress "The IP address from which the action was initiated"
+        DATE timestamp "The timestamp when the action occurred"
+    }

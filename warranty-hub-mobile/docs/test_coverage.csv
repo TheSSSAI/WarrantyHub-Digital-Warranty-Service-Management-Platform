@@ -1,0 +1,5 @@
+"component_name","business_criticality","technical_complexity","change_frequency","test_types_required","unit_test_coverage","integration_test_coverage","e2e_test_coverage","automation_percentage","manual_test_effort","automated_test_effort","total_test_cases","risk_mitigation_score","quality_confidence","maintenance_overhead","tool_compatibility","team_skill_alignment"
+"Backend API (NestJS)","Critical","High","High","[""Unit"",""Integration"",""Contract"",""Security""]","90","85","60","95","5","120","200","0.95","Very High","Low","Jest/Supertest","Excellent"
+"Mobile Apps (React Native)","Critical","High","Medium","[""Unit"",""Component"",""E2E"",""Offline""]","80","70","50","75","40","80","120","0.85","High","Medium","Detox/Jest","Good"
+"Web Portals (Next.js)","High","Medium","Medium","[""Component"",""E2E"",""Accessibility""]","85","75","60","80","20","60","80","0.9","High","Low","Playwright/RTL","Excellent"
+"Geospatial Routing Engine","Critical","Very High","Low","[""Unit"",""Performance"",""Data Integrity""]","95","90","40","100","","40","50","0.98","Very High","Low","Jest/PostGIS","Good"

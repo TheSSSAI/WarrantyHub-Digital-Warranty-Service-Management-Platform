@@ -1,0 +1,3 @@
+"gate_id","gate_name","sprint","gate_type","criteria","responsible_team","gate_date","approval_required","approver","bypass_criteria","automation_level","tools_used","success_metrics"
+"QG-001","Sprint 1 Code Freeze","Sprint 1","Integration","B2C Policies deployed to staging; Rollback tested; PostGIS schema applied","DevOps","2024-06-03","true","tech.lead@company.com","None","Partially Automated","GitHub Actions,Azure Portal","Staging env stable; Auth flows working"
+"QG-002","Offline Sync Verification","Sprint 2","Testing","Detox offline suite passing; Sync conflict resolution verified","Mobile Team","2024-06-17","true","qa.lead@company.com","None","Fully Automated","Detox,Jest","Zero data loss scenarios in test"

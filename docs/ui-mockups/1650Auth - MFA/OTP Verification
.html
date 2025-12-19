@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Verify Identity - MFA</title>
+  <style>
+    /* 
+     * DESIGN SYSTEM TOKENS 
+     * Extracted from design system context
+     */
+    :root {
+      /* Colors: Primary */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      --color-primary-800: #3730a3;
+      
+      /* Colors: Secondary & Neutrals */
+      --color-white: #ffffff;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-600: #4b5563;
+      --color-gray-700: #374151;
+      --color-gray-900: #111827;
+
+      /* Colors: Semantic */
+      --color-error-main: #dc3545;
+      --color-error-bg: #f8d7da;
+      --color-success-main: #28a745;
+      
+      /* Typography */
+      --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-size-h2: 24px;
+      --font-size-body: 16px;
+      --font-size-body-sm: 14px;
+      --font-size-caption: 12px;
+      
+      /* Spacing & Layout */
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --radius-md: 6px;
+      --radius-lg: 12px;
+      
+      /* Shadows */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      
+      /* Transitions */
+      --transition-base: all 0.2s ease-in-out;
+    }
+
+    /* CSS Reset & Base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family-primary);
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-900);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-md);
+    }
+
+    /* 
+     * COMPONENT: AUTH LAYOUT 
+     */
+    .auth-container {
+      width: 100%;
+      max-width: 440px;
+      margin: 0 auto;
+    }
+
+    .auth-header {
+      text-align: center;
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .auth-logo {
+      width: 48px;
+      height: 48px;
+      background: var(--color-primary-600);
+      border-radius: var(--radius-md);
+      margin: 0 auto var(--spacing-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 24px;
+    }
+
+    .auth-title {
+      font-size: var(--font-size-h2);
+      font-weight: 700;
+      color: var(--color-gray-900);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .auth-subtitle {
+      font-size: var(--font-size-body);
+      color: var(--color-gray-500);
+    }
+
+    .strong-text {
+      color: var(--color-gray-700);
+      font-weight: 600;
+    }
+
+    .auth-card {
+      background: var(--color-white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 40px;
+      border: 1px solid var(--color-gray-200);
+    }
+
+    /* 
+     * COMPONENT: OTP INPUT GROUP 
+     */
+    .otp-form {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-lg);
+    }
+
+    .otp-group {
+      display: flex;
+      gap: var(--spacing-sm);
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .otp-digit {
+      width: 48px;
+      height: 56px;
+      font-size: 24px;
+      font-weight: 600;
+      text-align: center;
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--radius-md);
+      background: var(--color-white);
+      color: var(--color-gray-900);
+      transition: var(--transition-base);
+      /* Hide arrows/spinners */
+      -moz-appearance: textfield;
+    }
+
+    .otp-digit::-webkit-outer-spin-button,
+    .otp-digit::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .otp-digit:focus {
+      outline: none;
+      border-color: var(--color-primary-600);
+      box-shadow: 0 0 0 3px var(--color-primary-100);
+      z-index: 2;
+    }
+
+    .otp-digit:disabled {
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-400);
+      cursor: not-allowed;
+    }
+
+    .otp-digit.error {
+      border-color: var(--color-error-main);
+      color: var(--color-error-main);
+      background-color: #fff8f9;
+    }
+
+    /* 
+     * COMPONENT: BUTTONS 
+     */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 20px;
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-body);
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition-base);
+      border: none;
+      width: 100%;
+      height: 44px; /* Minimum touch target */
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background-color: var(--color-primary-600);
+      color: var(--color-white);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background-color: var(--color-primary-700);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:active:not(:disabled) {
+      background-color: var(--color-primary-800);
+      transform: translateY(0);
+    }
+
+    .btn-primary:focus-visible {
+      outline: 2px solid var(--color-primary-600);
+      outline-offset: 2px;
+    }
+
+    .btn-primary:disabled {
+      background-color: var(--color-gray-200);
+      color: var(--color-gray-400);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-text {
+      background: transparent;
+      color: var(--color-gray-500);
+      font-size: var(--font-size-body-sm);
+    }
+
+    .btn-text:hover {
+      color: var(--color-gray-900);
+    }
+
+    /* 
+     * COMPONENT: TIMER & RESEND 
+     */
+    .resend-container {
+      text-align: center;
+      font-size: var(--font-size-body-sm);
+      color: var(--color-gray-600);
+      margin-top: var(--spacing-md);
+    }
+
+    .resend-link {
+      color: var(--color-primary-600);
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .resend-link:hover {
+      text-decoration: underline;
+    }
+
+    .resend-link.disabled {
+      color: var(--color-gray-400);
+      cursor: default;
+      text-decoration: none;
+    }
+
+    /* 
+     * COMPONENT: ALERTS 
+     */
+    .alert {
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-body-sm);
+      margin-bottom: var(--spacing-md);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .alert-error {
+      background-color: var(--color-error-bg);
+      color: #842029;
+      border: 1px solid #f5c2c7;
+    }
+    
+    .alert-icon {
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* 
+     * UTILITIES 
+     */
+    .hidden {
+      display: none !important;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .mt-4 { margin-top: var(--spacing-md); }
+    .mt-6 { margin-top: var(--spacing-lg); }
+
+    /* Loading Spinner */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s ease-in-out infinite;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* 
+     * RESPONSIVE ADAPTATIONS 
+     */
+    @media (max-width: 480px) {
+      .auth-card {
+        padding: 24px;
+        box-shadow: none;
+        border: none;
+        background: transparent;
+      }
+      
+      .otp-digit {
+        width: 100%; /* Fill available space */
+        height: 48px;
+      }
+      
+      .auth-header {
+        margin-bottom: var(--spacing-lg);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="auth-container">
+    
+    <!-- Header Area -->
+    <header class="auth-header">
+      <div class="auth-logo" aria-label="Company Logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
+      <h1 class="auth-title">Verify your identity</h1>
+      <p class="auth-subtitle">
+        We've sent a 6-digit code to <span class="strong-text" id="masked-contact">+1 (555) •••-8899</span>
+      </p>
+    </header>
+
+    <!-- Main Card -->
+    <main class="auth-card">
+      
+      <!-- Error Message Container (Hidden by default) -->
+      <div id="error-message" class="alert alert-error hidden" role="alert" aria-live="polite">
+        <svg class="alert-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <span class="error-text">The code you entered is incorrect. Please try again.</span>
+      </div>
+
+      <form id="otp-form" class="otp-form" novalidate>
+        
+        <!-- OTP Input Group -->
+        <div class="otp-group" role="group" aria-label="Enter the 6-digit verification code">
+          <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" aria-label="Digit 1" required>
+          <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Digit 2" required>
+          <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Digit 3" required>
+          <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Digit 4" required>
+          <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Digit 5" required>
+          <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Digit 6" required>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="verify-btn" class="btn btn-primary" disabled>
+          <span class="btn-text-content">Verify</span>
+        </button>
+
+      </form>
+
+      <!-- Resend Timer -->
+      <div class="resend-container">
+        <p>
+          Didn't receive the code? 
+          <br>
+          <button type="button" id="resend-link" class="btn-text resend-link disabled" disabled>
+            Resend code <span id="timer-display">(0:59)</span>
+          </button>
+        </p>
+      </div>
+
+    </main>
+
+    <!-- Footer Navigation -->
+    <div class="text-center mt-6">
+      <a href="#" class="btn-text" style="text-decoration: none;">&larr; Back to Log In</a>
+    </div>
+
+  </div>
+
+  <!-- 
+    INTERACTION SCRIPT 
+    Simulates: Auto-focus, Auto-advance, State management, Timer, Error Handling
+  -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const inputs = document.querySelectorAll('.otp-digit');
+      const verifyBtn = document.getElementById('verify-btn');
+      const form = document.getElementById('otp-form');
+      const errorAlert = document.getElementById('error-message');
+      const resendLink = document.getElementById('resend-link');
+      const timerDisplay = document.getElementById('timer-display');
+      
+      // Auto-focus first input on load
+      inputs[0].focus();
+
+      // State: Timer for Resend
+      let timeLeft = 59;
+      const timerId = setInterval(() => {
+        if (timeLeft <= 0) {
+          clearInterval(timerId);
+          resendLink.classList.remove('disabled');
+          resendLink.removeAttribute('disabled');
+          resendLink.textContent = "Resend code";
+          timerDisplay.style.display = 'none';
+        } else {
+          timerDisplay.textContent = `(0:${timeLeft.toString().padStart(2, '0')})`;
+          timeLeft--;
+        }
+      }, 1000);
+
+      // Input Logic
+      inputs.forEach((input, index) => {
+        // Handle Input
+        input.addEventListener('input', (e) => {
+          // Allow only numbers
+          e.target.value = e.target.value.replace(/[^0-9]/g, '');
+          
+          if (e.target.value.length === 1) {
+            // Remove error state on typing
+            inputs.forEach(i => i.classList.remove('error'));
+            errorAlert.classList.add('hidden');
+            
+            // Move to next input
+            if (index < inputs.length - 1) {
+              inputs[index + 1].focus();
+            }
+          }
+          checkCompletion();
+        });
+
+        // Handle Paste
+        input.addEventListener('paste', (e) => {
+          e.preventDefault();
+          const pasteData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 6);
+          
+          if (pasteData) {
+            pasteData.split('').forEach((char, i) => {
+              if (inputs[i]) inputs[i].value = char;
+            });
+            // Focus last filled or next empty
+            const focusIndex = Math.min(pasteData.length, inputs.length - 1);
+            inputs[focusIndex].focus();
+            checkCompletion();
+          }
+        });
+
+        // Handle Backspace
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && !e.target.value && index > 0) {
+            inputs[index - 1].focus();
+          }
+        });
+      });
+
+      function checkCompletion() {
+        const code = Array.from(inputs).map(i => i.value).join('');
+        if (code.length === 6) {
+          verifyBtn.removeAttribute('disabled');
+        } else {
+          verifyBtn.setAttribute('disabled', 'true');
+        }
+        return code;
+      }
+
+      // Simulate Verification
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const code = checkCompletion();
+        
+        // Loading State
+        const originalBtnText = verifyBtn.innerHTML;
+        verifyBtn.innerHTML = '<div class="spinner"></div> Verifying...';
+        verifyBtn.setAttribute('disabled', 'true');
+        inputs.forEach(i => i.setAttribute('disabled', 'true'));
+
+        // Simulate API delay
+        setTimeout(() => {
+          // DEMO: Simulating an error for demonstration purposes
+          // In production, this would redirect on success
+          
+          // Reset Button
+          verifyBtn.innerHTML = originalBtnText;
+          verifyBtn.removeAttribute('disabled');
+          inputs.forEach(i => i.removeAttribute('disabled'));
+          
+          // Show Error
+          errorAlert.classList.remove('hidden');
+          inputs.forEach(i => {
+            i.value = '';
+            i.classList.add('error');
+          });
+          inputs[0].focus();
+          
+          // Update button state
+          verifyBtn.setAttribute('disabled', 'true');
+        }, 1500);
+      });
+
+      // Resend Interaction
+      resendLink.addEventListener('click', () => {
+        if(!resendLink.hasAttribute('disabled')) {
+           alert("Code resent!");
+           // Reset timer logic here in real app
+        }
+      });
+    });
+  </script>
+
+  <!-- VARIANT: VERIFYING STATE -->
+  <div class="mt-6" style="border-top: 1px solid #eee; padding-top: 20px; width: 100%; max-width: 440px;">
+    <h3 style="font-size: 14px; color: #666; margin-bottom: 10px;">Variant: Loading State (Demo)</h3>
+    <button class="btn btn-primary" disabled>
+      <div class="spinner"></div> Verifying...
+    </button>
+  </div>
+
+</body>
+</html>

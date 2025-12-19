@@ -1,0 +1,2 @@
+"total_stories","total_story_points","must_have_stories","should_have_stories","could_have_stories","epics_identified","estimated_sprints","key_dependencies"
+"8","73","4","3","0","[""Core Features"",""Data Management"",""Performance"",""User Experience"",""Security"",""Integration""]","4","[""WI-INFRA-002 (Database Provisioning)"",""WI-BE-001 (Authentication Service)"",""WI-FE-001 (Mapbox Integration)""]"

@@ -1,0 +1,110 @@
+<!--
+    Global Policy Definition for WarrantyHub API Gateway.
+    This policy is applied to all APIs hosted within this API Management instance.
+    
+    Architectural Responsibilities:
+    1. Cross-Origin Resource Sharing (CORS) enforcement.
+    2. Request Correlation and Tracing.
+    3. Global Rate Limiting (DoS Protection).
+    4. Zero Trust Security (JWT Validation).
+    5. Security Header Injection.
+    6. Standardized Error Handling.
+    
+    Dependencies:
+    - cors-policy-fragment
+    - jwt-validation-fragment
+    - error-handling-fragment
+-->
+<policies>
+    <inbound>
+        <!-- 
+            1. CORS Processing
+            Apply Cross-Origin Resource Sharing policies to allow web clients (Admin Portal, Web App) to consume APIs.
+            Relies on the 'cors-policy-fragment' defined in Level 0.
+        -->
+        <include-fragment fragment-id="cors-policy-fragment" />
+
+        <!-- 
+            2. Request Correlation
+            Ensure every request has a unique correlation ID for distributed tracing across microservices.
+            If the client sends 'X-Correlation-ID', preserve it; otherwise, generate a new GUID.
+        -->
+        <set-header name="X-Correlation-ID" exists-action="skip">
+            <value>@(Guid.NewGuid().ToString())</value>
+        </set-header>
+
+        <!-- 
+            3. Global DoS Protection
+            Apply a baseline rate limit based on the caller's IP address to prevent volumetric attacks.
+            Limit: 1000 calls per minute per IP.
+            Note: Stricter limits are applied at the Product level (e.g., Public Product).
+        -->
+        <rate-limit-by-key calls="1000" renewal-period="60" counter-key="@(context.Request.IpAddress)" />
+
+        <!-- 
+            4. Zero Trust Security Enforcement
+            Validate the JWT Access Token for all requests.
+            This ensures that no unauthenticated traffic reaches the backend services (Layer 1 Security).
+            Relies on 'jwt-validation-fragment' defined in Level 0.
+        -->
+        <include-fragment fragment-id="jwt-validation-fragment" />
+
+        <!-- 
+            5. Standardized Logging
+            Emit a trace event for debugging policy execution flow.
+        -->
+        <trace source="GlobalPolicy" severity="information">
+            <message>Request processing started at Global scope.</message>
+            <metadata name="CorrelationId" value="@(context.Request.Headers.GetValueOrDefault("X-Correlation-ID"))" />
+        </trace>
+    </inbound>
+
+    <backend>
+        <!-- 
+            Forward the request to the configured backend service.
+            timeout: fail fast if backend is unresponsive (30 seconds).
+            follow-redirects: do not follow redirects internally to maintain strict contract control.
+        -->
+        <forward-request timeout="30" follow-redirects="false" buffer-request-body="false" />
+    </backend>
+
+    <outbound>
+        <!-- 
+            6. Security Header Injection
+            Inject OWASP-recommended security headers to protect clients.
+        -->
+        <!-- HSTS: Enforce HTTPS -->
+        <set-header name="Strict-Transport-Security" exists-action="override">
+            <value>max-age=31536000; includeSubDomains</value>
+        </set-header>
+        <!-- X-Content-Type-Options: Prevent MIME sniffing -->
+        <set-header name="X-Content-Type-Options" exists-action="override">
+            <value>nosniff</value>
+        </set-header>
+        <!-- X-Frame-Options: Prevent Clickjacking -->
+        <set-header name="X-Frame-Options" exists-action="override">
+            <value>DENY</value>
+        </set-header>
+        <!-- Content-Security-Policy: Restrict content sources -->
+        <set-header name="Content-Security-Policy" exists-action="override">
+            <value>default-src 'self'; frame-ancestors 'none';</value>
+        </set-header>
+
+        <!-- 
+            7. Information Leakage Prevention
+            Remove headers that reveal backend technology stack details.
+        -->
+        <set-header name="X-Powered-By" exists-action="delete" />
+        <set-header name="X-AspNet-Version" exists-action="delete" />
+        <set-header name="Server" exists-action="delete" />
+    </outbound>
+
+    <on-error>
+        <!-- 
+            8. Global Error Handling
+            Transform all exceptions into a standardized JSON error response (RFC 7807).
+            Relies on 'error-handling-fragment' defined in Level 0.
+        -->
+        <include-fragment fragment-id="error-handling-fragment" />
+    </on-error>
+</policies>

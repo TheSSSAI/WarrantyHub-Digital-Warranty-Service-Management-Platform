@@ -1,0 +1,42 @@
+sequenceDiagram
+    autonumber
+    actor Client as Mobile Client
+    participant Gateway as API Gateway
+    participant Service as Product Service
+
+    note over Client, Gateway: Phase 1: Authentication (Layer 1 Defense)
+    
+    Client->>Gateway: GET /api/v1/products/{id}<br/>Authorization: Bearer {JWT}
+    activate Gateway
+    
+    Gateway->>Gateway: Validate JWT Signature
+    Gateway->>Gateway: Check Expiry (exp) & Issuer (iss)
+    
+    alt Token Invalid or Expired
+        Gateway-->>Client: 401 Unauthorized
+    else Token Valid
+        note right of Gateway: Token allows entry,<br/>claims forwarded downstream
+        Gateway->>Service: Forward Request<br/>X-User-Roles: {roles}<br/>X-User-Id: {sub}
+        activate Service
+        
+        note over Service: Phase 2: Authorization (Layer 2 Defense)
+        
+        Service->>Service: Execute AuthZ Middleware
+        
+        rect rgb(240, 248, 255)
+            note right of Service: Zero Trust Check
+            Service->>Service: Re-validate Token Signature (Optional)
+            Service->>Service: Check Route Policy<br/>e.g. Requires Role='BrandAdmin'
+        end
+
+        alt Insufficient Permissions
+            Service-->>Gateway: 403 Forbidden
+            Gateway-->>Client: 403 Forbidden
+        else Authorized
+            Service->>Service: Process Business Logic
+            Service-->>Gateway: 200 OK (Product Data)
+            deactivate Service
+            Gateway-->>Client: 200 OK (Product Data)
+        end
+    end
+    deactivate Gateway

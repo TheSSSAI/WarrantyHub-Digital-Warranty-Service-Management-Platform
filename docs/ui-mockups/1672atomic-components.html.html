@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atomic Component Library - Warranty Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+  <style>
+    /* =========================================
+       1. DESIGN TOKENS
+       ========================================= */
+    :root {
+      /* Colors: Primary (Indigo) */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-200: #c7d2fe;
+      --color-primary-300: #a5b4fc;
+      --color-primary-400: #818cf8;
+      --color-primary-500: #6366f1;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      --color-primary-800: #3730a3;
+      --color-primary-900: #312e81;
+
+      /* Colors: Neutrals */
+      --color-white: #ffffff;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-600: #4b5563;
+      --color-gray-700: #374151;
+      --color-gray-800: #1f2937;
+      --color-gray-900: #111827;
+      --color-black: #000000;
+
+      /* Colors: Semantic */
+      --color-success-bg: #d1e7dd;
+      --color-success-text: #0f5132;
+      --color-success-main: #28a745;
+      
+      --color-warning-bg: #fff3cd;
+      --color-warning-text: #664d03;
+      --color-warning-main: #ffc107;
+      
+      --color-error-bg: #f8d7da;
+      --color-error-text: #842029;
+      --color-error-main: #dc3545;
+      
+      --color-info-bg: #cff4fc;
+      --color-info-text: #055160;
+      --color-info-main: #0dcaf0;
+
+      /* Typography */
+      --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-family-mono: 'JetBrains Mono', monospace;
+
+      --font-size-xs: 12px;
+      --font-size-sm: 14px;
+      --font-size-md: 16px;
+      --font-size-lg: 18px;
+      --font-size-xl: 20px;
+      --font-size-2xl: 24px;
+      --font-size-3xl: 32px;
+
+      /* Spacing */
+      --spacing-1: 4px;
+      --spacing-2: 8px;
+      --spacing-3: 12px;
+      --spacing-4: 16px;
+      --spacing-6: 24px;
+      --spacing-8: 32px;
+
+      /* Radius */
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+      --radius-full: 9999px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --focus-ring: 0 0 0 3px var(--color-primary-200);
+
+      /* Transitions */
+      --transition-base: all 0.2s ease-in-out;
+    }
+
+    /* =========================================
+       2. RESET & BASE
+       ========================================= */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family-base);
+      font-size: var(--font-size-md);
+      line-height: 1.5;
+      color: var(--color-gray-900);
+      background-color: var(--color-gray-50);
+      padding: var(--spacing-6);
+    }
+
+    /* =========================================
+       3. SHOWCASE LAYOUT
+       ========================================= */
+    .showcase {
+      max-width: 1140px;
+      margin: 0 auto;
+    }
+
+    .showcase__header {
+      margin-bottom: var(--spacing-8);
+      border-bottom: 1px solid var(--color-gray-200);
+      padding-bottom: var(--spacing-6);
+    }
+
+    .showcase__title {
+      font-size: var(--font-size-3xl);
+      font-weight: 700;
+      color: var(--color-gray-900);
+      margin-bottom: var(--spacing-2);
+    }
+
+    .showcase__subtitle {
+      color: var(--color-gray-600);
+      font-size: var(--font-size-lg);
+    }
+
+    .component-section {
+      background: var(--color-white);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-6);
+      margin-bottom: var(--spacing-8);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--color-gray-200);
+    }
+
+    .component-section__title {
+      font-size: var(--font-size-2xl);
+      font-weight: 600;
+      margin-bottom: var(--spacing-6);
+      padding-bottom: var(--spacing-2);
+      border-bottom: 2px solid var(--color-gray-100);
+    }
+
+    .component-group {
+      margin-bottom: var(--spacing-6);
+    }
+
+    .component-group__title {
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      margin-bottom: var(--spacing-2);
+      color: var(--color-gray-700);
+    }
+
+    .component-group__desc {
+      font-size: var(--font-size-sm);
+      color: var(--color-gray-500);
+      margin-bottom: var(--spacing-4);
+    }
+
+    .demo-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--spacing-4);
+      align-items: center;
+      margin-bottom: var(--spacing-4);
+    }
+
+    .demo-column {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-4);
+      max-width: 400px;
+    }
+
+    .dark-bg {
+      background-color: var(--color-gray-900);
+      padding: var(--spacing-4);
+      border-radius: var(--radius-md);
+    }
+
+    /* =========================================
+       4. ATOMIC COMPONENTS
+       ========================================= */
+
+    /* --- BUTTONS --- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-2);
+      padding: 10px 20px;
+      font-family: var(--font-family-base);
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      line-height: 1.5;
+      text-decoration: none;
+      border-radius: var(--radius-md);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: var(--transition-base);
+      white-space: nowrap;
+    }
+
+    .btn:focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring);
+    }
+
+    .btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    /* Button Variants */
+    .btn--primary {
+      background-color: var(--color-primary-600);
+      color: var(--color-white);
+    }
+    .btn--primary:hover:not(:disabled) {
+      background-color: var(--color-primary-700);
+      box-shadow: var(--shadow-md);
+    }
+    .btn--primary:active:not(:disabled) {
+      background-color: var(--color-primary-800);
+      transform: translateY(1px);
+    }
+
+    .btn--secondary {
+      background-color: transparent;
+      border-color: var(--color-gray-300);
+      color: var(--color-gray-700);
+    }
+    .btn--secondary:hover:not(:disabled) {
+      background-color: var(--color-gray-50);
+      border-color: var(--color-gray-400);
+      color: var(--color-gray-900);
+    }
+
+    .btn--outline {
+      background-color: transparent;
+      border-color: var(--color-primary-600);
+      color: var(--color-primary-600);
+    }
+    .btn--outline:hover:not(:disabled) {
+      background-color: var(--color-primary-50);
+    }
+
+    .btn--ghost {
+      background-color: transparent;
+      color: var(--color-gray-600);
+    }
+    .btn--ghost:hover:not(:disabled) {
+      background-color: var(--color-gray-100);
+      color: var(--color-gray-900);
+    }
+
+    .btn--destructive {
+      background-color: var(--color-error-main);
+      color: var(--color-white);
+    }
+    .btn--destructive:hover:not(:disabled) {
+      background-color: #bb2d3b;
+    }
+
+    .btn--link {
+      background: none;
+      padding: 0;
+      color: var(--color-primary-600);
+      text-decoration: underline;
+      height: auto;
+      border-radius: 0;
+    }
+    .btn--link:hover:not(:disabled) {
+      color: var(--color-primary-800);
+    }
+
+    /* Button Sizes */
+    .btn--sm {
+      padding: 6px 12px;
+      font-size: var(--font-size-xs);
+    }
+    .btn--lg {
+      padding: 12px 24px;
+      font-size: var(--font-size-md);
+    }
+    .btn--full-width {
+      width: 100%;
+    }
+
+    /* Floating Action Button (FAB) */
+    .btn--fab {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      padding: 0;
+      box-shadow: var(--shadow-lg);
+      background-color: var(--color-primary-600);
+      color: var(--color-white);
+    }
+    .btn--fab:hover:not(:disabled) {
+      background-color: var(--color-primary-700);
+      transform: translateY(-2px);
+    }
+
+    /* --- INPUTS --- */
+    .form-control {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-1);
+      margin-bottom: var(--spacing-4);
+      width: 100%;
+    }
+
+    .form-label {
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+      color: var(--color-gray-700);
+    }
+
+    .form-label--required::after {
+      content: "*";
+      color: var(--color-error-main);
+      margin-left: 2px;
+    }
+
+    .input {
+      display: block;
+      width: 100%;
+      padding: 10px 12px;
+      font-size: var(--font-size-sm);
+      line-height: 1.5;
+      color: var(--color-gray-900);
+      background-color: var(--color-white);
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--radius-md);
+      transition: var(--transition-base);
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: var(--color-primary-600);
+      box-shadow: var(--focus-ring);
+    }
+
+    .input:disabled {
+      background-color: var(--color-gray-100);
+      color: var(--color-gray-400);
+      cursor: not-allowed;
+    }
+
+    .input:read-only {
+      background-color: var(--color-gray-50);
+    }
+
+    .input--error {
+      border-color: var(--color-error-main);
+    }
+    .input--error:focus {
+      box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25);
+    }
+
+    .form-helper {
+      font-size: var(--font-size-xs);
+      color: var(--color-gray-500);
+    }
+
+    .form-error {
+      font-size: var(--font-size-xs);
+      color: var(--color-error-main);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* --- SELECT --- */
+    .select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3F%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 16px;
+      padding-right: 40px;
+    }
+
+    /* --- CHECKBOX & RADIO --- */
+    .check-group {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-2);
+      cursor: pointer;
+    }
+    
+    .check-input {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border: 1px solid var(--color-gray-300);
+      background-color: var(--color-white);
+      transition: var(--transition-base);
+      display: grid;
+      place-content: center;
+      margin: 0;
+    }
+
+    .check-input[type="checkbox"] {
+      border-radius: var(--radius-sm);
+    }
+    
+    .check-input[type="radio"] {
+      border-radius: 50%;
+    }
+
+    .check-input::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      transform: scale(0);
+      transition: 120ms transform ease-in-out;
+      box-shadow: inset 1em 1em white;
+    }
+
+    .check-input[type="checkbox"]::before {
+      transform-origin: center;
+      clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+      background-color: white;
+    }
+
+    .check-input[type="radio"]::before {
+      border-radius: 50%;
+      background-color: white;
+    }
+
+    .check-input:checked {
+      background-color: var(--color-primary-600);
+      border-color: var(--color-primary-600);
+    }
+
+    .check-input:checked::before {
+      transform: scale(1);
+    }
+
+    .check-input:focus-visible {
+      outline: 2px solid var(--color-primary-600);
+      outline-offset: 2px;
+    }
+
+    .check-input:disabled {
+      background-color: var(--color-gray-100);
+      border-color: var(--color-gray-200);
+      cursor: not-allowed;
+    }
+    .check-input:disabled + .check-label {
+      color: var(--color-gray-400);
+      cursor: not-allowed;
+    }
+
+    .check-label {
+      font-size: var(--font-size-sm);
+      color: var(--color-gray-700);
+    }
+
+    /* Card-like Checkbox */
+    .card-check {
+      display: flex;
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-3);
+      transition: var(--transition-base);
+    }
+    .card-check:has(.check-input:checked) {
+      border-color: var(--color-primary-600);
+      background-color: var(--color-primary-50);
+    }
+
+    /* --- BADGE --- */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .badge--success { background: var(--color-success-bg); color: var(--color-success-text); }
+    .badge--warning { background: var(--color-warning-bg); color: var(--color-warning-text); }
+    .badge--error { background: var(--color-error-bg); color: var(--color-error-text); }
+    .badge--info { background: var(--color-info-bg); color: var(--color-info-text); }
+    
+    .badge--outlined {
+      background: transparent;
+      border: 1px solid currentColor;
+    }
+    .badge--counter {
+      background: var(--color-error-main);
+      color: white;
+      min-width: 20px;
+      height: 20px;
+      justify-content: center;
+      padding: 0 4px;
+    }
+
+    /* --- AVATAR --- */
+    .avatar {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      overflow: hidden;
+      user-select: none;
+      background-color: var(--color-gray-200);
+      color: var(--color-gray-600);
+    }
+
+    .avatar--circle { border-radius: 50%; }
+    .avatar--square { border-radius: var(--radius-md); }
+
+    .avatar--sm { width: 32px; height: 32px; font-size: 12px; }
+    .avatar--md { width: 40px; height: 40px; font-size: 14px; }
+    .avatar--lg { width: 64px; height: 64px; font-size: 24px; }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* --- LOADER --- */
+    .loader-spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--color-gray-200);
+      border-top-color: var(--color-primary-600);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loader-dots {
+      display: flex;
+      gap: 4px;
+    }
+    .loader-dots div {
+      width: 8px;
+      height: 8px;
+      background: var(--color-primary-600);
+      border-radius: 50%;
+      animation: bounce 0.6s infinite alternate;
+    }
+    .loader-dots div:nth-child(2) { animation-delay: 0.2s; }
+    .loader-dots div:nth-child(3) { animation-delay: 0.4s; }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background-color: var(--color-gray-200);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    .progress-bar__fill {
+      height: 100%;
+      background-color: var(--color-primary-600);
+      transition: width 0.3s ease;
+    }
+
+    /* --- TOOLTIP --- */
+    [data-tooltip] {
+      position: relative;
+      cursor: help;
+    }
+    [data-tooltip]:hover::before,
+    [data-tooltip]:focus::before {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-bottom: 8px;
+      padding: 6px 12px;
+      background: var(--color-gray-800);
+      color: white;
+      font-size: var(--font-size-xs);
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+      z-index: 10;
+      pointer-events: none;
+    }
+    [data-tooltip]:hover::after,
+    [data-tooltip]:focus::after {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: var(--color-gray-800);
+      margin-bottom: -4px;
+    }
+    /* Variants for tooltip positions omitted for brevity, logic similar */
+
+    /* --- OTP INPUT --- */
+    .otp-group {
+      display: flex;
+      gap: var(--spacing-2);
+    }
+    .otp-input {
+      width: 48px;
+      height: 56px;
+      font-size: 24px;
+      text-align: center;
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--radius-md);
+    }
+    .otp-input:focus {
+      border-color: var(--color-primary-600);
+      outline: 2px solid var(--color-primary-100);
+    }
+
+    /* --- ANIMATIONS --- */
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes bounce {
+      to { transform: translateY(-8px); opacity: 0.7; }
+    }
+
+    /* --- ICONS (SVGs) --- */
+    .icon {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .icon--sm { width: 16px; height: 16px; }
+    .icon--lg { width: 24px; height: 24px; }
+
+  </style>
+</head>
+<body>
+
+  <div class="showcase">
+    <header class="showcase__header">
+      <h1 class="showcase__title">Atomic Components Library</h1>
+      <p class="showcase__subtitle">Visual inventory of base-level UI components for the Warranty Platform, designed for Web (React) and Mobile (React Native).</p>
+    </header>
+
+    <!-- SECTION: ACTIONS -->
+    <section class="component-section">
+      <h2 class="component-section__title">Actions</h2>
+      
+      <div class="component-group">
+        <h3 class="component-group__title">Button Variants</h3>
+        <p class="component-group__desc">Core interactive elements for triggering actions.</p>
+        <div class="demo-row">
+          <button class="btn btn--primary">Primary Action</button>
+          <button class="btn btn--secondary">Secondary</button>
+          <button class="btn btn--outline">Outline</button>
+          <button class="btn btn--ghost">Ghost</button>
+          <button class="btn btn--destructive">Destructive</button>
+          <button class="btn btn--link">Link Button</button>
+        </div>
+      </div>
+
+      <div class="component-group">
+        <h3 class="component-group__title">Button States</h3>
+        <p class="component-group__desc">Interaction feedback states.</p>
+        <div class="demo-row">
+          <button class="btn btn--primary">Default</button>
+          <button class="btn btn--primary" disabled>Disabled</button>
+          <button class="btn btn--primary">
+            <div class="loader-spinner" style="width: 16px; height: 16px; border-color: rgba(255,255,255,0.3); border-top-color: white;"></div>
+            Loading
+          </button>
+          <button class="btn btn--secondary" disabled>Disabled Secondary</button>
+        </div>
+      </div>
+
+      <div class="component-group">
+        <h3 class="component-group__title">Button Sizes & Icons</h3>
+        <p class="component-group__desc">Size variations and icon integration.</p>
+        <div class="demo-row">
+          <button class="btn btn--primary btn--sm">Small</button>
+          <button class="btn btn--primary">Medium</button>
+          <button class="btn btn--primary btn--lg">Large</button>
+          <button class="btn btn--primary">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg>
+            With Icon
+          </button>
+          <button class="btn btn--secondary btn--fab" aria-label="Add new">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: FORM ELEMENTS -->
+    <section class="component-section">
+      <h2 class="component-section__title">Form Elements</h2>
+      
+      <div class="component-group">
+        <h3 class="component-group__title">Input Fields</h3>
+        <p class="component-group__desc">Basic text entry fields in various states.</p>
+        
+        <div class="demo-column">
+          <div class="form-control">
+            <label for="input-default" class="form-label">Default Input</label>
+            <input type="text" id="input-default" class="input" placeholder="e.g. John Doe">
+          </div>
+
+          <div class="form-control">
+            <label for="input-filled" class="form-label">Filled Input</label>
+            <input type="text" id="input-filled" class="input" value="user@example.com">
+          </div>
+
+          <div class="form-control">
+            <label for="input-error" class="form-label form-label--required">Error State</label>
+            <input type="email" id="input-error" class="input input--error" value="invalid-email" aria-invalid="true" aria-describedby="email-error">
+            <span id="email-error" class="form-error">
+              <svg class="icon icon--sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              Please enter a valid email address
+            </span>
+          </div>
+
+          <div class="form-control">
+            <label for="input-disabled" class="form-label">Disabled Input</label>
+            <input type="text" id="input-disabled" class="input" value="Cannot edit this" disabled>
+          </div>
+          
+          <div class="form-control">
+            <label for="input-readonly" class="form-label">Readonly Input</label>
+            <input type="text" id="input-readonly" class="input" value="System Generated ID" readonly>
+          </div>
+        </div>
+      </div>
+
+      <div class="component-group">
+        <h3 class="component-group__title">Select</h3>
+        <p class="component-group__desc">Native-styled select for options.</p>
+        <div class="demo-column">
+          <div class="form-control">
+            <label for="select-default" class="form-label">Product Category</label>
+            <select id="select-default" class="input select">
+              <option value="" disabled selected>Select a category</option>
+              <option value="electronics">Electronics</option>
+              <option value="appliances">Home Appliances</option>
+              <option value="furniture">Furniture</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="component-group">
+        <h3 class="component-group__title">Checkbox & Radio</h3>
+        <p class="component-group__desc">Selection controls.</p>
+        <div class="demo-column">
+          <label class="check-group">
+            <input type="checkbox" class="check-input" checked>
+            <span class="check-label">Checked Option</span>
+          </label>
+          <label class="check-group">
+            <input type="checkbox" class="check-input">
+            <span class="check-label">Unchecked Option</span>
+          </label>
+          <label class="check-group">
+            <input type="checkbox" class="check-input" disabled>
+            <span class="check-label">Disabled Option</span>
+          </label>
+          
+          <hr style="border: 0; border-top: 1px solid var(--color-gray-200); margin: 8px 0;">
+          
+          <label class="check-group">
+            <input type="radio" name="radio-demo" class="check-input" checked>
+            <span class="check-label">Radio Selected</span>
+          </label>
+          <label class="check-group">
+            <input type="radio" name="radio-demo" class="check-input">
+            <span class="check-label">Radio Unselected</span>
+          </label>
+          
+          <!-- Card-like Variant -->
+          <label class="check-group card-check">
+            <input type="checkbox" class="check-input" checked>
+            <div>
+              <span class="check-label" style="font-weight: 600;">Enhanced Coverage</span>
+              <p class="form-helper" style="margin: 0;">Includes accidental damage protection</p>
+            </div>
+          </label>
+        </div>
+      </div>
+      
+      <div class="component-group">
+        <h3 class="component-group__title">OTP Input</h3>
+        <p class="component-group__desc">Specialized input for multi-factor authentication codes.</p>
+        <div class="otp-group">
+          <input type="text" class="input otp-input" maxlength="1" value="2">
+          <input type="text" class="input otp-input" maxlength="1" value="4">
+          <input type="text" class="input otp-input" maxlength="1" value="9">
+          <input type="text" class="input otp-input" maxlength="1" value="">
+          <input type="text" class="input otp-input" maxlength="1" value="">
+          <input type="text" class="input otp-input" maxlength="1" value="">
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: DATA DISPLAY -->
+    <section class="component-section">
+      <h2 class="component-section__title">Data Display</h2>
+      
+      <div class="component-group">
+        <h3 class="component-group__title">Status Badges</h3>
+        <p class="component-group__desc">Compact elements to display status, categories, or counts.</p>
+        <div class="demo-row">
+          <span class="badge badge--success">Active</span>
+          <span class="badge badge--warning">Expiring Soon</span>
+          <span class="badge badge--error">Expired</span>
+          <span class="badge badge--info">Processing</span>
+          <span class="badge badge--outlined">Neutral</span>
+          <span class="badge badge--counter">3</span>
+        </div>
+      </div>
+
+      <div class="component-group">
+        <h3 class="component-group__title">Avatars</h3>
+        <p class="component-group__desc">Representing users or entities.</p>
+        <div class="demo-row">
+          <div class="avatar avatar--circle avatar--sm">JD</div>
+          <div class="avatar avatar--circle avatar--md" style="background-color: var(--color-primary-100); color: var(--color-primary-700)">AB</div>
+          <div class="avatar avatar--circle avatar--lg">
+            <img src="https://ui-avatars.com/api/?name=Technician+One&background=random" alt="Technician Profile">
+          </div>
+          <div class="avatar avatar--square avatar--md">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="component-group">
+        <h3 class="component-group__title">Tooltip</h3>
+        <p class="component-group__desc">Contextual information on hover/focus.</p>
+        <div class="demo-row">
+          <button class="btn btn--secondary" data-tooltip="This is a tooltip">Hover me</button>
+          <span class="icon" data-tooltip="More information" tabindex="0">
+            <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: FEEDBACK -->
+    <section class="component-section">
+      <h2 class="component-section__title">Feedback & Loading</h2>
+      
+      <div class="component-group">
+        <h3 class="component-group__title">Loaders</h3>
+        <p class="component-group__desc">Indicating active processes.</p>
+        <div class="demo-row">
+          <div class="loader-spinner"></div>
+          <div class="loader-dots">
+            <div></div><div></div><div></div>
+          </div>
+        </div>
+        <div class="form-control" style="margin-top: 16px;">
+          <label class="form-label">Upload Progress</label>
+          <div class="progress-bar">
+            <div class="progress-bar__fill" style="width: 65%;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: ICONS -->
+    <section class="component-section">
+      <h2 class="component-section__title">Icons</h2>
+      <p>Using React Icons / SVG vectors in production.</p>
+      <div class="demo-row">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <svg class="icon" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      </div>
+    </section>
+
+  </div>
+
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Individual Component - Component Specifications</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            line-height: 1.6;
+            color: #2d3748;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        
+        .component-type-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 8px;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .section h2 {
+            color: #1e293b;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #4f46e5;
+            display: inline-block;
+        }
+        
+        .section h3 {
+            color: #4f46e5;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 20px 0 12px 0;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .info-card {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .info-card h4 {
+            color: #374151;
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
+        
+        .info-card p {
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .variations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+        
+        .variation-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .variation-name {
+            font-weight: 600;
+            color: #4f46e5;
+            margin-bottom: 8px;
+        }
+        
+        .variation-code {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            color: #1e293b;
+            overflow-x: auto;
+            margin: 8px 0;
+            border-left: 4px solid #4f46e5;
+        }
+        
+        .variation-description {
+            font-size: 13px;
+            color: #64748b;
+            font-style: italic;
+        }
+        
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        
+        .feature-category {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .feature-category h4 {
+            color: #374151;
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        
+        .feature-category ul {
+            list-style: none;
+        }
+        
+        .feature-category li {
+            padding: 6px 0;
+            color: #4b5563;
+            font-size: 14px;
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        .feature-category li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        .tokens-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 8px;
+        }
+        
+        .token {
+            background: #f0f9ff;
+            color: #0369a1;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            border: 1px solid #bae6fd;
+            text-align: center;
+        }
+        
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin: 16px 0;
+            line-height: 1.4;
+        }
+        
+        .stats-bar {
+            background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+        
+        .stat {
+            flex: 1;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Individual Component</h1>
+            <div class="component-type-badge">Unknown Component</div>
+        </div>
+        <div class="stats-bar">
+            <div class="stat">
+                <span class="stat-number">0</span>
+                <span class="stat-label">Variations</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">0</span>
+                <span class="stat-label">Design Tokens</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">0</span>
+                <span class="stat-label">Breakpoints</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">0</span>
+                <span class="stat-label">A11y Features</span>
+            </div>
+        </div><div class="content">
+        <div class="section">
+            <h2>Implementation Notes</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h4>Css Architecture</h4>
+                    <p>BEM naming convention with CSS Custom Properties for design tokens</p>
+                </div>
+                <div class="info-card">
+                    <h4>Responsive Design</h4>
+                    <p>Fluid layouts with mobile-first media queries; inputs are 100% width on mobile</p>
+                </div>
+                <div class="info-card">
+                    <h4>Accessibility Compliance</h4>
+                    <p>WCAG 2.1 AA standards applied including color contrast and focus management</p>
+                </div>
+                <div class="info-card">
+                    <h4>Browser Support</h4>
+                    <p>Works in all modern browsers (Chrome, Firefox, Safari, Edge)</p>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <h2>Usage Guidelines</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h4>File Purpose</h4><p>Component reference and development starting point</p>
+                </div>
+                <div class="info-card">
+                    <h4>Development Workflow</h4><p>Extract CSS variables to root stylesheet; copy component HTML structure</p>
+                </div>
+                <div class="info-card">
+                    <h4>Testing Scenarios</h4><p>Check focus states with keyboard (Tab); verify contrast in high-contrast modes</p>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,3 @@
+"dependency_id","from_task","to_task","dependency_type","description","critical_path","lead_time_days","responsible_team","coordination_required","risk_level","mitigation_plan","status","resolution_date","impact_if_delayed","escalation_required"
+"DEP-001","TASK-098-02","TASK-013-04","Technical","Frontend Map editor requires Backend API for GeoJSON persistence","true","5","Backend Team","true","Medium","Define API contract in Sprint 1 for mocking","Active","2024-06-07","Frontend integration blocked",""
+"DEP-002","TASK-118-01","TASK-118-02","Technical","Anonymization implementation requires approved PII mapping strategy","true","3","Data Team","true","High","Start mapping early in Sprint 2","Active","2024-06-07","Compliance feature delayed",""

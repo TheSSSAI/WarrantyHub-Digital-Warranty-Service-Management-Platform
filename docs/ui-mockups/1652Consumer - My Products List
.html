@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>My Products | Warranty Manager</title>
+  <style>
+    /* 
+      DESIGN SYSTEM TOKENS 
+      Based on input specifications
+    */
+    :root {
+      /* Colors - Primary */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-500: #6366f1;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      
+      /* Colors - Neutrals */
+      --color-white: #ffffff;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-600: #4b5563;
+      --color-gray-700: #374151;
+      --color-gray-800: #1f2937;
+      --color-gray-900: #111827;
+
+      /* Colors - Semantic */
+      --color-success-bg: #d1e7dd;
+      --color-success-text: #0f5132;
+      --color-success-border: #badbcc;
+      
+      --color-warning-bg: #fff3cd;
+      --color-warning-text: #664d03;
+      --color-warning-border: #ffecb5;
+      
+      --color-error-bg: #f8d7da;
+      --color-error-text: #842029;
+      --color-error-border: #f5c2c7;
+
+      /* Typography */
+      --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      
+      /* Spacing & Sizing */
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-full: 9999px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --shadow-focus: 0 0 0 3px rgba(99, 102, 241, 0.5);
+
+      /* Transitions */
+      --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* 
+      RESET & BASE STYLES 
+    */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-900);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    /* Screen Layout Structure */
+    .screen-layout {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* 
+      COMPONENT: HEADER 
+    */
+    .app-header {
+      background-color: var(--color-white);
+      border-bottom: 1px solid var(--color-gray-200);
+      padding: var(--spacing-md) var(--spacing-lg);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 64px;
+    }
+
+    .app-logo {
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--color-primary-600);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .user-actions {
+      display: flex;
+      gap: var(--spacing-md);
+      align-items: center;
+    }
+
+    .icon-btn {
+      padding: var(--spacing-xs);
+      border-radius: var(--radius-sm);
+      color: var(--color-gray-500);
+      transition: color var(--transition-fast), background-color var(--transition-fast);
+    }
+
+    .icon-btn:hover {
+      background-color: var(--color-gray-100);
+      color: var(--color-gray-900);
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-full);
+      background-color: var(--color-primary-100);
+      color: var(--color-primary-700);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    /* 
+      COMPONENT: MAIN CONTENT AREA 
+    */
+    .main-content {
+      flex: 1;
+      width: 100%;
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: var(--spacing-lg);
+    }
+
+    .page-title-section {
+      margin-bottom: var(--spacing-lg);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    @media (min-width: 768px) {
+      .page-title-section {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+    }
+
+    .page-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--color-gray-900);
+    }
+
+    /* 
+      COMPONENT: SEARCH BAR 
+    */
+    .search-container {
+      position: relative;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 12px 10px 40px;
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      background-color: var(--color-white);
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--color-primary-600);
+      box-shadow: var(--shadow-focus);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--color-gray-400);
+      pointer-events: none;
+    }
+
+    /* 
+      COMPONENT: PRODUCT GRID
+    */
+    .product-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--spacing-lg);
+    }
+
+    @media (min-width: 768px) {
+      .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .product-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    /* 
+      COMPONENT: PRODUCT CARD 
+    */
+    .product-card {
+      background-color: var(--color-white);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      border: 1px solid var(--color-gray-200);
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .product-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--color-primary-100);
+    }
+
+    .product-card:focus-within {
+      outline: none;
+      border-color: var(--color-primary-600);
+      box-shadow: var(--shadow-focus);
+    }
+
+    .card-header {
+      padding: var(--spacing-md);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid var(--color-gray-100);
+    }
+
+    .brand-logo {
+      font-weight: 700;
+      color: var(--color-gray-700);
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .brand-logo svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Status Badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .status-active {
+      background-color: var(--color-success-bg);
+      color: var(--color-success-text);
+      border: 1px solid var(--color-success-border);
+    }
+
+    .status-expiring {
+      background-color: var(--color-warning-bg);
+      color: var(--color-warning-text);
+      border: 1px solid var(--color-warning-border);
+    }
+
+    .status-expired {
+      background-color: var(--color-error-bg);
+      color: var(--color-error-text);
+      border: 1px solid var(--color-error-border);
+    }
+
+    .card-body {
+      padding: var(--spacing-md);
+      flex: 1;
+    }
+
+    .product-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-gray-900);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .product-model {
+      font-size: 14px;
+      color: var(--color-gray-500);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .expiry-info {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      font-size: 13px;
+      color: var(--color-gray-600);
+    }
+
+    .card-footer {
+      padding: var(--spacing-md);
+      background-color: var(--color-gray-50);
+      border-top: 1px solid var(--color-gray-100);
+    }
+
+    .view-details-link {
+      color: var(--color-primary-600);
+      font-size: 14px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .view-details-link::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+
+    /* 
+      COMPONENT: FLOATING ACTION BUTTON 
+    */
+    .fab {
+      position: fixed;
+      bottom: var(--spacing-lg);
+      right: var(--spacing-lg);
+      width: 56px;
+      height: 56px;
+      background-color: var(--color-primary-600);
+      border-radius: 50%;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-white);
+      transition: transform var(--transition-fast), background-color var(--transition-fast);
+      z-index: 100;
+    }
+
+    .fab:hover {
+      background-color: var(--color-primary-700);
+      transform: scale(1.05);
+    }
+
+    .fab:focus {
+      outline: none;
+      box-shadow: var(--shadow-focus);
+    }
+
+    .fab svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    /* 
+      COMPONENT: OFFLINE BANNER 
+    */
+    .offline-banner {
+      background-color: var(--color-gray-800);
+      color: var(--color-white);
+      padding: var(--spacing-sm) var(--spacing-md);
+      text-align: center;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-sm);
+      position: sticky;
+      top: 64px; /* Below header */
+      z-index: 40;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* 
+      COMPONENT: LOADING SKELETON 
+    */
+    .skeleton {
+      background: linear-gradient(90deg, var(--color-gray-200) 25%, var(--color-gray-100) 50%, var(--color-gray-200) 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+      border-radius: 4px;
+    }
+
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-card {
+      height: 180px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-gray-200);
+      background-color: var(--color-white);
+      padding: var(--spacing-md);
+    }
+
+    /* 
+      COMPONENT: EMPTY STATE 
+    */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 64px 20px;
+      text-align: center;
+      background-color: var(--color-white);
+      border-radius: var(--radius-md);
+      border: 1px dashed var(--color-gray-300);
+      color: var(--color-gray-500);
+    }
+
+    .empty-icon {
+      width: 64px;
+      height: 64px;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-gray-400);
+    }
+
+    .empty-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--color-gray-900);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .empty-action {
+      margin-top: var(--spacing-lg);
+    }
+
+    /* Utility Classes */
+    .hidden { display: none !important; }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Demo Controls (for showcase purposes only) */
+    .demo-controls {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1000;
+      display: flex;
+      gap: 10px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="screen-layout">
+    
+    <!-- HEADER -->
+    <header class="app-header" role="banner">
+      <div class="app-logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+        <span>Warrantify</span>
+      </div>
+      
+      <div class="user-actions">
+        <button class="icon-btn" aria-label="Notifications">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </button>
+        <button class="avatar" aria-label="User Profile">
+          JD
+        </button>
+      </div>
+    </header>
+
+    <!-- OFFLINE BANNER (Hidden by default, toggled via demo) -->
+    <div id="offlineBanner" class="offline-banner hidden" role="status" aria-live="polite">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="1" y1="1" x2="23" y2="23"></line>
+        <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
+        <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
+        <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
+        <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+        <line x1="12" y1="20" x2="12.01" y2="20"></line>
+      </svg>
+      <span>You are offline. Showing cached data.</span>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content" role="main" id="mainContent">
+      
+      <div class="page-title-section">
+        <h1 class="page-title">My Products</h1>
+        
+        <div class="search-container">
+          <label for="productSearch" class="sr-only">Search products</label>
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="productSearch" class="search-input" placeholder="Filter by name, brand, or model...">
+        </div>
+      </div>
+
+      <!-- LOADING STATE (Hidden by default) -->
+      <div id="loadingState" class="product-grid hidden" aria-hidden="true">
+        <div class="skeleton-card">
+          <div class="skeleton" style="width: 60%; height: 20px; margin-bottom: 12px;"></div>
+          <div class="skeleton" style="width: 40%; height: 16px; margin-bottom: 24px;"></div>
+          <div class="skeleton" style="width: 80%; height: 16px;"></div>
+        </div>
+        <div class="skeleton-card">
+          <div class="skeleton" style="width: 60%; height: 20px; margin-bottom: 12px;"></div>
+          <div class="skeleton" style="width: 40%; height: 16px; margin-bottom: 24px;"></div>
+          <div class="skeleton" style="width: 80%; height: 16px;"></div>
+        </div>
+        <div class="skeleton-card">
+          <div class="skeleton" style="width: 60%; height: 20px; margin-bottom: 12px;"></div>
+          <div class="skeleton" style="width: 40%; height: 16px; margin-bottom: 24px;"></div>
+          <div class="skeleton" style="width: 80%; height: 16px;"></div>
+        </div>
+      </div>
+
+      <!-- POPULATED STATE (Default) -->
+      <div id="populatedState" class="product-grid">
+        
+        <!-- Product 1: Active -->
+        <article class="product-card" tabindex="0">
+          <div class="card-header">
+            <div class="brand-logo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/></svg>
+              SAMSUNG
+            </div>
+            <span class="status-badge status-active">Active</span>
+          </div>
+          <div class="card-body">
+            <h2 class="product-name">QLED 4K Smart TV</h2>
+            <p class="product-model">Model: QN90C-65</p>
+            <div class="expiry-info">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span>Expires: <strong>Dec 24, 2025</strong></span>
+            </div>
+          </div>
+          <div class="card-footer">
+            <a href="#" class="view-details-link">
+              View Details 
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </article>
+
+        <!-- Product 2: Expiring Soon -->
+        <article class="product-card" tabindex="0">
+          <div class="card-header">
+            <div class="brand-logo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+              DYSON
+            </div>
+            <span class="status-badge status-expiring">Expiring Soon</span>
+          </div>
+          <div class="card-body">
+            <h2 class="product-name">V15 Detect Vacuum</h2>
+            <p class="product-model">Model: SV22-AB</p>
+            <div class="expiry-info">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span>Expires: <strong>In 14 Days</strong></span>
+            </div>
+          </div>
+          <div class="card-footer">
+            <a href="#" class="view-details-link">
+              View Details 
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </article>
+
+        <!-- Product 3: Expired -->
+        <article class="product-card" tabindex="0">
+          <div class="card-header">
+            <div class="brand-logo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+              APPLE
+            </div>
+            <span class="status-badge status-expired">Expired</span>
+          </div>
+          <div class="card-body">
+            <h2 class="product-name">MacBook Pro 14"</h2>
+            <p class="product-model">Model: M2 Pro</p>
+            <div class="expiry-info">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span>Expired: <strong>Oct 10, 2023</strong></span>
+            </div>
+          </div>
+          <div class="card-footer">
+            <a href="#" class="view-details-link">
+              View Details 
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </article>
+
+      </div>
+
+      <!-- EMPTY STATE (Hidden by default) -->
+      <div id="emptyState" class="empty-state hidden">
+        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+        <h3 class="empty-title">No products found</h3>
+        <p>You haven't registered any products yet, or no products matched your search.</p>
+        <div class="empty-action">
+          <button class="fab" style="position: static; border-radius: 28px; width: auto; padding: 0 24px; box-shadow: none;">
+            <span style="margin-right: 8px;">Register Your First Product</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          </button>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- FLOATING ACTION BUTTON -->
+    <button class="fab" aria-label="Register New Product" onclick="alert('Navigate to Add Product Flow')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    </button>
+
+  </div>
+
+  <!-- DEMO CONTROLS (Dev only) -->
+  <div class="demo-controls">
+    <button onclick="toggleState('loading')">Toggle Loading</button>
+    <button onclick="toggleState('empty')">Toggle Empty</button>
+    <button onclick="toggleState('offline')">Toggle Offline</button>
+  </div>
+
+  <script>
+    function toggleState(state) {
+      const loading = document.getElementById('loadingState');
+      const populated = document.getElementById('populatedState');
+      const empty = document.getElementById('emptyState');
+      const offline = document.getElementById('offlineBanner');
+
+      // Reset all
+      loading.classList.add('hidden');
+      populated.classList.remove('hidden');
+      empty.classList.add('hidden');
+
+      if (state === 'loading') {
+        loading.classList.remove('hidden');
+        populated.classList.add('hidden');
+      } else if (state === 'empty') {
+        empty.classList.remove('hidden');
+        populated.classList.add('hidden');
+      } else if (state === 'offline') {
+        offline.classList.toggle('hidden');
+      }
+    }
+  </script>
+</body>
+</html>

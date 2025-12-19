@@ -1,0 +1,73 @@
+stateDiagram-v2
+    direction TB
+
+    %% Definition of Global Styles
+    classDef tracking fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#000
+    classDef static fill:#f5f5f5,stroke:#616161,stroke-width:1px,color:#000
+    classDef terminal fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef offline stroke-dasharray: 5 5
+
+    state "Technician Job Lifecycle" as MainContext {
+        
+        state "Technician Assigned" as Assigned
+        
+        state "Location Tracking Active" as TrackingContext {
+            direction LR
+            state "On The Way\n(Initial Travel)" as OnTheWay
+            state "Mid-Job Travel\n(Parts/Tools)" as MidTravel
+            
+            note right of OnTheWay
+                Backend: Start WSS Stream
+                Client: FG/BG Location Svc
+                Timeout: 4 Hours Max
+            end note
+        }
+
+        state "Work In Progress" as WIP {
+            direction TB
+            state "Service Execution" as Execution
+            state "Data Entry" as DataEntry
+            
+            Execution --> DataEntry : Add Notes/Parts
+            DataEntry --> Execution : Save Draft
+        }
+
+        state "Job Resolved" as Resolved
+
+        %% Transitions
+        [*] --> Assigned
+
+        %% Start Travel
+        Assigned --> OnTheWay : [Action] Tap 'Activate Travel Mode'
+        
+        %% Arrive / Start Work
+        OnTheWay --> WIP : [Action] Tap 'Start Work'\n(Auto-Stop Location Sharing)
+
+        %% Mid-Job Travel Loop
+        WIP --> MidTravel : [Action] Tap 'Activate Travel Mode'
+        MidTravel --> WIP : [Action] Tap 'Stop Sharing'\nOR [System] Timeout (4h)
+
+        %% Job Completion
+        WIP --> Resolved : [Action] Tap 'Mark Resolved'
+        MidTravel --> Resolved : [Action] Tap 'Mark Resolved'\n(Auto-Stop Location Sharing)
+
+        %% Validation Logic
+        state ValidationCheck <<choice>>
+        WIP --> ValidationCheck : Validate Prerequisites
+        ValidationCheck --> Resolved : [Success] Notes & Sig Present
+        ValidationCheck --> WIP : [Failure] Show Error\n"Sig/Notes Required"
+    }
+
+    %% Offline Handling Notation
+    note left of MainContext
+        OFFLINE RESILIENCE:
+        1. User performs action (Transition)
+        2. UI updates Optimistically
+        3. Action stored in Local Queue (AsyncStorage/SQLite)
+        4. Network Restore -> Queue Flush (FIFO) -> Backend Sync
+    end note
+
+    %% Apply Styles
+    class OnTheWay,MidTravel tracking
+    class Assigned,WIP static
+    class Resolved terminal

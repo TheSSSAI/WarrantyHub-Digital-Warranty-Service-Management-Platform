@@ -1,0 +1,4 @@
+"component_name","business_criticality","technical_complexity","change_frequency","test_types_required","unit_test_coverage","integration_test_coverage","e2e_test_coverage","automation_percentage","manual_test_effort","automated_test_effort","total_test_cases","risk_mitigation_score","quality_confidence","maintenance_overhead","tool_compatibility","team_skill_alignment"
+"Service Request Engine (Backend)","Critical","High","Medium","[""Unit"",""Integration"",""Performance"",""State Transition""]","95","90","75","90","8","60","85","0.95","Very High","Medium","Excellent (Jest)","High"
+"Technician Mobile App","High","Very High","Medium","[""E2E"",""Offline/Sync"",""GPS/Battery"",""UI/UX""]","80","70","60","65","40","80","60","0.85","High","High","Good (Detox)","Medium"
+"Real-time Location Service","Medium","High","Low","[""Load"",""Concurrency"",""WebSocket""]","90","85","50","80","4","30","20","0.9","High","Low","Good (k6 + WebSocket)","Medium"

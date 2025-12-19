@@ -1,0 +1,4 @@
+"component_name","business_criticality","technical_complexity","change_frequency","test_types_required","unit_test_coverage","integration_test_coverage","e2e_test_coverage","automation_percentage","manual_test_effort","automated_test_effort","total_test_cases","risk_mitigation_score","quality_confidence","maintenance_overhead","tool_compatibility","team_skill_alignment"
+"Backend API (NestJS)","Critical","High","High","[""Unit"",""Integration"",""Contract"",""Security""]","90","85","70","95","5","120","250","0.95","Very High","Low","Jest, Supertest","Excellent"
+"Service Routing Engine (PostGIS)","High","High","Low","[""Integration"",""Performance""]","85","95","60","90","2","40","45","0.9","High","Low","Jest, TypeORM","Good"
+"Mobile Apps (React Native)","High","High","Medium","[""Unit"",""E2E"",""Offline"",""Hardware""]","80","70","60","70","40","100","120","0.85","Medium","High","Detox, Jest","Medium"

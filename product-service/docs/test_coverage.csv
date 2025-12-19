@@ -1,0 +1,4 @@
+"component_name","business_criticality","technical_complexity","change_frequency","test_types_required","unit_test_coverage","integration_test_coverage","e2e_test_coverage","automation_percentage","manual_test_effort","automated_test_effort","total_test_cases","risk_mitigation_score","quality_confidence","maintenance_overhead","tool_compatibility","team_skill_alignment"
+"Core Backend (NestJS)","Critical","High","High","[""Unit"",""Integration"",""Contract""]","90","85","40","95","5","60","120","0.95","Very High","Low","Native (Jest)","High"
+"Technician Mobile App","Critical","High","Medium","[""E2E"",""Unit"",""Offline Simulation"",""Battery""]","70","60","75","70","20","80","85","0.88","High","High","Complex (Detox/Appium)","Medium"
+"Real-time Location (.NET)","High","Medium","Low","[""Load"",""Integration""]","85","90","20","90","2","20","30","0.9","High","Low","Excellent (k6)","Good"

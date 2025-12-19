@@ -1,0 +1,2 @@
+"total_stories","total_story_points","must_have_stories","should_have_stories","could_have_stories","epics_identified","estimated_sprints","key_dependencies"
+"6","52","3","3","0","[""Authentication & User Management"",""Core Business Services"",""Real-time Communication & Tracking"",""Web & Mobile Applications""]","4","[""Azure AD B2C Configuration"",""PostGIS Database Extension"",""Redis Cache Availability""]"

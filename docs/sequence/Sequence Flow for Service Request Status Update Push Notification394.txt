@@ -1,0 +1,694 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-EP-002
+
+## 1.2 Name
+
+Service Request Status Update Push Notification
+
+## 1.3 Description
+
+When a service technician updates the status of a job, the system publishes an event that triggers a push notification to be sent to the customer's mobile device via Firebase Cloud Messaging (FCM).
+
+## 1.4 Type
+
+🔹 EventProcessing
+
+## 1.5 Purpose
+
+To keep the customer proactively informed about the progress of their service request, fulfilling the notification requirements of REQ-INTG-001.
+
+## 1.6 Complexity
+
+Medium
+
+## 1.7 Priority
+
+🔴 High
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- service-request-service-005
+- notification-service-006
+
+## 1.10 Key Interactions
+
+- A technician updates a job status to 'On The Way' via their app, which calls the ServiceRequestService.
+- The ServiceRequestService updates the status in the database.
+- The service then publishes a 'ServiceRequestStatusChanged' domain event to an Azure Service Bus topic.
+- The NotificationService, which has a subscription to this topic, consumes the event message.
+- The NotificationService queries its database to look up the customer's registered FCM device token.
+- It constructs a push notification payload and sends it to the customer via an authenticated API call to the FCM service.
+- The customer's device receives the push notification.
+
+## 1.11 Triggers
+
+- The status of a ServiceRequest entity is updated.
+
+## 1.12 Outcomes
+
+- The customer receives a timely push notification about their service request.
+- The customer is kept informed without needing to manually check the app.
+
+## 1.13 Business Rules
+
+- Notifications must be sent for key status changes: 'Technician Assigned', 'On The Way', 'Resolved/Closed'.
+- Users must be able to manage their notification preferences.
+
+## 1.14 Error Scenarios
+
+- The event fails to publish to the message bus.
+- The NotificationService cannot find a valid device token for the user.
+- The FCM service is unavailable or rejects the notification request.
+
+## 1.15 Integration Points
+
+- Azure Service Bus
+- Firebase Cloud Messaging (FCM)
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-EP-002-IMPL
+
+## 2.2 Name
+
+Implementation: Service Request Status Update Push Notification via Event Bus
+
+## 2.3 Description
+
+Provides a detailed technical implementation for the event-driven sequence where a service request status update in the ServiceRequestService triggers an asynchronous push notification to the customer via the NotificationService. This sequence leverages Azure Service Bus for decoupling and Firebase Cloud Messaging (FCM) for delivery, fulfilling REQ-INTG-001.
+
+## 2.4 Participants
+
+### 2.4.1 Client
+
+#### 2.4.1.1 Repository Id
+
+REPO-FE-003
+
+#### 2.4.1.2 Display Name
+
+Technician Mobile App
+
+#### 2.4.1.3 Type
+
+🔹 Client
+
+#### 2.4.1.4 Technology
+
+Flutter 3.19+
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #90CAF9 |
+| Stereotype | Client |
+
+### 2.4.2.0 Microservice
+
+#### 2.4.2.1 Repository Id
+
+service-request-service-005
+
+#### 2.4.2.2 Display Name
+
+ServiceRequestService
+
+#### 2.4.2.3 Type
+
+🔹 Microservice
+
+#### 2.4.2.4 Technology
+
+.NET 8, ASP.NET Core 8
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #A5D6A7 |
+| Stereotype | Publisher |
+
+### 2.4.3.0 Infrastructure
+
+#### 2.4.3.1 Repository Id
+
+infra-asb-001
+
+#### 2.4.3.2 Display Name
+
+Azure Service Bus
+
+#### 2.4.3.3 Type
+
+🔹 Infrastructure
+
+#### 2.4.3.4 Technology
+
+PaaS Messaging
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | queue |
+| Color | #FFAB91 |
+| Stereotype | Message Broker |
+
+### 2.4.4.0 Microservice
+
+#### 2.4.4.1 Repository Id
+
+notification-service-006
+
+#### 2.4.4.2 Display Name
+
+NotificationService
+
+#### 2.4.4.3 Type
+
+🔹 Microservice
+
+#### 2.4.4.4 Technology
+
+.NET 8 Worker Service
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #A5D6A7 |
+| Stereotype | Subscriber |
+
+### 2.4.5.0 External Service
+
+#### 2.4.5.1 Repository Id
+
+ext-fcm-001
+
+#### 2.4.5.2 Display Name
+
+Firebase Cloud Messaging (FCM)
+
+#### 2.4.5.3 Type
+
+🔹 External Service
+
+#### 2.4.5.4 Technology
+
+HTTP/JSON API
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #B0BEC5 |
+| Stereotype | External API |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Synchronous API Call
+
+#### 2.5.1.1 Source Id
+
+REPO-FE-003
+
+#### 2.5.1.2 Target Id
+
+service-request-service-005
+
+#### 2.5.1.3 Message
+
+[HTTP PUT] /api/v1/servicerequests/{id}/status
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Synchronous API Call
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+200 OK or Error Response
+
+#### 2.5.1.8 Has Return
+
+✅ Yes
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+##### 2.5.1.10.1 Protocol
+
+HTTP/1.1
+
+##### 2.5.1.10.2 Method
+
+PUT
+
+##### 2.5.1.10.3 Parameters
+
+Path: {id: Guid}, Body: { "newStatus": "OnTheWay", "notes": "..." }
+
+##### 2.5.1.10.4 Authentication
+
+JWT Bearer Token required. Validated by API Gateway and service.
+
+##### 2.5.1.10.5 Error Handling
+
+Returns 400 (Bad Request), 401 (Unauthorized), 403 (Forbidden), 404 (Not Found), 500 (Server Error).
+
+##### 2.5.1.10.6 Performance
+
+###### 2.5.1.10.6.1 Latency
+
+<250ms p95
+
+#### 2.5.1.11.0.0 Nested Interactions
+
+##### 2.5.1.11.1.0 Database Operation
+
+###### 2.5.1.11.1.1 Source Id
+
+service-request-service-005
+
+###### 2.5.1.11.1.2 Target Id
+
+service-request-service-005
+
+###### 2.5.1.11.1.3 Message
+
+[DB] Begin Transaction
+
+###### 2.5.1.11.1.4 Sequence Number
+
+1.1
+
+###### 2.5.1.11.1.5 Type
+
+🔹 Database Operation
+
+###### 2.5.1.11.1.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.1.11.1.7 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Npgsql |
+| Method | UPDATE ServiceRequests SET Status = @newStatus WHE... |
+| Parameters | SQL parameters for ID and new status. |
+| Error Handling | Throws NpgsqlException on failure, triggering tran... |
+
+##### 2.5.1.11.2.0 Database Operation
+
+###### 2.5.1.11.2.1 Source Id
+
+service-request-service-005
+
+###### 2.5.1.11.2.2 Target Id
+
+service-request-service-005
+
+###### 2.5.1.11.2.3 Message
+
+[DB] Commit Transaction
+
+###### 2.5.1.11.2.4 Sequence Number
+
+1.2
+
+###### 2.5.1.11.2.5 Type
+
+🔹 Database Operation
+
+###### 2.5.1.11.2.6 Is Synchronous
+
+✅ Yes
+
+### 2.5.2.0.0.0 Event Publication
+
+#### 2.5.2.1.0.0 Source Id
+
+service-request-service-005
+
+#### 2.5.2.2.0.0 Target Id
+
+infra-asb-001
+
+#### 2.5.2.3.0.0 Message
+
+PublishEvent('ServiceRequestStatusChanged')
+
+#### 2.5.2.4.0.0 Sequence Number
+
+2
+
+#### 2.5.2.5.0.0 Type
+
+🔹 Event Publication
+
+#### 2.5.2.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.2.7.0.0 Has Return
+
+❌ No
+
+#### 2.5.2.8.0.0 Is Activation
+
+❌ No
+
+#### 2.5.2.9.0.0 Technical Details
+
+##### 2.5.2.9.1.0 Protocol
+
+AMQP 1.0
+
+##### 2.5.2.9.2.0 Method
+
+SendAsync to Topic: 'domain-events-topic'
+
+##### 2.5.2.9.3.0 Parameters
+
+Event Payload (JSON): { "eventId": "uuid", "correlationId": "uuid", "eventTimestamp": "iso8601", "eventVersion": "1.0", "payload": { "serviceRequestId": "guid", "userId": "guid", "oldStatus": "Acknowledged", "newStatus": "OnTheWay" } }
+
+##### 2.5.2.9.4.0 Authentication
+
+Managed Identity or SAS Token.
+
+##### 2.5.2.9.5.0 Error Handling
+
+Uses Polly retry policy (Exponential Backoff) for transient publish failures. Logs permanent failures.
+
+##### 2.5.2.9.6.0 Performance
+
+###### 2.5.2.9.6.1 Throughput
+
+Can handle >1000 events/sec.
+
+### 2.5.3.0.0.0 Event Consumption
+
+#### 2.5.3.1.0.0 Source Id
+
+infra-asb-001
+
+#### 2.5.3.2.0.0 Target Id
+
+notification-service-006
+
+#### 2.5.3.3.0.0 Message
+
+ConsumeEvent('ServiceRequestStatusChanged')
+
+#### 2.5.3.4.0.0 Sequence Number
+
+3
+
+#### 2.5.3.5.0.0 Type
+
+🔹 Event Consumption
+
+#### 2.5.3.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.3.7.0.0 Has Return
+
+❌ No
+
+#### 2.5.3.8.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.3.9.0.0 Technical Details
+
+##### 2.5.3.9.1.0 Protocol
+
+AMQP 1.0
+
+##### 2.5.3.9.2.0 Method
+
+Message handler listening on Subscription: 'notifications-subscription'
+
+##### 2.5.3.9.3.0 Parameters
+
+Consumes the event payload sent in step 2.
+
+##### 2.5.3.9.4.0 Authentication
+
+Managed Identity or SAS Token.
+
+##### 2.5.3.9.5.0 Error Handling
+
+Handler is idempotent. On transient failure, message is abandoned for redelivery. After max retries, message is moved to Dead Letter Queue (DLQ).
+
+##### 2.5.3.9.6.0 Performance
+
+###### 2.5.3.9.6.1 Latency
+
+Message available for consumption <1s after publication.
+
+#### 2.5.3.10.0.0 Nested Interactions
+
+##### 2.5.3.10.1.0 Database Query
+
+###### 2.5.3.10.1.1 Source Id
+
+notification-service-006
+
+###### 2.5.3.10.1.2 Target Id
+
+notification-service-006
+
+###### 2.5.3.10.1.3 Message
+
+[DB] FindDeviceTokenByUserId({userId})
+
+###### 2.5.3.10.1.4 Sequence Number
+
+3.1
+
+###### 2.5.3.10.1.5 Type
+
+🔹 Database Query
+
+###### 2.5.3.10.1.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.3.10.1.7 Return Message
+
+FCM Device Token or null
+
+###### 2.5.3.10.1.8 Has Return
+
+✅ Yes
+
+###### 2.5.3.10.1.9 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Npgsql |
+| Method | SELECT Token FROM DeviceRegistrations WHERE UserId... |
+| Parameters | SQL parameter for UserId. |
+| Error Handling | If no token is found, logs a warning and completes... |
+
+##### 2.5.3.10.2.0 External API Call
+
+###### 2.5.3.10.2.1 Source Id
+
+notification-service-006
+
+###### 2.5.3.10.2.2 Target Id
+
+ext-fcm-001
+
+###### 2.5.3.10.2.3 Message
+
+[HTTP POST] /fcm/send
+
+###### 2.5.3.10.2.4 Sequence Number
+
+3.2
+
+###### 2.5.3.10.2.5 Type
+
+🔹 External API Call
+
+###### 2.5.3.10.2.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.3.10.2.7 Return Message
+
+200 OK (Success) or Error
+
+###### 2.5.3.10.2.8 Has Return
+
+✅ Yes
+
+###### 2.5.3.10.2.9 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTP/1.1 |
+| Method | POST |
+| Parameters | Body (JSON): { "message": { "token": "<device_toke... |
+| Authentication | OAuth 2.0 Bearer Token (via Firebase Admin SDK). |
+| Error Handling | Wrapped in a Polly Circuit Breaker policy. Retries... |
+
+### 2.5.4.0.0.0 Message Acknowledgment
+
+#### 2.5.4.1.0.0 Source Id
+
+notification-service-006
+
+#### 2.5.4.2.0.0 Target Id
+
+infra-asb-001
+
+#### 2.5.4.3.0.0 Message
+
+CompleteMessage() / DeadLetterMessage()
+
+#### 2.5.4.4.0.0 Sequence Number
+
+4
+
+#### 2.5.4.5.0.0 Type
+
+🔹 Message Acknowledgment
+
+#### 2.5.4.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.4.7.0.0 Has Return
+
+❌ No
+
+#### 2.5.4.8.0.0 Is Activation
+
+❌ No
+
+#### 2.5.4.9.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | AMQP 1.0 |
+| Method | 'CompleteAsync' on successful processing to remove... |
+| Parameters | Message LockToken. |
+| Error Handling | This step finalizes the message processing lifecyc... |
+
+## 2.6.0.0.0.0 Notes
+
+### 2.6.1.0.0.0 Content
+
+#### 2.6.1.1.0.0 Content
+
+A 'CorrelationId' MUST be generated by the ServiceRequestService (or propagated from the client) and included in the event payload. The NotificationService must log this ID to enable end-to-end distributed tracing.
+
+#### 2.6.1.2.0.0 Position
+
+top
+
+#### 2.6.1.3.0.0 Participant Id
+
+service-request-service-005
+
+#### 2.6.1.4.0.0 Sequence Number
+
+2
+
+### 2.6.2.0.0.0 Content
+
+#### 2.6.2.1.0.0 Content
+
+The message handler in NotificationService must be idempotent. It should check if this specific notification has already been processed to prevent duplicate notifications during message redelivery.
+
+#### 2.6.2.2.0.0 Position
+
+right
+
+#### 2.6.2.3.0.0 Participant Id
+
+notification-service-006
+
+#### 2.6.2.4.0.0 Sequence Number
+
+3
+
+### 2.6.3.0.0.0 Content
+
+#### 2.6.3.1.0.0 Content
+
+A dedicated monitoring alert MUST be configured to trigger if the message count in the Dead Letter Queue (DLQ) for the 'notifications-subscription' is greater than zero, indicating a persistent failure that requires manual intervention.
+
+#### 2.6.3.2.0.0 Position
+
+bottom
+
+#### 2.6.3.3.0.0 Participant Id
+
+infra-asb-001
+
+#### 2.6.3.4.0.0 Sequence Number
+
+4
+
+## 2.7.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | The API Gateway must enforce JWT authentication fo... |
+| Performance Targets | End-to-end latency from status update to notificat... |
+| Error Handling Strategy | ServiceRequestService: Use Polly for retrying even... |
+| Testing Considerations | Unit test the event publisher and message handler ... |
+| Monitoring Requirements | Azure Monitor: Track Service Bus metrics (Active M... |
+| Deployment Considerations | Event schema changes must be backward-compatible. ... |
+

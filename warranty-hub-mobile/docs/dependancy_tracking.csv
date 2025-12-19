@@ -1,0 +1,4 @@
+"dependency_id","from_task","to_task","dependency_type","description","critical_path","status"
+"DEP-001","TASK-INFRA-001-02","TASK-BE-004-01","Technical","AKS/Redis infrastructure must be provisioned before deploying WebSocket gateway","true","Active"
+"DEP-002","TASK-BE-001-01","TASK-BE-004-02","Technical","Auth module configuration required for securing WebSockets","true","Active"
+"DEP-003","TASK-MOB-001-01","TASK-MOB-001-02","Technical","Local DB schema must be defined before implementing queue logic","true","Active"

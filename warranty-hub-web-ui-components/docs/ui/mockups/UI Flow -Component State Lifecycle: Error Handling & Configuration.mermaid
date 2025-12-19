@@ -1,0 +1,61 @@
+stateDiagram-v2
+    direction TB
+
+    %% Style Definitions
+    classDef default fill:#fff,stroke:#333,stroke-width:1px,color:#333
+    classDef errorState fill:#ffebee,stroke:#d32f2f,stroke-width:2px,color:#d32f2f
+    classDef successState fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#2e7d32
+    classDef processState fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#1565c0
+    classDef warningState fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#ef6c00
+
+    [*] --> Mounting : Component Mounted
+
+    state Mounting {
+        [*] --> PropValidation
+        
+        state "Validating Configuration" as PropValidation {
+            direction LR
+            CheckTypes --> CheckRequired
+            CheckRequired --> CheckConstraints
+        }
+
+        PropValidation --> InvalidConfiguration : Validation Failed
+        PropValidation --> DeterminingSource : Validation Passed
+    }
+
+    state DeterminingSource <<choice>>
+    
+    state "Error: Invalid Prop Configuration" as InvalidConfiguration:::errorState {
+        direction TB
+        LogDevWarning --> RenderFallbackUI
+        note right of LogDevWarning : "Missing required 'status'\nInvalid 'variant' enum"
+    }
+
+    state "Data Management" as DataLayer {
+        state "Loading State" as Loading:::processState
+        state "Data Loading Failure" as LoadFail:::warningState
+        
+        Loading --> LoadFail : API/Network Error
+        LoadFail --> Loading : User Clicks Retry
+        LoadFail --> Loading : Auto-Retry (3x)
+    }
+
+    state "Rendered State" as Success:::successState {
+        DisplayContent --> [*]
+    }
+
+    %% Main Transitions
+    DeterminingSource --> Success : Static Data Props
+    DeterminingSource --> Loading : Async Data Required
+    
+    Loading --> Success : Data Received
+    
+    InvalidConfiguration --> [*] : Terminal State
+    LoadFail --> [*] : Max Retries Exceeded
+
+    %% Notes
+    note right of LoadFail
+        Display error toast
+        or empty state with
+        retry button
+    end note

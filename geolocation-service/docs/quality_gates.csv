@@ -1,0 +1,3 @@
+"gate_id","gate_name","sprint","gate_type","criteria","responsible_team","gate_date","approval_required","approver","bypass_criteria","automation_level","tools_used","success_metrics"
+"QG-SPRINT1","Infrastructure & Auth Ready","Sprint 1","Security","Terraform apply successful; Auth endpoint validates JWT","DevOps & Backend","2024-06-07","true","tech.lead@company.com","None","Automated","Terraform, Jest","Environment accessible; 0 security vulnerabilities"
+"QG-SPRINT2","Core Logic Validated","Sprint 2","Integration","Routing logic passes 100% tests; Mobile sync handles conflicts","Backend & Mobile","2024-06-21","true","tech.lead@company.com","Non-critical sync bugs (if documented)","Partially Automated","Supertest, Detox","Sync reliability > 99%; API P95 < 500ms"

@@ -1,0 +1,2 @@
+"environment_name","environment_type","deployment_frequency","data_refresh_frequency","infrastructure_stack","service_dependencies","monitoring_tools","access_control","backup_strategy","disaster_recovery","cost_optimization","maintenance_window"
+"Staging","Pre-Production","Continuous (CD)","Monthly (Sanitized Prod Data)","AKS (Standard); Azure SQL (General Purpose); Redis (Standard)","Azure AI (Mocked/Dev Tier); FCM (Dev Project); SendGrid (Sandbox)","Azure Monitor; Sentry","Engineering + QA + Product","Daily","Tested Monthly","Scale down to 1 node at night","Ad-hoc"

@@ -1,0 +1,706 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-IF-002
+
+## 1.2 Name
+
+Calculating Technician ETA using Mapbox
+
+## 1.3 Description
+
+When a technician is in 'Travel Mode', the system uses their live GPS location and the customer's address to calculate an Estimated Time of Arrival (ETA) via an external mapping service.
+
+## 1.4 Type
+
+🔹 IntegrationFlow
+
+## 1.5 Purpose
+
+To provide customers with an accurate, dynamically updated ETA for their service visit, improving customer satisfaction.
+
+## 1.6 Complexity
+
+Medium
+
+## 1.7 Priority
+
+🔴 High
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- mobile-client-013
+- api-gateway-001
+- geolocation-service-007
+
+## 1.10 Key Interactions
+
+- The GeolocationService receives a GPS update from a technician's device (as in SEQ-SI-001).
+- The service retrieves the customer's destination address associated with the job.
+- The GeolocationService makes a server-to-server API call to the Mapbox Directions API, providing the technician's coordinates (origin) and the customer's address (destination).
+- Mapbox calculates the route and returns data including the estimated travel duration.
+- The GeolocationService processes the response and broadcasts the updated ETA to the customer's client via the existing WebSocket connection.
+- The customer's mobile app displays the new ETA (e.g., 'Arriving in 15 minutes').
+
+## 1.11 Triggers
+
+- A new GPS coordinate is received from a technician in 'Travel Mode'.
+
+## 1.12 Outcomes
+
+- The customer's app displays a real-time ETA.
+- The ETA is automatically updated as traffic conditions or the route changes.
+
+## 1.13 Business Rules
+
+- ETA calculation must use real-time traffic data if available from the provider.
+
+## 1.14 Error Scenarios
+
+- The Mapbox API is unavailable or returns an error.
+- The customer's address is invalid and cannot be geocoded.
+- Network latency causes a delay in the ETA update.
+
+## 1.15 Integration Points
+
+- Mapbox Directions API
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-IF-002
+
+## 2.2 Name
+
+Real-time Technician ETA Calculation via Mapbox Integration
+
+## 2.3 Description
+
+Technical sequence for calculating and broadcasting a technician's ETA. The GeolocationService, upon receiving a technician's GPS update via a WebSocket, fetches the corresponding customer's address from the ServiceRequestService through the API Gateway. It then calls the external Mapbox Directions API, encapsulating the call with a Polly Circuit Breaker resilience policy. The calculated travel duration is transformed into an ETA and broadcast to the specific customer's mobile client via the SignalR WebSocket connection.
+
+## 2.4 Participants
+
+### 2.4.1 Client
+
+#### 2.4.1.1 Repository Id
+
+mobile-client-013
+
+#### 2.4.1.2 Display Name
+
+Technician Mobile Client
+
+#### 2.4.1.3 Type
+
+🔹 Client
+
+#### 2.4.1.4 Technology
+
+Flutter 3.19+
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #1E90FF |
+| Stereotype | Technician |
+
+### 2.4.2.0 Service
+
+#### 2.4.2.1 Repository Id
+
+geolocation-service-007
+
+#### 2.4.2.2 Display Name
+
+GeolocationService
+
+#### 2.4.2.3 Type
+
+🔹 Service
+
+#### 2.4.2.4 Technology
+
+.NET 8, SignalR
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #4CAF50 |
+| Stereotype | Microservice |
+
+### 2.4.3.0 Gateway
+
+#### 2.4.3.1 Repository Id
+
+api-gateway-001
+
+#### 2.4.3.2 Display Name
+
+APIGateway
+
+#### 2.4.3.3 Type
+
+🔹 Gateway
+
+#### 2.4.3.4 Technology
+
+YARP on .NET 8
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | boundary |
+| Color | #FFC107 |
+| Stereotype | Gateway |
+
+### 2.4.4.0 Service
+
+#### 2.4.4.1 Repository Id
+
+service-request-service-005
+
+#### 2.4.4.2 Display Name
+
+ServiceRequestService
+
+#### 2.4.4.3 Type
+
+🔹 Service
+
+#### 2.4.4.4 Technology
+
+.NET 8, ASP.NET Core
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #4CAF50 |
+| Stereotype | Microservice |
+
+### 2.4.5.0 External
+
+#### 2.4.5.1 Repository Id
+
+mapbox-api
+
+#### 2.4.5.2 Display Name
+
+Mapbox Directions API
+
+#### 2.4.5.3 Type
+
+🔹 External
+
+#### 2.4.5.4 Technology
+
+HTTPS/REST
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #9E9E9E |
+| Stereotype | External API |
+
+### 2.4.6.0 Client
+
+#### 2.4.6.1 Repository Id
+
+mobile-client-013
+
+#### 2.4.6.2 Display Name
+
+Customer Mobile Client
+
+#### 2.4.6.3 Type
+
+🔹 Client
+
+#### 2.4.6.4 Technology
+
+Flutter 3.19+
+
+#### 2.4.6.5 Order
+
+6
+
+#### 2.4.6.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #1E90FF |
+| Stereotype | Customer |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Real-time Push / RPC
+
+#### 2.5.1.1 Source Id
+
+mobile-client-013
+
+#### 2.5.1.2 Target Id
+
+geolocation-service-007
+
+#### 2.5.1.3 Message
+
+1. SendGpsUpdate(jobId, latitude, longitude)
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Real-time Push / RPC
+
+#### 2.5.1.6 Is Synchronous
+
+❌ No
+
+#### 2.5.1.7 Return Message
+
+
+
+#### 2.5.1.8 Has Return
+
+❌ No
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | WSS (SignalR) |
+| Method | Hub.InvokeAsync("SendLocationUpdate") |
+| Parameters | Payload: { "jobId": "GUID", "latitude": "double", ... |
+| Authentication | JWT Bearer Token established in WebSocket connecti... |
+| Error Handling | Client-side handling for connection failures. Serv... |
+| Performance | Low latency message delivery over persistent conne... |
+
+#### 2.5.1.11 Nested Interactions
+
+*No items available*
+
+### 2.5.2.0 Request-Reply
+
+#### 2.5.2.1 Source Id
+
+geolocation-service-007
+
+#### 2.5.2.2 Target Id
+
+api-gateway-001
+
+#### 2.5.2.3 Message
+
+2. GET /api/v1/service-requests/{jobId}/destination
+
+#### 2.5.2.4 Sequence Number
+
+2
+
+#### 2.5.2.5 Type
+
+🔹 Request-Reply
+
+#### 2.5.2.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7 Return Message
+
+2.3. Return DestinationAddress DTO
+
+#### 2.5.2.8 Has Return
+
+✅ Yes
+
+#### 2.5.2.9 Is Activation
+
+✅ Yes
+
+#### 2.5.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS/REST |
+| Method | GET |
+| Parameters | Path parameter: jobId (GUID) |
+| Authentication | Service-to-service authentication with propagated ... |
+| Error Handling | Standard HTTP client retry policy for transient er... |
+| Performance | Latency target < 50ms. |
+
+#### 2.5.2.11 Nested Interactions
+
+- {'sourceId': 'api-gateway-001', 'targetId': 'service-request-service-005', 'message': '2.1. Forward GET /api/v1/service-requests/{jobId}/destination', 'sequenceNumber': 2.1, 'type': 'Request-Reply', 'isSynchronous': True, 'returnMessage': '2.2. HTTP 200 OK with DestinationAddress DTO', 'hasReturn': True, 'isActivation': True, 'technicalDetails': {'protocol': 'HTTP/REST', 'method': 'GET', 'parameters': 'Path parameter: jobId (GUID)', 'authentication': 'JWT validation at gateway.', 'errorHandling': 'Returns 404 if request not found, 5xx on internal error.', 'performance': 'Database query for address must be indexed and optimized.'}, 'nestedInteractions': []}
+
+### 2.5.3.0 Request-Reply
+
+#### 2.5.3.1 Source Id
+
+geolocation-service-007
+
+#### 2.5.3.2 Target Id
+
+mapbox-api
+
+#### 2.5.3.3 Message
+
+3. Request Directions (wrapped in Circuit Breaker)
+
+#### 2.5.3.4 Sequence Number
+
+3
+
+#### 2.5.3.5 Type
+
+🔹 Request-Reply
+
+#### 2.5.3.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7 Return Message
+
+3.5. Return transformed ETADuration model or null on failure
+
+#### 2.5.3.8 Has Return
+
+✅ Yes
+
+#### 2.5.3.9 Is Activation
+
+✅ Yes
+
+#### 2.5.3.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS/REST |
+| Method | GET |
+| Parameters | URL: /directions/v5/mapbox/driving-traffic/{coords... |
+| Authentication | Mapbox API Key sent as a query parameter (`access_... |
+| Error Handling | Wrapped in a Polly Circuit Breaker policy (5 conse... |
+| Performance | External dependency SLA. Monitored for P95 latency... |
+
+#### 2.5.3.11 Nested Interactions
+
+##### 2.5.3.11.1 Internal
+
+###### 2.5.3.11.1.1 Source Id
+
+geolocation-service-007
+
+###### 2.5.3.11.1.2 Target Id
+
+geolocation-service-007
+
+###### 2.5.3.11.1.3 Message
+
+3.1. [Policy] Check Circuit Breaker State
+
+###### 2.5.3.11.1.4 Sequence Number
+
+3.1
+
+###### 2.5.3.11.1.5 Type
+
+🔹 Internal
+
+###### 2.5.3.11.1.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.3.11.1.7 Return Message
+
+IsClosedOrHalfOpen
+
+###### 2.5.3.11.1.8 Has Return
+
+✅ Yes
+
+###### 2.5.3.11.1.9 Is Activation
+
+❌ No
+
+###### 2.5.3.11.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | In-Memory |
+| Method | CircuitBreaker.ExecuteAsync() |
+| Parameters | N/A |
+| Authentication | N/A |
+| Error Handling | If circuit is open, throws BrokenCircuitException ... |
+| Performance | Negligible overhead. |
+
+###### 2.5.3.11.1.11 Nested Interactions
+
+*No items available*
+
+##### 2.5.3.11.2.0 Request-Reply
+
+###### 2.5.3.11.2.1 Source Id
+
+geolocation-service-007
+
+###### 2.5.3.11.2.2 Target Id
+
+mapbox-api
+
+###### 2.5.3.11.2.3 Message
+
+3.2. [Adapter] GET /directions/v5/mapbox/driving-traffic/{origin_lon,origin_lat;dest_lon,dest_lat}
+
+###### 2.5.3.11.2.4 Sequence Number
+
+3.2
+
+###### 2.5.3.11.2.5 Type
+
+🔹 Request-Reply
+
+###### 2.5.3.11.2.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.3.11.2.7 Return Message
+
+3.3. HTTP 200 OK with DirectionsResponse JSON
+
+###### 2.5.3.11.2.8 Has Return
+
+✅ Yes
+
+###### 2.5.3.11.2.9 Is Activation
+
+❌ No
+
+###### 2.5.3.11.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS/REST |
+| Method | GET |
+| Parameters | Coordinates for technician and customer, plus para... |
+| Authentication | API Key included in request. |
+| Error Handling | HTTP status codes (4xx, 5xx) are caught and handle... |
+| Performance | Critical path for ETA calculation. |
+
+###### 2.5.3.11.2.11 Nested Interactions
+
+*No items available*
+
+##### 2.5.3.11.3.0 Internal
+
+###### 2.5.3.11.3.1 Source Id
+
+geolocation-service-007
+
+###### 2.5.3.11.3.2 Target Id
+
+geolocation-service-007
+
+###### 2.5.3.11.3.3 Message
+
+3.4. [Adapter] Transform JSON response to internal ETADuration model
+
+###### 2.5.3.11.3.4 Sequence Number
+
+3.4
+
+###### 2.5.3.11.3.5 Type
+
+🔹 Internal
+
+###### 2.5.3.11.3.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.3.11.3.7 Return Message
+
+ETADuration { DurationSeconds, DistanceMeters }
+
+###### 2.5.3.11.3.8 Has Return
+
+✅ Yes
+
+###### 2.5.3.11.3.9 Is Activation
+
+❌ No
+
+###### 2.5.3.11.3.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | In-Memory |
+| Method | MapboxAdapter.ParseResponse() |
+| Parameters | Raw JSON response from Mapbox API. |
+| Authentication | N/A |
+| Error Handling | Handles JSON parsing errors or unexpected response... |
+| Performance | Negligible overhead. |
+
+###### 2.5.3.11.3.11 Nested Interactions
+
+*No items available*
+
+### 2.5.4.0.0.0 Real-time Push / RPC
+
+#### 2.5.4.1.0.0 Source Id
+
+geolocation-service-007
+
+#### 2.5.4.2.0.0 Target Id
+
+mobile-client-013
+
+#### 2.5.4.3.0.0 Message
+
+4. BroadcastEtaUpdate(etaMinutes, distanceMeters)
+
+#### 2.5.4.4.0.0 Sequence Number
+
+4
+
+#### 2.5.4.5.0.0 Type
+
+🔹 Real-time Push / RPC
+
+#### 2.5.4.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.4.7.0.0 Return Message
+
+
+
+#### 2.5.4.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.4.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.4.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | WSS (SignalR) |
+| Method | Clients.Group(customerId).SendAsync("EtaUpdated") |
+| Parameters | Payload: { "etaMinutes": "int", "distanceMeters": ... |
+| Authentication | N/A. Broadcast is targeted to a secure group estab... |
+| Error Handling | Fire-and-forget. Delivery is not guaranteed but re... |
+| Performance | Must meet REQ-PERF-002: End-to-end latency < 2 sec... |
+
+#### 2.5.4.11.0.0 Nested Interactions
+
+*No items available*
+
+## 2.6.0.0.0.0 Notes
+
+### 2.6.1.0.0.0 Content
+
+#### 2.6.1.1.0.0 Content
+
+The Mapbox API Key is a sensitive secret and must be loaded at runtime from Azure Key Vault, never stored in configuration files or source code.
+
+#### 2.6.1.2.0.0 Position
+
+top_right
+
+#### 2.6.1.3.0.0 Participant Id
+
+mapbox-api
+
+#### 2.6.1.4.0.0 Sequence Number
+
+3
+
+### 2.6.2.0.0.0 Content
+
+#### 2.6.2.1.0.0 Content
+
+The broadcast in step 4 is targeted. During the WebSocket connection setup, the customer's client is added to a SignalR group named after their unique customer ID. This ensures ETAs are only sent to the correct user.
+
+#### 2.6.2.2.0.0 Position
+
+bottom_left
+
+#### 2.6.2.3.0.0 Participant Id
+
+geolocation-service-007
+
+#### 2.6.2.4.0.0 Sequence Number
+
+4
+
+### 2.6.3.0.0.0 Content
+
+#### 2.6.3.1.0.0 Content
+
+The entire flow is idempotent for a given GPS update. If the same update is processed twice, the calculated ETA will be the same and the broadcast will have no negative side effects.
+
+#### 2.6.3.2.0.0 Position
+
+bottom_left
+
+#### 2.6.3.3.0.0 Participant Id
+
+geolocation-service-007
+
+#### 2.6.3.4.0.0 Sequence Number
+
+1
+
+## 2.7.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | The Mapbox API key must be managed via Azure Key V... |
+| Performance Targets | The end-to-end latency, from the technician sendin... |
+| Error Handling Strategy | A Polly Circuit Breaker policy must wrap the Mapbo... |
+| Testing Considerations | Integration tests for the GeolocationService must ... |
+| Monitoring Requirements | Monitor the latency and error rate (4xx/5xx) of ou... |
+| Deployment Considerations | The GeolocationService deployment configuration mu... |
+

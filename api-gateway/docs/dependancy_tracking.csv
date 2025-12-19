@@ -1,0 +1,4 @@
+"dependency_id","from_task","to_task","dependency_type","description","critical_path","lead_time_days","responsible_team","coordination_required","risk_level","mitigation_plan","status","impact_if_delayed","escalation_required"
+"DEP-001","TASK-INF-001","TASK-INF-002","Technical","Cluster needed for HPA","true","1","DevOps","","Low","None","Active","HPA config delayed",""
+"DEP-002","TASK-INF-004","TASK-BE-001","Infrastructure","DB needed for Product Service","true","2","DevOps","true","Medium","Use local docker DB","Active","Backend blocked","true"
+"DEP-003","TASK-BE-009","TASK-MOB-006","Technical","Backend Hub needed for mobile client","true","5","Backend","true","High","Define SignalR contract early","Active","Mobile tracking blocked",""

@@ -1,0 +1,36 @@
+sequenceDiagram
+    participant "Operations Engineer" as OperationsEngineer
+    participant "Monitoring System" as MonitoringSystem
+    participant "Knowledge Base" as KnowledgeBase
+    participant "GitHub Actions" as GitHubActions
+    participant "Azure Container Registry" as AzureContainerRegistry
+    participant "Azure Kubernetes Service" as AzureKubernetesService
+    participant "Azure Portal" as AzurePortal
+    participant "Azure DB for PostgreSQL" as AzureDBforPostgreSQL
+    participant "Terraform Repo" as TerraformRepo
+
+    activate OperationsEngineer
+    MonitoringSystem->>OperationsEngineer: 1. 1. Fires Critical Alert (e.g., P95 Latency > 500ms, Error Rate > 5%)
+    OperationsEngineer->>KnowledgeBase: 2. 2. Consults 'Production Rollback Procedure' Runbook
+    KnowledgeBase-->>OperationsEngineer: Returns step-by-step instructions for rollback scenarios.
+    OperationsEngineer->>OperationsEngineer: 3. 3. ALT: Selects Rollback Strategy based on incident type
+    activate GitHubActions
+    OperationsEngineer->>GitHubActions: 3.1. 3.1 [Application Failure]: Triggers 'Deploy' workflow with previous stable image tag
+    GitHubActions-->>OperationsEngineer: Workflow execution logs and status (Success/Failure)
+    activate AzurePortal
+    OperationsEngineer->>AzurePortal: 3.2. 3.2 [Database Corruption]: Initiates Point-in-Time Recovery (PITR)
+    AzurePortal-->>OperationsEngineer: PITR operation initiated notification
+    activate TerraformRepo
+    OperationsEngineer->>TerraformRepo: 3.3. 3.3 [Infrastructure Failure]: Reverts breaking change and applies
+    TerraformRepo-->>OperationsEngineer: Git push confirmation
+    OperationsEngineer->>MonitoringSystem: 4. 4. Validates System Stability Post-Rollback
+    MonitoringSystem-->>OperationsEngineer: Dashboards showing key metrics (Error Rate, Latency, Saturation)
+    OperationsEngineer->>AzureKubernetesService: 5. 5. Performs Smoke Test on critical endpoint
+    AzureKubernetesService-->>OperationsEngineer: HTTP 200 OK
+
+    note over OperationsEngineer: For Database Rollback (3.2), the engineer must manually update application configurations (e.g., ...
+
+    deactivate TerraformRepo
+    deactivate AzurePortal
+    deactivate GitHubActions
+    deactivate OperationsEngineer

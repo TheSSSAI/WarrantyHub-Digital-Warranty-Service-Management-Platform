@@ -1,0 +1,4 @@
+"gate_id","gate_name","sprint","gate_type","criteria","responsible_team","gate_date","approval_required","approver","bypass_criteria","automation_level","tools_used","success_metrics"
+"QG-001","Infrastructure Readiness","Sprint 1","Infrastructure","Terraform apply clean; Security scan passed; Connectivity verified","DevOps","2024-06-13","true","tech.lead@company.com","None","Automated","tfsec,checkov","Zero high severity issues"
+"QG-002","Mobile Architecture Review","Sprint 2","Architecture","Offline sync strategy approved; Schema validated; PoC working","Mobile","2024-06-27","true","mobile.lead@company.com","None","Manual","Design Doc Review","Sync conflict resolution defined"
+"QG-003","Real-time Performance","Sprint 3","Performance","WS Gateway handles 1k connections; Latency < 100ms","Backend","2024-07-11","true","tech.lead@company.com","Performance below 500 connections acceptable for MVP","Automated","Artillery.io","P95 latency < 100ms"

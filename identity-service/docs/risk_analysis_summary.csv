@@ -1,0 +1,2 @@
+"total_risks_identified","critical_risks","high_priority_risks","average_risk_score","key_risk_themes","immediate_actions_required"
+"7","1","2","14.1","[""Mobile Device Constraints (Battery/OS)"",""Identity Management Complexity (B2C)"",""Distributed Data Consistency""]","[""Validate mobile background location library against iOS 17/Android 14 battery optimization policies immediately."",""Secure Azure Identity specialist or verify team capability for XML custom policies."",""Finalize VNet IP planning calculations before Terraform execution.""]"

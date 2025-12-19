@@ -1,0 +1,381 @@
+
+{
+  "visual_foundation": {
+    "typography": {
+      "font_families": {
+        "primary": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        "secondary": "'Inter', sans-serif",
+        "monospace": "'JetBrains Mono', 'Roboto Mono', monospace"
+      },
+      "font_scale": {
+        "h1": {
+          "size": "32px",
+          "weight": "700",
+          "line_height": "1.25",
+          "letter_spacing": "-0.02em",
+          "mobile_size": "28px"
+        },
+        "h2": {
+          "size": "24px",
+          "weight": "600",
+          "line_height": "1.3",
+          "letter_spacing": "-0.01em",
+          "mobile_size": "22px"
+        },
+        "h3": {
+          "size": "20px",
+          "weight": "600",
+          "line_height": "1.4",
+          "letter_spacing": "0",
+          "mobile_size": "18px"
+        },
+        "h4": {
+          "size": "18px",
+          "weight": "600",
+          "line_height": "1.4",
+          "letter_spacing": "0",
+          "mobile_size": "16px"
+        },
+        "body_large": {
+          "size": "16px",
+          "weight": "400",
+          "line_height": "1.5",
+          "letter_spacing": "0"
+        },
+        "body_default": {
+          "size": "14px",
+          "weight": "400",
+          "line_height": "1.5",
+          "letter_spacing": "0"
+        },
+        "caption": {
+          "size": "12px",
+          "weight": "500",
+          "line_height": "1.4",
+          "letter_spacing": "0.02em",
+          "text_transform": "uppercase"
+        },
+        "code": {
+          "size": "13px",
+          "weight": "400",
+          "line_height": "1.5"
+        }
+      },
+      "responsive_scaling": "Fluid typography using clamp() for headings; fixed steps for body text to ensure readability on mobile devices."
+    },
+    "color_palette": {
+      "primary": {
+        "50": "#eef2ff",
+        "100": "#e0e7ff",
+        "200": "#c7d2fe",
+        "300": "#a5b4fc",
+        "400": "#818cf8",
+        "500": "#6366f1",
+        "600": "#4f46e5",
+        "700": "#4338ca",
+        "800": "#3730a3",
+        "900": "#312e81"
+      },
+      "secondary": {
+        "50": "#f8fafc",
+        "500": "#64748b",
+        "900": "#0f172a"
+      },
+      "neutrals": {
+        "white": "#ffffff",
+        "gray_50": "#f9fafb",
+        "gray_100": "#f3f4f6",
+        "gray_200": "#e5e7eb",
+        "gray_300": "#d1d5db",
+        "gray_400": "#9ca3af",
+        "gray_500": "#6b7280",
+        "gray_600": "#4b5563",
+        "gray_700": "#374151",
+        "gray_800": "#1f2937",
+        "gray_900": "#111827",
+        "black": "#000000"
+      },
+      "semantic": {
+        "success_bg": "#d1e7dd",
+        "success_text": "#0f5132",
+        "success_main": "#28a745",
+        "warning_bg": "#fff3cd",
+        "warning_text": "#664d03",
+        "warning_main": "#ffc107",
+        "error_bg": "#f8d7da",
+        "error_text": "#842029",
+        "error_main": "#dc3545",
+        "info_bg": "#cff4fc",
+        "info_text": "#055160",
+        "info_main": "#0dcaf0"
+      },
+      "overlay": {
+        "modal_backdrop": "rgba(17, 24, 39, 0.75)",
+        "map_overlay": "rgba(255, 255, 255, 0.95)"
+      }
+    },
+    "spacing_system": {
+      "scale": [
+        "0px",
+        "4px",
+        "8px",
+        "12px",
+        "16px",
+        "24px",
+        "32px",
+        "48px",
+        "64px",
+        "96px"
+      ],
+      "grid_system": "12-column grid with 24px gutters (desktop), 16px gutters (tablet), 4-column with 16px gutters (mobile)",
+      "container_widths": {
+        "mobile": "100%",
+        "tablet": "720px",
+        "desktop": "1140px",
+        "wide": "1440px"
+      },
+      "responsive_spacing": "Compact density on mobile (4px/8px base), Comfortable density on desktop (8px/16px base)"
+    }
+  },
+  "component_specifications": {
+    "buttons": {
+      "primary": {
+        "default_state": {
+          "background": "var(--color-primary-600)",
+          "text": "var(--color-white)",
+          "padding": "10px 20px",
+          "border_radius": "6px",
+          "font_weight": "600"
+        },
+        "hover_state": {
+          "background": "var(--color-primary-700)",
+          "elevation": "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+        },
+        "active_state": {
+          "background": "var(--color-primary-800)",
+          "transform": "scale(0.98)"
+        },
+        "disabled_state": {
+          "background": "var(--color-gray-200)",
+          "text": "var(--color-gray-400)",
+          "cursor": "not-allowed"
+        },
+        "focus_state": {
+          "outline": "2px solid var(--color-primary-600)",
+          "outline_offset": "2px"
+        }
+      },
+      "secondary": {
+        "default_state": {
+          "background": "transparent",
+          "text": "var(--color-gray-700)",
+          "border": "1px solid var(--color-gray-300)",
+          "padding": "10px 20px"
+        },
+        "hover_state": {
+          "background": "var(--color-gray-50)",
+          "text": "var(--color-gray-900)"
+        }
+      },
+      "floating_action": {
+        "default_state": {
+          "background": "var(--color-primary-600)",
+          "size": "56px",
+          "icon_size": "24px",
+          "border_radius": "50%",
+          "elevation": "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+        }
+      },
+      "accessibility": "Minimum touch target 44x44px on mobile. Visible focus rings. Descriptive ARIA labels for icon-only buttons."
+    },
+    "form_inputs": {
+      "text_input": {
+        "default_state": {
+          "border": "1px solid var(--color-gray-300)",
+          "background": "var(--color-white)",
+          "padding": "10px 12px",
+          "border_radius": "6px",
+          "text": "var(--color-gray-900)"
+        },
+        "focus_state": {
+          "border": "1px solid var(--color-primary-600)",
+          "box_shadow": "0 0 0 3px var(--color-primary-100)"
+        },
+        "error_state": {
+          "border": "1px solid var(--color-error-main)",
+          "icon": "alert-circle"
+        },
+        "disabled_state": {
+          "background": "var(--color-gray-100)",
+          "text": "var(--color-gray-400)",
+          "cursor": "not-allowed"
+        },
+        "accessibility": "Labels must be visible and associated via 'for' attribute. Error messages linked via aria-describedby."
+      },
+      "signature_canvas": {
+        "default_state": {
+          "border": "1px dashed var(--color-gray-400)",
+          "background": "var(--color-gray-50)",
+          "height": "200px",
+          "border_radius": "8px"
+        },
+        "active_state": {
+          "border": "1px solid var(--color-primary-600)",
+          "background": "var(--color-white)"
+        }
+      }
+    },
+    "navigation": {
+      "header": {
+        "desktop_layout": "Logo (Left), Links (Center), User/Tenant Switcher (Right). Height: 64px. Sticky positioning.",
+        "mobile_layout": "Hamburger (Left), Logo (Center), Notifications (Right). Height: 56px.",
+        "active_states": "Bottom border 2px solid var(--color-primary-600) for desktop links.",
+        "accessibility": "Skip-to-content link. Focus trap in mobile menu."
+      },
+      "bottom_tab_bar": {
+        "layout": "Fixed bottom, 4-5 items. Height: 60px + safe area.",
+        "active_state": "Icon color var(--color-primary-600), Label visible.",
+        "inactive_state": "Icon color var(--color-gray-400), Label visible."
+      }
+    },
+    "data_display": {
+      "warranty_card": {
+        "default_card": {
+          "background": "linear-gradient(135deg, var(--color-gray-900), var(--color-gray-800))",
+          "text": "var(--color-white)",
+          "border_radius": "12px",
+          "padding": "20px",
+          "aspect_ratio": "1.586",
+          "shadow": "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+        },
+        "status_badge_position": "Top Right",
+        "content_structure": "Brand Logo (Top Left), Product Name (Middle), Serial/Expiry (Bottom)"
+      },
+      "status_badge": {
+        "active": {
+          "background": "var(--color-success-bg)",
+          "text": "var(--color-success-text)",
+          "border": "1px solid var(--color-success-text)"
+        },
+        "expiring": {
+          "background": "var(--color-warning-bg)",
+          "text": "var(--color-warning-text)",
+          "border": "1px solid var(--color-warning-text)"
+        },
+        "expired": {
+          "background": "var(--color-error-bg)",
+          "text": "var(--color-error-text)",
+          "border": "1px solid var(--color-error-text)"
+        },
+        "structure": "Pill shape, 4px padding vertical, 8px horizontal, font-size 12px uppercase bold"
+      },
+      "technician_map_marker": {
+        "default": {
+          "icon": "vehicle",
+          "color": "var(--color-primary-600)",
+          "size": "32px"
+        },
+        "active_job": {
+          "icon": "vehicle",
+          "color": "var(--color-success-main)",
+          "pulse_animation": "true"
+        }
+      }
+    },
+    "feedback": {
+      "alerts": {
+        "success": {
+          "background": "var(--color-success-bg)",
+          "icon": "check-circle",
+          "text": "var(--color-success-text)",
+          "border_left": "4px solid var(--color-success-main)"
+        },
+        "error": {
+          "background": "var(--color-error-bg)",
+          "icon": "x-circle",
+          "text": "var(--color-error-text)",
+          "border_left": "4px solid var(--color-error-main)"
+        },
+        "offline_mode": {
+          "background": "var(--color-gray-800)",
+          "text": "var(--color-white)",
+          "icon": "wifi-off",
+          "position": "Fixed bottom toast"
+        },
+        "accessibility": "Role='alert' for dynamic errors. Toast messages auto-dismiss after 5s unless critical."
+      }
+    }
+  },
+  "interaction_patterns": {
+    "micro_interactions": [
+      {
+        "pattern_name": "Button Press",
+        "trigger": "Active/Tap",
+        "animation": "Scale 0.98, Duration 100ms, Easing ease-in-out",
+        "accessibility": "Respects prefers-reduced-motion"
+      },
+      {
+        "pattern_name": "Card Expansion",
+        "trigger": "Tap on Warranty Card",
+        "animation": "Height transition, Duration 300ms, Easing cubic-bezier(0.4, 0, 0.2, 1)",
+        "accessibility": "Ensure content is in DOM before expansion for screen readers"
+      }
+    ],
+    "loading_states": [
+      {
+        "pattern_name": "Skeleton Loading",
+        "visual": "Gray-200 pulsing background on text/image blocks",
+        "duration": "1.5s infinite loop",
+        "accessibility": "aria-busy='true', aria-label='Loading content'"
+      },
+      {
+        "pattern_name": "Map Loading",
+        "visual": "Grid overlay with spinner centered",
+        "accessibility": "Loading announcement"
+      }
+    ],
+    "gestures": [
+      {
+        "pattern_name": "Pull to Refresh",
+        "context": "Mobile Lists (Jobs, Products)",
+        "feedback": "Haptic tick on trigger threshold"
+      },
+      {
+        "pattern_name": "Swipe Actions",
+        "context": "Technician Job List",
+        "action": "Swipe Right to Accept, Left to Reject",
+        "visual": "Reveal background color (Green/Red) and Icon"
+      }
+    ]
+  },
+  "implementation_guidelines": {
+    "css_architecture": {
+      "custom_properties": {
+        "--color-primary-600": "#4f46e5",
+        "--color-success-main": "#28a745",
+        "--font-family-base": "'Inter', sans-serif",
+        "--radius-md": "6px",
+        "--shadow-sm": "0 1px 2px 0 rgba(0, 0, 0, 0.05)"
+      },
+      "naming_conventions": "BEM (Block Element Modifier) for web components. Styled Components/Emotion for React Native.",
+      "component_organization": "Atomic Design: Atoms (Buttons, Inputs), Molecules (Form Fields, Cards), Organisms (Headers, Lists), Templates (Layouts).",
+      "utility_classes": "Tailwind-compatible utility classes for margins, padding, and flexbox layouts."
+    },
+    "responsive_strategy": {
+      "breakpoints": {
+        "mobile": "0px",
+        "tablet": "768px",
+        "desktop": "1024px",
+        "wide": "1440px"
+      },
+      "approach": "Mobile-first. Default styles are mobile; min-width media queries add complexity for larger screens.",
+      "component_adaptations": "Navigation collapses to hamburger/tab bar on mobile. Data tables convert to card lists on mobile. Modals become full-screen sheets on mobile."
+    },
+    "accessibility_implementation": {
+      "focus_management": "Visible focus ring (2px solid primary) on all interactive elements. Focus trap within modals. Restore focus to trigger upon modal close.",
+      "color_contrast": "Automated testing in CI/CD pipeline to ensure 4.5:1 ratio for normal text.",
+      "screen_reader_support": "All icons must have aria-label. Status changes (e.g., 'Saving...') must use aria-live regions. Semantic HTML (main, nav, article) required.",
+      "keyboard_navigation": "Logical tab order (top-left to bottom-right). Enter/Space to activate buttons. Esc to close overlays."
+    }
+  }
+}

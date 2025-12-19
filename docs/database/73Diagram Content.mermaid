@@ -1,0 +1,8 @@
+erDiagram
+    TechnicianLocation {
+        DateTime timestamp PK "Time-series hypertable dimension"
+        UUID technicianId PK "Time-series hypertable dimension"
+        UUID serviceRequestId
+        DOUBLE latitude
+        DOUBLE longitude
+    }

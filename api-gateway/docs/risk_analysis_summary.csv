@@ -1,0 +1,2 @@
+"total_risks_identified","critical_risks","high_priority_risks","average_risk_score","key_risk_themes","immediate_actions_required"
+"7","0","3","14","[""Mobile Offline & Background Processing"",""Identity Management Complexity"",""Performance & SLA Compliance""]","[""Review and validate WatermelonDB sync protocol design"",""Prototype iOS background location behavior to confirm feasibility"",""Audit Azure AD B2C policy configuration plan""]"

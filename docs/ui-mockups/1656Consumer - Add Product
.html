@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Add Product | Consumer App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* 
+     * CSS ARCHITECTURE & DESIGN TOKENS
+     */
+    :root {
+      /* Colors - Primary */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-500: #6366f1;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      
+      /* Colors - Neutrals */
+      --color-white: #ffffff;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-700: #374151;
+      --color-gray-900: #111827;
+
+      /* Colors - Semantic */
+      --color-error: #dc3545;
+      --color-error-bg: #f8d7da;
+      --color-success: #28a745;
+      --color-success-bg: #d1e7dd;
+      
+      /* Typography */
+      --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-size-sm: 14px;
+      --font-size-base: 16px;
+      --font-size-lg: 18px;
+      --font-weight-regular: 400;
+      --font-weight-medium: 500;
+      --font-weight-bold: 600;
+
+      /* Spacing */
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+
+      /* Layout */
+      --header-height: 60px;
+      --bottom-nav-height: 80px;
+      --border-radius-sm: 6px;
+      --border-radius-md: 8px;
+      --border-radius-lg: 12px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      
+      /* Transitions */
+      --transition-base: 0.2s ease-in-out;
+    }
+
+    /* 
+     * GLOBAL RESET 
+     */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family-base);
+      background-color: var(--color-gray-100);
+      color: var(--color-gray-900);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      overflow: hidden; /* Prevent body scroll, handle inside app-container */
+    }
+
+    /* 
+     * APP CONTAINER (Mobile Simulation)
+     */
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      height: 100%;
+      background-color: var(--color-white);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+
+    /* 
+     * HEADER
+     */
+    .header {
+      height: var(--header-height);
+      padding: 0 var(--spacing-md);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--color-gray-200);
+      background: var(--color-white);
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    .header__btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--color-gray-700);
+      padding: var(--spacing-sm);
+      border-radius: var(--border-radius-sm);
+    }
+
+    .header__btn:hover {
+      background-color: var(--color-gray-50);
+    }
+
+    .header__title {
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-gray-900);
+    }
+
+    /* 
+     * TAB SWITCHER
+     */
+    .mode-switcher {
+      padding: var(--spacing-md);
+      background: var(--color-white);
+    }
+
+    .tabs {
+      display: flex;
+      background-color: var(--color-gray-100);
+      padding: 4px;
+      border-radius: var(--border-radius-md);
+      position: relative;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 8px;
+      text-align: center;
+      border: none;
+      background: transparent;
+      color: var(--color-gray-500);
+      font-weight: var(--font-weight-medium);
+      font-size: var(--font-size-sm);
+      border-radius: var(--border-radius-sm);
+      cursor: pointer;
+      transition: color var(--transition-base);
+      z-index: 2;
+    }
+
+    .tab-btn.is-active {
+      color: var(--color-primary-600);
+      background-color: var(--color-white);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* 
+     * SCROLLABLE CONTENT AREA
+     */
+    .content-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 var(--spacing-md) var(--bottom-nav-height);
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* 
+     * SCAN MODE UI
+     */
+    .scan-view {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+      background: #000;
+      position: absolute;
+      top: var(--header-height);
+      left: 0;
+      width: 100%;
+      bottom: 0;
+      z-index: 20;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .scan-view.is-visible {
+      display: flex;
+    }
+
+    .camera-viewport {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .camera-feed-simulation {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.6;
+      background: url('https://images.unsplash.com/photo-1615915233159-28c03566a7b3?q=80&w=1000&auto=format&fit=crop') no-repeat center center;
+      background-size: cover;
+    }
+
+    .scan-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .scan-frame {
+      width: 280px;
+      height: 280px;
+      border: 2px solid var(--color-white);
+      border-radius: 12px;
+      position: relative;
+      box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.5);
+    }
+
+    .scan-frame::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 10%;
+      right: 10%;
+      height: 2px;
+      background: var(--color-error);
+      animation: scan-line 2s infinite linear;
+      box-shadow: 0 0 4px var(--color-error);
+    }
+
+    .scan-instruction {
+      margin-top: var(--spacing-xl);
+      color: var(--color-white);
+      text-align: center;
+      font-weight: var(--font-weight-medium);
+    }
+
+    .scan-actions {
+      position: absolute;
+      bottom: 40px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: var(--spacing-lg);
+    }
+
+    .scan-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    /* 
+     * FORM ELEMENTS
+     */
+    .form-group {
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .form-label {
+      display: block;
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-medium);
+      color: var(--color-gray-700);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--border-radius-sm);
+      font-size: var(--font-size-base);
+      color: var(--color-gray-900);
+      transition: all var(--transition-base);
+      background-color: var(--color-white);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--color-primary-600);
+      box-shadow: 0 0 0 3px var(--color-primary-100);
+    }
+
+    .form-input:disabled {
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-500);
+      cursor: not-allowed;
+    }
+
+    .input-with-icon {
+      position: relative;
+    }
+
+    .input-with-icon .form-input {
+      padding-right: 44px;
+    }
+
+    .input-icon-btn {
+      position: absolute;
+      right: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      padding: 8px;
+      cursor: pointer;
+      color: var(--color-primary-600);
+    }
+
+    /* 
+     * UPLOAD ZONE 
+     */
+    .upload-zone {
+      border: 2px dashed var(--color-gray-300);
+      border-radius: var(--border-radius-md);
+      padding: var(--spacing-lg);
+      text-align: center;
+      background-color: var(--color-gray-50);
+      cursor: pointer;
+      transition: all var(--transition-base);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .upload-zone:hover, .upload-zone.is-dragover {
+      border-color: var(--color-primary-500);
+      background-color: var(--color-primary-50);
+    }
+
+    .upload-zone__icon {
+      color: var(--color-gray-400);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .upload-zone__text {
+      color: var(--color-gray-600);
+      font-size: var(--font-size-sm);
+    }
+
+    .upload-zone__link {
+      color: var(--color-primary-600);
+      font-weight: var(--font-weight-medium);
+    }
+
+    /* 
+     * OCR PREVIEW CARD
+     */
+    .ocr-preview {
+      display: none;
+      background: var(--color-primary-50);
+      border: 1px solid var(--color-primary-100);
+      border-radius: var(--border-radius-md);
+      padding: var(--spacing-md);
+      margin-bottom: var(--spacing-lg);
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+
+    .ocr-preview.is-visible {
+      display: flex;
+    }
+
+    .ocr-thumbnail {
+      width: 48px;
+      height: 48px;
+      border-radius: 4px;
+      object-fit: cover;
+      background-color: var(--color-gray-200);
+    }
+
+    .ocr-info {
+      flex: 1;
+    }
+
+    .ocr-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-primary-700);
+      text-transform: uppercase;
+    }
+
+    /* 
+     * FOOTER ACTIONS 
+     */
+    .footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: var(--spacing-md);
+      background: var(--color-white);
+      border-top: 1px solid var(--color-gray-200);
+      z-index: 5;
+    }
+
+    .btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 20px;
+      border-radius: var(--border-radius-sm);
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-bold);
+      cursor: pointer;
+      border: none;
+      transition: all var(--transition-base);
+    }
+
+    .btn-primary {
+      background-color: var(--color-primary-600);
+      color: var(--color-white);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--color-primary-700);
+    }
+
+    .btn-primary:disabled {
+      background-color: var(--color-gray-200);
+      color: var(--color-gray-400);
+      cursor: not-allowed;
+    }
+
+    /* 
+     * NOTIFICATIONS / TOAST
+     */
+    .toast {
+      position: absolute;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--color-gray-900);
+      color: var(--color-white);
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toast.is-visible {
+      opacity: 1;
+    }
+
+    .toast-success {
+      background: var(--color-success);
+    }
+
+    /* 
+     * ANIMATIONS
+     */
+    @keyframes scan-line {
+      0% { top: 10%; opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { top: 90%; opacity: 0; }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: var(--color-white);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <button class="header__btn" aria-label="Go back">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <h1 class="header__title">Add Product</h1>
+      <button class="header__btn" style="visibility: hidden;">
+        <!-- Placeholder for symmetry -->
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/></svg>
+      </button>
+    </header>
+
+    <!-- Mode Switcher -->
+    <div class="mode-switcher">
+      <div class="tabs" role="tablist">
+        <button class="tab-btn is-active" id="tab-manual" role="tab" aria-selected="true" onclick="switchMode('manual')">Manual Entry</button>
+        <button class="tab-btn" id="tab-scan" role="tab" aria-selected="false" onclick="switchMode('scan')">Scan Barcode</button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="content-area" id="main-content">
+      
+      <!-- Invoice Upload (OCR Trigger) -->
+      <section class="form-group">
+        <label class="form-label">Product Invoice (Optional - Auto-fill)</label>
+        <div class="upload-zone" id="invoice-dropzone" onclick="triggerFileUpload()" role="button" tabindex="0" aria-label="Upload invoice to auto-fill form">
+          <div class="upload-zone__icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <div class="upload-zone__text">
+            <span class="upload-zone__link">Click to upload</span> or drag and drop<br>
+            PDF, JPG or PNG (max. 5MB)
+          </div>
+          <input type="file" id="file-input" hidden accept="image/*,.pdf" onchange="handleFileUpload(this)">
+        </div>
+
+        <!-- OCR Processing/Success State -->
+        <div class="ocr-preview" id="ocr-status-card">
+          <img src="" alt="Invoice thumbnail" class="ocr-thumbnail" id="ocr-img-preview">
+          <div class="ocr-info">
+            <div id="ocr-status-text" class="ocr-status">
+              <div class="spinner" style="border-color: var(--color-primary-600); border-top-color: transparent; margin-right: 8px;"></div>
+              Processing Invoice...
+            </div>
+            <div style="font-size: 12px; color: var(--color-gray-500); margin-top: 2px;" id="ocr-detail-text">Extracting details...</div>
+          </div>
+          <button class="header__btn" onclick="clearInvoice()" aria-label="Remove invoice">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- Manual Form Fields -->
+      <form id="product-form" onsubmit="handleSubmit(event)">
+        <div class="form-group">
+          <label class="form-label" for="brand">Brand</label>
+          <select class="form-input" id="brand" required>
+            <option value="" disabled selected>Select Brand</option>
+            <option value="samsung">Samsung</option>
+            <option value="lg">LG</option>
+            <option value="sony">Sony</option>
+            <option value="apple">Apple</option>
+            <option value="whirlpool">Whirlpool</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="model">Model Number</label>
+          <input type="text" class="form-input" id="model" placeholder="e.g. WH-1000XM4" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="serial">Serial Number</label>
+          <div class="input-with-icon">
+            <input type="text" class="form-input" id="serial" placeholder="e.g. SN123456789" required>
+            <button type="button" class="input-icon-btn" onclick="switchMode('scan')" aria-label="Scan serial number">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="purchase-date">Purchase Date</label>
+          <input type="date" class="form-input" id="purchase-date" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="category">Category</label>
+          <select class="form-input" id="category">
+            <option value="" disabled selected>Select Category</option>
+            <option value="electronics">Electronics</option>
+            <option value="appliances">Home Appliances</option>
+            <option value="computers">Computers</option>
+          </select>
+        </div>
+      </form>
+      
+      <!-- Spacing for bottom fixed footer -->
+      <div style="height: 20px;"></div>
+    </main>
+
+    <!-- Footer Action -->
+    <footer class="footer">
+      <button class="btn btn-primary" id="submit-btn" onclick="document.getElementById('product-form').dispatchEvent(new Event('submit'))">
+        Register Product
+      </button>
+    </footer>
+
+    <!-- Camera Overlay (Scan Mode) -->
+    <div class="scan-view" id="scan-overlay" aria-hidden="true">
+      <div class="camera-viewport">
+        <div class="camera-feed-simulation"></div>
+        <div class="scan-overlay">
+          <div class="scan-frame"></div>
+          <p class="scan-instruction">Align barcode within frame</p>
+          
+          <div class="scan-actions">
+            <button class="scan-btn" onclick="closeScanMode()" aria-label="Close scanner">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <button class="scan-btn" style="background: var(--color-white); color: var(--color-primary-600);" onclick="simulateScanSuccess()" aria-label="Capture">
+              <div style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid currentColor;"></div>
+            </button>
+            <button class="scan-btn" aria-label="Toggle flash">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      <span id="toast-message">Operation successful</span>
+    </div>
+
+  </div>
+
+  <script>
+    /* 
+     * INTERACTION LOGIC
+     */
+
+    // State Management
+    const state = {
+      isScanning: false,
+      ocrProcessing: false,
+      formDirty: false
+    };
+
+    // DOM Elements
+    const scanOverlay = document.getElementById('scan-overlay');
+    const tabManual = document.getElementById('tab-manual');
+    const tabScan = document.getElementById('tab-scan');
+    const invoiceDropzone = document.getElementById('invoice-dropzone');
+    const ocrPreview = document.getElementById('ocr-status-card');
+    const ocrStatusText = document.getElementById('ocr-status-text');
+    const ocrDetailText = document.getElementById('ocr-detail-text');
+    const ocrImgPreview = document.getElementById('ocr-img-preview');
+
+    function switchMode(mode) {
+      if (mode === 'scan') {
+        state.isScanning = true;
+        scanOverlay.classList.add('is-visible');
+        scanOverlay.setAttribute('aria-hidden', 'false');
+        tabScan.classList.add('is-active');
+        tabManual.classList.remove('is-active');
+        // In a real app, this would initialize the camera stream
+      } else {
+        closeScanMode();
+      }
+    }
+
+    function closeScanMode() {
+      state.isScanning = false;
+      scanOverlay.classList.remove('is-visible');
+      scanOverlay.setAttribute('aria-hidden', 'true');
+      tabManual.classList.add('is-active');
+      tabScan.classList.remove('is-active');
+    }
+
+    function triggerFileUpload() {
+      document.getElementById('file-input').click();
+    }
+
+    function handleFileUpload(input) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        
+        // UI Updates for Processing State
+        invoiceDropzone.style.display = 'none';
+        ocrPreview.classList.add('is-visible');
+        
+        // Simulating Image Preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          ocrImgPreview.src = e.target.result;
+        }
+        reader.readAsDataURL(file);
+
+        // Simulate OCR Processing
+        simulateOCR();
+      }
+    }
+
+    function simulateOCR() {
+      state.ocrProcessing = true;
+      
+      // Simulate network delay
+      setTimeout(() => {
+        // Success State
+        state.ocrProcessing = false;
+        ocrStatusText.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" color="var(--color-success)"><polyline points="20 6 9 17 4 12"></polyline></svg> Scanned Successfully`;
+        ocrDetailText.textContent = "Data auto-filled from invoice";
+        ocrPreview.style.background = "var(--color-success-bg)";
+        ocrPreview.style.borderColor = "#badbcc";
+        
+        // Auto-fill Form
+        document.getElementById('brand').value = "sony";
+        document.getElementById('model').value = "WH-1000XM4";
+        document.getElementById('serial').value = "S01-99887766";
+        document.getElementById('purchase-date').value = "2023-10-15";
+        document.getElementById('category').value = "electronics";
+        
+        showToast('Data extracted from invoice!', 'success');
+      }, 2000);
+    }
+
+    function clearInvoice() {
+      document.getElementById('file-input').value = '';
+      invoiceDropzone.style.display = 'block';
+      ocrPreview.classList.remove('is-visible');
+      
+      // Reset OCR card styles
+      ocrStatusText.innerHTML = `<div class="spinner" style="border-color: var(--color-primary-600); border-top-color: transparent; margin-right: 8px;"></div> Processing Invoice...`;
+      ocrDetailText.textContent = "Extracting details...";
+      ocrPreview.style.background = "var(--color-primary-50)";
+      ocrPreview.style.borderColor = "var(--color-primary-100)";
+    }
+
+    function simulateScanSuccess() {
+      // Simulate successful barcode scan
+      closeScanMode();
+      document.getElementById('serial').value = "8839291002";
+      document.getElementById('model').value = "GALAXY-S23";
+      document.getElementById('brand').value = "samsung";
+      showToast('Product found: Samsung Galaxy S23', 'success');
+    }
+
+    function handleSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submit-btn');
+      
+      // Basic Validation
+      const required = ['brand', 'model', 'serial', 'purchase-date'];
+      let isValid = true;
+      
+      required.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el.value) {
+          isValid = false;
+          el.style.borderColor = 'var(--color-error)';
+        } else {
+          el.style.borderColor = 'var(--color-gray-300)';
+        }
+      });
+
+      if (isValid) {
+        btn.innerHTML = '<div class="spinner"></div> Registering...';
+        btn.disabled = true;
+        
+        setTimeout(() => {
+          btn.innerHTML = 'Register Product';
+          btn.disabled = false;
+          showToast('Product registered successfully!', 'success');
+          // Reset form
+          document.getElementById('product-form').reset();
+          clearInvoice();
+        }, 1500);
+      } else {
+        showToast('Please fill in all required fields', 'error');
+      }
+    }
+
+    function showToast(message, type = 'default') {
+      const toast = document.getElementById('toast');
+      const text = document.getElementById('toast-message');
+      
+      text.textContent = message;
+      if (type === 'success') {
+        toast.style.background = 'var(--color-success)';
+      } else if (type === 'error') {
+        toast.style.background = 'var(--color-error)';
+      } else {
+        toast.style.background = 'var(--color-gray-900)';
+      }
+      
+      toast.classList.add('is-visible');
+      setTimeout(() => {
+        toast.classList.remove('is-visible');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

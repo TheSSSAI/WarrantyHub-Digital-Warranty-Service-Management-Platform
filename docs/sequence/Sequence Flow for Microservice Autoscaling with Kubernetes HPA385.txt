@@ -1,0 +1,1264 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-OP-001
+
+## 1.2 Name
+
+Microservice Autoscaling with Kubernetes HPA
+
+## 1.3 Description
+
+As user traffic increases, a microservice's CPU utilization exceeds its HPA threshold, causing Kubernetes to automatically provision and start new container instances (pods) to handle the load.
+
+## 1.4 Type
+
+🔹 OperationalFlow
+
+## 1.5 Purpose
+
+To ensure the system remains responsive and available during traffic spikes by automatically scaling horizontally, as required by REQ-SCAL-001.
+
+## 1.6 Complexity
+
+Medium
+
+## 1.7 Priority
+
+🔴 High
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+*No items available*
+
+## 1.10 Key Interactions
+
+- An increase in API calls to the ProductService causes its running pods' average CPU utilization to rise above the HPA target (e.g., 75%).
+- The Kubernetes Metrics Server scrapes and aggregates these metrics from each pod.
+- The Horizontal Pod Autoscaler (HPA) for the ProductService deployment polls the Metrics Server periodically.
+- The HPA observes the sustained high utilization and calculates the required number of replicas (e.g., from 3 to 5).
+- The HPA updates the `replicas` field on the ProductService's Deployment object.
+- The Kubernetes ReplicaSet controller detects the change and creates new Pods to meet the desired count.
+- The Kubernetes scheduler places the new pods onto available nodes.
+- The new pods start, pass their readiness probes (see SEQ-OP-002), and begin receiving traffic from the Kubernetes Service load balancer.
+
+## 1.11 Triggers
+
+- Sustained increase in CPU or memory utilization of a microservice deployment beyond a configured threshold.
+
+## 1.12 Outcomes
+
+- The number of running instances for the service increases seamlessly.
+- The load is distributed across more instances, reducing the average CPU utilization back to the target level.
+- The system maintains its performance SLOs under increased load.
+
+## 1.13 Business Rules
+
+- Microservices must be stateless to allow for safe horizontal scaling.
+- Autoscaling is configured based on CPU and memory usage with defined min/max replica counts.
+
+## 1.14 Error Scenarios
+
+- The cluster has insufficient node resources to schedule new pods.
+- New pods fail their readiness probes and never enter the load balancer rotation.
+- The HPA is misconfigured with a threshold that is too high or too low.
+
+## 1.15 Integration Points
+
+- Azure Kubernetes Service (AKS)
+- Kubernetes Horizontal Pod Autoscaler (HPA)
+- Kubernetes Metrics Server
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-OP-001
+
+## 2.2 Name
+
+Implementation: Microservice Horizontal Pod Autoscaling
+
+## 2.3 Description
+
+Technical sequence detailing the automated horizontal scaling of a microservice (ProductService) in an Azure Kubernetes Service (AKS) cluster. The process is initiated by a sustained increase in CPU utilization, triggering the Horizontal Pod Autoscaler (HPA) to provision new pods, which are then integrated into the service mesh to handle the increased load, thereby maintaining performance Service Level Objectives (SLOs). This sequence directly implements the scalability requirement REQ-SCAL-001.
+
+## 2.4 Participants
+
+### 2.4.1 Gateway
+
+#### 2.4.1.1 Repository Id
+
+api-gateway-001
+
+#### 2.4.1.2 Display Name
+
+API Gateway
+
+#### 2.4.1.3 Type
+
+🔹 Gateway
+
+#### 2.4.1.4 Technology
+
+YARP on .NET 8
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #1168BD |
+| Stereotype | External Traffic Source |
+
+### 2.4.2.0 Kubernetes Resource
+
+#### 2.4.2.1 Repository Id
+
+k8s-service-lb
+
+#### 2.4.2.2 Display Name
+
+K8s Service (Load Balancer)
+
+#### 2.4.2.3 Type
+
+🔹 Kubernetes Resource
+
+#### 2.4.2.4 Technology
+
+Kubernetes Service (Type: ClusterIP)
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #3498DB |
+| Stereotype | Network |
+
+### 2.4.3.0 Containerized Service
+
+#### 2.4.3.1 Repository Id
+
+product-service-003
+
+#### 2.4.3.2 Display Name
+
+ProductService Pod
+
+#### 2.4.3.3 Type
+
+🔹 Containerized Service
+
+#### 2.4.3.4 Technology
+
+.NET 8 on Docker
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #2ECC71 |
+| Stereotype | Microservice |
+
+### 2.4.4.0 Kubernetes Component
+
+#### 2.4.4.1 Repository Id
+
+k8s-metrics-server
+
+#### 2.4.4.2 Display Name
+
+K8s Metrics Server
+
+#### 2.4.4.3 Type
+
+🔹 Kubernetes Component
+
+#### 2.4.4.4 Technology
+
+metrics-server
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #F1C40F |
+| Stereotype | Monitoring |
+
+### 2.4.5.0 Kubernetes Controller
+
+#### 2.4.5.1 Repository Id
+
+k8s-hpa-controller
+
+#### 2.4.5.2 Display Name
+
+K8s HPA Controller
+
+#### 2.4.5.3 Type
+
+🔹 Kubernetes Controller
+
+#### 2.4.5.4 Technology
+
+kube-controller-manager
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #E67E22 |
+| Stereotype | Control Plane |
+
+### 2.4.6.0 Kubernetes Component
+
+#### 2.4.6.1 Repository Id
+
+k8s-api-server
+
+#### 2.4.6.2 Display Name
+
+K8s API Server
+
+#### 2.4.6.3 Type
+
+🔹 Kubernetes Component
+
+#### 2.4.6.4 Technology
+
+kube-apiserver
+
+#### 2.4.6.5 Order
+
+6
+
+#### 2.4.6.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #E74C3C |
+| Stereotype | Control Plane Hub |
+
+### 2.4.7.0 Kubernetes Controller
+
+#### 2.4.7.1 Repository Id
+
+k8s-replicaset-controller
+
+#### 2.4.7.2 Display Name
+
+K8s ReplicaSet Controller
+
+#### 2.4.7.3 Type
+
+🔹 Kubernetes Controller
+
+#### 2.4.7.4 Technology
+
+kube-controller-manager
+
+#### 2.4.7.5 Order
+
+7
+
+#### 2.4.7.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #E67E22 |
+| Stereotype | Control Plane |
+
+### 2.4.8.0 Kubernetes Controller
+
+#### 2.4.8.1 Repository Id
+
+k8s-scheduler
+
+#### 2.4.8.2 Display Name
+
+K8s Scheduler
+
+#### 2.4.8.3 Type
+
+🔹 Kubernetes Controller
+
+#### 2.4.8.4 Technology
+
+kube-scheduler
+
+#### 2.4.8.5 Order
+
+8
+
+#### 2.4.8.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #E67E22 |
+| Stereotype | Control Plane |
+
+### 2.4.9.0 Infrastructure
+
+#### 2.4.9.1 Repository Id
+
+aks-node
+
+#### 2.4.9.2 Display Name
+
+AKS Node (Kubelet)
+
+#### 2.4.9.3 Type
+
+🔹 Infrastructure
+
+#### 2.4.9.4 Technology
+
+Azure VM with Kubelet
+
+#### 2.4.9.5 Order
+
+9
+
+#### 2.4.9.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | node |
+| Color | #95A5A6 |
+| Stereotype | Compute |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Request
+
+#### 2.5.1.1 Source Id
+
+api-gateway-001
+
+#### 2.5.1.2 Target Id
+
+k8s-service-lb
+
+#### 2.5.1.3 Message
+
+1. Forwards high volume of API requests
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Request
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+HTTP Responses
+
+#### 2.5.1.8 Has Return
+
+✅ Yes
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTP/1.1 |
+| Method | POST, GET, etc. |
+| Parameters | Standard API request payloads |
+| Authentication | N/A (Handled at Gateway) |
+| Error Handling | Standard HTTP error codes (4xx, 5xx) |
+| Performance | Increased request rate leads to higher downstream ... |
+
+### 2.5.2.0 Request
+
+#### 2.5.2.1 Source Id
+
+k8s-service-lb
+
+#### 2.5.2.2 Target Id
+
+product-service-003
+
+#### 2.5.2.3 Message
+
+2. Distributes requests to existing pods (e.g., 3 replicas)
+
+#### 2.5.2.4 Sequence Number
+
+2
+
+#### 2.5.2.5 Type
+
+🔹 Request
+
+#### 2.5.2.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7 Return Message
+
+Responses
+
+#### 2.5.2.8 Has Return
+
+✅ Yes
+
+#### 2.5.2.9 Is Activation
+
+✅ Yes
+
+#### 2.5.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTP |
+| Method | N/A |
+| Parameters | Traffic is load balanced based on the Service's se... |
+| Authentication | N/A (Intra-cluster) |
+| Error Handling | N/A |
+| Performance | Average CPU utilization on existing pods rises abo... |
+
+### 2.5.3.0 Metrics Collection
+
+#### 2.5.3.1 Source Id
+
+k8s-metrics-server
+
+#### 2.5.3.2 Target Id
+
+product-service-003
+
+#### 2.5.3.3 Message
+
+3. Scrapes pod resource utilization metrics
+
+#### 2.5.3.4 Sequence Number
+
+3
+
+#### 2.5.3.5 Type
+
+🔹 Metrics Collection
+
+#### 2.5.3.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7 Return Message
+
+CPU/Memory usage data
+
+#### 2.5.3.8 Has Return
+
+✅ Yes
+
+#### 2.5.3.9 Is Activation
+
+❌ No
+
+#### 2.5.3.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Internal |
+| Method | Scrape from Kubelet Summary API |
+| Parameters | Pod name, namespace |
+| Authentication | ServiceAccount Token |
+| Error Handling | Metrics Server will report an error if a pod's Kub... |
+| Performance | Scraping occurs at a fixed interval (e.g., every 6... |
+
+### 2.5.4.0 API Call
+
+#### 2.5.4.1 Source Id
+
+k8s-hpa-controller
+
+#### 2.5.4.2 Target Id
+
+k8s-metrics-server
+
+#### 2.5.4.3 Message
+
+4. Polls for aggregated metrics for ProductService deployment
+
+#### 2.5.4.4 Sequence Number
+
+4
+
+#### 2.5.4.5 Type
+
+🔹 API Call
+
+#### 2.5.4.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7 Return Message
+
+Aggregated CPU Utilization (e.g., 85%)
+
+#### 2.5.4.8 Has Return
+
+✅ Yes
+
+#### 2.5.4.9 Is Activation
+
+✅ Yes
+
+#### 2.5.4.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Kubernetes API (REST) |
+| Method | GET /apis/metrics.k8s.io/v1beta1/namespaces/{ns}/p... |
+| Parameters | Namespace, Label Selector for ProductService |
+| Authentication | ServiceAccount Token |
+| Error Handling | HPA logs an error if Metrics Server is unavailable... |
+| Performance | Polling occurs at a fixed interval (e.g., every 15... |
+
+### 2.5.5.0 Internal Calculation
+
+#### 2.5.5.1 Source Id
+
+k8s-hpa-controller
+
+#### 2.5.5.2 Target Id
+
+k8s-hpa-controller
+
+#### 2.5.5.3 Message
+
+5. Calculates required replicas based on utilization (85%) vs target (75%)
+
+#### 2.5.5.4 Sequence Number
+
+5
+
+#### 2.5.5.5 Type
+
+🔹 Internal Calculation
+
+#### 2.5.5.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7 Return Message
+
+Desired replicas = 5
+
+#### 2.5.5.8 Has Return
+
+✅ Yes
+
+#### 2.5.5.9 Is Activation
+
+❌ No
+
+#### 2.5.5.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Internal Logic |
+| Method | desiredReplicas = ceil[currentReplicas * ( current... |
+| Parameters | current=3, currentMetric=85, desiredMetric=75 |
+| Authentication | N/A |
+| Error Handling | Calculation is constrained by minReplicas and maxR... |
+| Performance | Calculation is fast. A stabilization window (coold... |
+
+### 2.5.6.0 API Call
+
+#### 2.5.6.1 Source Id
+
+k8s-hpa-controller
+
+#### 2.5.6.2 Target Id
+
+k8s-api-server
+
+#### 2.5.6.3 Message
+
+6. Updates Deployment's replica count
+
+#### 2.5.6.4 Sequence Number
+
+6
+
+#### 2.5.6.5 Type
+
+🔹 API Call
+
+#### 2.5.6.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7 Return Message
+
+200 OK
+
+#### 2.5.6.8 Has Return
+
+✅ Yes
+
+#### 2.5.6.9 Is Activation
+
+❌ No
+
+#### 2.5.6.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Kubernetes API (REST) |
+| Method | PATCH /apis/apps/v1/namespaces/{ns}/deployments/pr... |
+| Parameters | Payload: { 'spec': { 'replicas': 5 } } |
+| Authentication | ServiceAccount Token (with permissions to update D... |
+| Error Handling | API server rejects the request if the HPA controll... |
+| Performance | This is a lightweight metadata update. |
+
+### 2.5.7.0 Event Subscription
+
+#### 2.5.7.1 Source Id
+
+k8s-replicaset-controller
+
+#### 2.5.7.2 Target Id
+
+k8s-api-server
+
+#### 2.5.7.3 Message
+
+7. Detects change in desired replica count via WATCH
+
+#### 2.5.7.4 Sequence Number
+
+7
+
+#### 2.5.7.5 Type
+
+🔹 Event Subscription
+
+#### 2.5.7.6 Is Synchronous
+
+❌ No
+
+#### 2.5.7.7 Return Message
+
+Deployment/ReplicaSet Updated Event
+
+#### 2.5.7.8 Has Return
+
+✅ Yes
+
+#### 2.5.7.9 Is Activation
+
+✅ Yes
+
+#### 2.5.7.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Kubernetes API (WATCH) |
+| Method | WATCH /apis/apps/v1/replicasets |
+| Parameters | N/A |
+| Authentication | ServiceAccount Token |
+| Error Handling | Controller will retry if the watch connection is l... |
+| Performance | Event-driven, near real-time detection. |
+
+### 2.5.8.0 API Call
+
+#### 2.5.8.1 Source Id
+
+k8s-replicaset-controller
+
+#### 2.5.8.2 Target Id
+
+k8s-api-server
+
+#### 2.5.8.3 Message
+
+8. Creates new Pod objects to satisfy new replica count (2 new pods)
+
+#### 2.5.8.4 Sequence Number
+
+8
+
+#### 2.5.8.5 Type
+
+🔹 API Call
+
+#### 2.5.8.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.8.7 Return Message
+
+201 Created
+
+#### 2.5.8.8 Has Return
+
+✅ Yes
+
+#### 2.5.8.9 Is Activation
+
+❌ No
+
+#### 2.5.8.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Kubernetes API (REST) |
+| Method | POST /api/v1/namespaces/{ns}/pods |
+| Parameters | Pod template from the ReplicaSet specification. |
+| Authentication | ServiceAccount Token |
+| Error Handling | API Server will reject if the pod spec is invalid. |
+| Performance | N/A |
+
+### 2.5.9.0 Event Subscription
+
+#### 2.5.9.1 Source Id
+
+k8s-scheduler
+
+#### 2.5.9.2 Target Id
+
+k8s-api-server
+
+#### 2.5.9.3 Message
+
+9. Detects new unscheduled pods via WATCH
+
+#### 2.5.9.4 Sequence Number
+
+9
+
+#### 2.5.9.5 Type
+
+🔹 Event Subscription
+
+#### 2.5.9.6 Is Synchronous
+
+❌ No
+
+#### 2.5.9.7 Return Message
+
+Pod Created Event
+
+#### 2.5.9.8 Has Return
+
+✅ Yes
+
+#### 2.5.9.9 Is Activation
+
+✅ Yes
+
+#### 2.5.9.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Kubernetes API (WATCH) |
+| Method | WATCH /api/v1/pods?fieldSelector=spec.nodeName=='' |
+| Parameters | Filter for pods without an assigned node. |
+| Authentication | ServiceAccount Token |
+| Error Handling | Scheduler will retry if watch is lost. |
+| Performance | Event-driven, near real-time detection. |
+
+### 2.5.10.0 Scheduling Logic
+
+#### 2.5.10.1 Source Id
+
+k8s-scheduler
+
+#### 2.5.10.2 Target Id
+
+aks-node
+
+#### 2.5.10.3 Message
+
+10. Evaluates cluster nodes and selects best fit for new pods
+
+#### 2.5.10.4 Sequence Number
+
+10
+
+#### 2.5.10.5 Type
+
+🔹 Scheduling Logic
+
+#### 2.5.10.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.10.7 Return Message
+
+Selected Node Name
+
+#### 2.5.10.8 Has Return
+
+✅ Yes
+
+#### 2.5.10.9 Is Activation
+
+❌ No
+
+#### 2.5.10.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Internal Logic |
+| Method | Filtering (resource requests, taints/tolerations) ... |
+| Parameters | Pod resource requirements, Node available capacity... |
+| Authentication | N/A |
+| Error Handling | If no node has sufficient resources, the pod remai... |
+| Performance | Scheduling decisions are typically very fast (<1s)... |
+
+### 2.5.11.0 API Call
+
+#### 2.5.11.1 Source Id
+
+k8s-scheduler
+
+#### 2.5.11.2 Target Id
+
+k8s-api-server
+
+#### 2.5.11.3 Message
+
+11. Binds pod to the selected node
+
+#### 2.5.11.4 Sequence Number
+
+11
+
+#### 2.5.11.5 Type
+
+🔹 API Call
+
+#### 2.5.11.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.11.7 Return Message
+
+201 Created (Binding)
+
+#### 2.5.11.8 Has Return
+
+✅ Yes
+
+#### 2.5.11.9 Is Activation
+
+❌ No
+
+#### 2.5.11.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Kubernetes API (REST) |
+| Method | POST /api/v1/namespaces/{ns}/pods/{pod-name}/bindi... |
+| Parameters | Payload: { 'target': { 'name': 'node-name' } } |
+| Authentication | ServiceAccount Token |
+| Error Handling | If the pod is already bound, this will fail. |
+| Performance | N/A |
+
+### 2.5.12.0 Event Subscription
+
+#### 2.5.12.1 Source Id
+
+aks-node
+
+#### 2.5.12.2 Target Id
+
+k8s-api-server
+
+#### 2.5.12.3 Message
+
+12. Kubelet detects pod assignment via WATCH
+
+#### 2.5.12.4 Sequence Number
+
+12
+
+#### 2.5.12.5 Type
+
+🔹 Event Subscription
+
+#### 2.5.12.6 Is Synchronous
+
+❌ No
+
+#### 2.5.12.7 Return Message
+
+Pod Update Event
+
+#### 2.5.12.8 Has Return
+
+✅ Yes
+
+#### 2.5.12.9 Is Activation
+
+✅ Yes
+
+#### 2.5.12.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Kubernetes API (WATCH) |
+| Method | WATCH /api/v1/pods?fieldSelector=spec.nodeName=={m... |
+| Parameters | Filter for pods assigned to this node. |
+| Authentication | Kubelet Certificate |
+| Error Handling | Kubelet will retry on connection failure. |
+| Performance | Event-driven. |
+
+### 2.5.13.0 Health Check
+
+#### 2.5.13.1 Source Id
+
+aks-node
+
+#### 2.5.13.2 Target Id
+
+product-service-003
+
+#### 2.5.13.3 Message
+
+13. Starts container, runs readiness probe
+
+#### 2.5.13.4 Sequence Number
+
+13
+
+#### 2.5.13.5 Type
+
+🔹 Health Check
+
+#### 2.5.13.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.13.7 Return Message
+
+HTTP 200 OK
+
+#### 2.5.13.8 Has Return
+
+✅ Yes
+
+#### 2.5.13.9 Is Activation
+
+✅ Yes
+
+#### 2.5.13.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTP |
+| Method | GET /health/ready |
+| Parameters | Configured in Deployment spec (initialDelaySeconds... |
+| Authentication | N/A |
+| Error Handling | If the probe fails 'failureThreshold' times, the p... |
+| Performance | Probes should be lightweight and fast. |
+
+### 2.5.14.0 API Call
+
+#### 2.5.14.1 Source Id
+
+aks-node
+
+#### 2.5.14.2 Target Id
+
+k8s-api-server
+
+#### 2.5.14.3 Message
+
+14. Updates pod status to 'Ready' after probe succeeds
+
+#### 2.5.14.4 Sequence Number
+
+14
+
+#### 2.5.14.5 Type
+
+🔹 API Call
+
+#### 2.5.14.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.14.7 Return Message
+
+200 OK
+
+#### 2.5.14.8 Has Return
+
+✅ Yes
+
+#### 2.5.14.9 Is Activation
+
+❌ No
+
+#### 2.5.14.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Kubernetes API (REST) |
+| Method | PATCH /api/v1/namespaces/{ns}/pods/{pod-name}/stat... |
+| Parameters | Payload: { 'status': { 'conditions': [ { 'type': '... |
+| Authentication | Kubelet Certificate |
+| Error Handling | Retry on failure. |
+| Performance | N/A |
+
+### 2.5.15.0 Event Subscription
+
+#### 2.5.15.1 Source Id
+
+k8s-service-lb
+
+#### 2.5.15.2 Target Id
+
+k8s-api-server
+
+#### 2.5.15.3 Message
+
+15. Endpoint controller detects 'Ready' pod and adds its IP to the Service's endpoint list
+
+#### 2.5.15.4 Sequence Number
+
+15
+
+#### 2.5.15.5 Type
+
+🔹 Event Subscription
+
+#### 2.5.15.6 Is Synchronous
+
+❌ No
+
+#### 2.5.15.7 Return Message
+
+Pod Ready Event
+
+#### 2.5.15.8 Has Return
+
+✅ Yes
+
+#### 2.5.15.9 Is Activation
+
+❌ No
+
+#### 2.5.15.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Kubernetes API (WATCH) |
+| Method | WATCH /api/v1/pods |
+| Parameters | Watching for pods matching the service selector th... |
+| Authentication | ServiceAccount Token |
+| Error Handling | Controller retries on failure. |
+| Performance | Updates to the endpoint object are propagated to k... |
+
+### 2.5.16.0 Request
+
+#### 2.5.16.1 Source Id
+
+k8s-service-lb
+
+#### 2.5.16.2 Target Id
+
+product-service-003
+
+#### 2.5.16.3 Message
+
+16. Begins forwarding new traffic to the new pods
+
+#### 2.5.16.4 Sequence Number
+
+16
+
+#### 2.5.16.5 Type
+
+🔹 Request
+
+#### 2.5.16.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.16.7 Return Message
+
+Responses
+
+#### 2.5.16.8 Has Return
+
+✅ Yes
+
+#### 2.5.16.9 Is Activation
+
+❌ No
+
+#### 2.5.16.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTP |
+| Method | N/A |
+| Parameters | N/A |
+| Authentication | N/A |
+| Error Handling | N/A |
+| Performance | Load is now distributed across 5 pods instead of 3... |
+
+### 2.5.17.0 API Call
+
+#### 2.5.17.1 Source Id
+
+k8s-hpa-controller
+
+#### 2.5.17.2 Target Id
+
+k8s-metrics-server
+
+#### 2.5.17.3 Message
+
+17. [Later] Polls again and observes stabilized metrics
+
+#### 2.5.17.4 Sequence Number
+
+17
+
+#### 2.5.17.5 Type
+
+🔹 API Call
+
+#### 2.5.17.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.17.7 Return Message
+
+Aggregated CPU Utilization (e.g., 74%)
+
+#### 2.5.17.8 Has Return
+
+✅ Yes
+
+#### 2.5.17.9 Is Activation
+
+❌ No
+
+#### 2.5.17.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Kubernetes API (REST) |
+| Method | GET /apis/metrics.k8s.io/v1beta1/... |
+| Parameters | Same as step 4 |
+| Authentication | ServiceAccount Token |
+| Error Handling | N/A |
+| Performance | The metric is now below the target, so no further ... |
+
+## 2.6.0.0 Notes
+
+### 2.6.1.0 Content
+
+#### 2.6.1.1 Content
+
+This entire process is autonomous. It is configured declaratively via a Kubernetes 'HorizontalPodAutoscaler' resource, which is managed as code in the infrastructure repository (GitOps).
+
+#### 2.6.1.2 Position
+
+top
+
+#### 2.6.1.3 Participant Id
+
+*Not specified*
+
+#### 2.6.1.4 Sequence Number
+
+*Not specified*
+
+### 2.6.2.0 Content
+
+#### 2.6.2.1 Content
+
+ERROR SCENARIO: If cluster nodes lack sufficient CPU/Memory, new pods will get stuck in 'Pending' state. This triggers alerts on pod status and node resource pressure.
+
+#### 2.6.2.2 Position
+
+bottom
+
+#### 2.6.2.3 Participant Id
+
+k8s-scheduler
+
+#### 2.6.2.4 Sequence Number
+
+10
+
+### 2.6.3.0 Content
+
+#### 2.6.3.1 Content
+
+ERROR SCENARIO: If a new pod fails its readiness probe (e.g., due to a bad configuration or DB connection failure), it will not be added to the Service's endpoints and will not receive traffic, protecting users from the faulty instance.
+
+#### 2.6.3.2 Position
+
+bottom
+
+#### 2.6.3.3 Participant Id
+
+aks-node
+
+#### 2.6.3.4 Sequence Number
+
+13
+
+## 2.7.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | The ServiceAccounts for the HPA, ReplicaSet, and o... |
+| Performance Targets | HPA Target CPU Utilization: 75%. Min Replicas: 3. ... |
+| Error Handling Strategy | The system relies on Kubernetes' self-healing natu... |
+| Testing Considerations | The HPA configuration must be validated in a stagi... |
+| Monitoring Requirements | A Grafana dashboard must visualize key HPA metrics... |
+| Deployment Considerations | The `HorizontalPodAutoscaler` object must be defin... |
+

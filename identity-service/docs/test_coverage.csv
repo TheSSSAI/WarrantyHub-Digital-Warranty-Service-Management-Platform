@@ -1,0 +1,5 @@
+"component_name","business_criticality","technical_complexity","change_frequency","test_types_required","unit_test_coverage","integration_test_coverage","e2e_test_coverage","automation_percentage","manual_test_effort","automated_test_effort","total_test_cases","risk_mitigation_score","quality_confidence","maintenance_overhead","tool_compatibility","team_skill_alignment"
+"Infrastructure (Terraform/AKS)","Critical","High","Low","[""Static Analysis"",""Compliance"",""Smoke""]","","100","50","100","2","10","15","0.95","High","Low","Checkov, Terratest","Medium"
+"Identity (Azure AD B2C)","Critical","Very High","Low","[""Security"",""Integration"",""Flow Validation""]","","85","100","60","8","20","20","0.88","High","High","Selenium, Playwright","Low (Specialist required)"
+"Backend Microservices (NestJS)","High","Medium","High","[""Unit"",""Integration"",""Contract"",""Performance""]","95","80","40","95","5","80","250","0.98","Very High","Medium","Jest, Supertest, k6","High"
+"Mobile Application (React Native)","High","High","High","[""Unit"",""UI"",""Offline"",""Battery""]","80","60","50","70","40","60","80","0.85","Medium","High","Detox, Appium, Jest","Medium"

@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  async-processors:
+    build:
+      context: .
+      target: builder
+    command: npm run start:dev
+    environment:
+      - NODE_ENV=development
+      - APP_PORT=3000
+      - AZURE_SERVICE_BUS_CONNECTION_STRING=${AZURE_SERVICE_BUS_CONNECTION_STRING}
+      - AZURE_DOC_INTELLIGENCE_ENDPOINT=${AZURE_DOC_INTELLIGENCE_ENDPOINT}
+      - AZURE_DOC_INTELLIGENCE_KEY=${AZURE_DOC_INTELLIGENCE_KEY}
+      - PRODUCT_SERVICE_INTERNAL_URL=http://host.docker.internal:3001
+      - CRON_SCHEDULE_TRANSFER_EXPIRY=0 */5 * * * *
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - warranty-hub-network
+
+  # Azurite for local Blob Storage emulation if needed
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    networks:
+      - warranty-hub-network
+
+networks:
+  warranty-hub-network:
+    driver: bridge

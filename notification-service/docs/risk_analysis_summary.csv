@@ -1,0 +1,2 @@
+"total_risks_identified","critical_risks","high_priority_risks","average_risk_score","key_risk_themes","immediate_actions_required"
+"6","1","2","15.3","[""Mobile Device Constraints (Battery/OS)"",""Identity Management Complexity"",""Data Consistency in Offline Scenarios""]","[""Prototype Android/iOS background location services to validate library choice"",""Audit Azure AD B2C policy configuration and set up automated integration tests"",""Finalize offline sync conflict resolution strategy before mobile development begins""]"

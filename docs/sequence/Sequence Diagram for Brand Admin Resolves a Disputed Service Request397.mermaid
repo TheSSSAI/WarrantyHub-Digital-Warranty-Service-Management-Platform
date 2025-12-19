@@ -1,0 +1,35 @@
+sequenceDiagram
+    participant "Brand Admin" as BrandAdmin
+    actor "AdminWebClient" as AdminWebClient
+    participant "APIGateway" as APIGateway
+    participant "ServiceRequestService" as ServiceRequestService
+    participant "Azure Service Bus" as AzureServiceBus
+    participant "NotificationService" as NotificationService
+
+    activate AdminWebClient
+    BrandAdmin->>AdminWebClient: 1. 1. Selects 'Disputed' service request with ID: {ticketId} from dashboard.
+    activate APIGateway
+    AdminWebClient->>APIGateway: 2. 2. GET /api/v1/service-requests/{ticketId}?include=history,chat
+    APIGateway-->>AdminWebClient: 8. 200 OK with ServiceRequestDetailsDTO
+    activate ServiceRequestService
+    APIGateway->>ServiceRequestService: 3. 3. Forward Request: GET /service-requests/{ticketId}?include=history,chat
+    ServiceRequestService-->>APIGateway: 7. 200 OK with ServiceRequestDetailsDTO
+    AdminWebClient->>BrandAdmin: 9. 9. Display full service request details for review.
+    BrandAdmin->>AdminWebClient: 10. 10. Submits resolution (e.g., 'Reject Dispute') with comments.
+    AdminWebClient->>APIGateway: 11. 11. PATCH /api/v1/service-requests/{ticketId}/resolve-dispute
+    APIGateway-->>AdminWebClient: 18. 200 OK
+    APIGateway->>ServiceRequestService: 12. 12. Forward Request: PATCH /service-requests/{ticketId}/resolve-dispute
+    ServiceRequestService-->>APIGateway: 17. 200 OK
+    AdminWebClient->>BrandAdmin: 19. 19. Update UI to reflect ticket resolution.
+    activate NotificationService
+    AzureServiceBus->>NotificationService: 20. 20. Consume ServiceRequestStatusChanged event
+    NotificationService->>NotificationService: 21. 21. Process Event: Fetch user's device token.
+    NotificationService->>NotificationService: 22. 22. Send Push Notification via FCM
+
+    note over ServiceRequestService: The database update (Step 14) and event publication (Step 15) must be atomic. This is achieved us...
+    note over NotificationService: The notification flow (Steps 20-22) is fully asynchronous and decoupled from the primary resoluti...
+
+    deactivate NotificationService
+    deactivate ServiceRequestService
+    deactivate APIGateway
+    deactivate AdminWebClient

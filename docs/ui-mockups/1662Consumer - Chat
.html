@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Service Chat | Warranty Platform</title>
+  <style>
+    /* 
+     * DESIGN SYSTEM TOKENS 
+     * Extracted from provided JSON specification
+     */
+    :root {
+      /* Color Palette - Primary (Indigo) */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-500: #6366f1;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      --color-primary-900: #312e81;
+
+      /* Color Palette - Neutrals */
+      --color-white: #ffffff;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-600: #4b5563;
+      --color-gray-700: #374151;
+      --color-gray-800: #1f2937;
+      --color-gray-900: #111827;
+
+      /* Color Palette - Semantic */
+      --color-success-bg: #d1e7dd;
+      --color-success-text: #0f5132;
+      --color-warning-bg: #fff3cd;
+      --color-warning-text: #664d03;
+      --color-error-bg: #f8d7da;
+      --color-error-text: #842029;
+      --color-error-main: #dc3545;
+
+      /* Typography */
+      --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      
+      /* Spacing */
+      --spacing-4: 4px;
+      --spacing-8: 8px;
+      --spacing-12: 12px;
+      --spacing-16: 16px;
+      --spacing-24: 24px;
+      
+      /* Borders */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 9999px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --shadow-app: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    /* CSS Reset & Base Styles */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family-primary);
+      background-color: var(--color-gray-100);
+      color: var(--color-gray-900);
+      line-height: 1.5;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* App Container (Mobile Simulation on Desktop) */
+    .app-screen {
+      width: 100%;
+      height: 100%;
+      background-color: var(--color-white);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    @media (min-width: 481px) {
+      .app-screen {
+        max-width: 420px;
+        height: 85vh;
+        max-height: 844px; /* iPhone 12/13 Pro height */
+        border-radius: 24px;
+        box-shadow: var(--shadow-app);
+        overflow: hidden;
+        border: 1px solid var(--color-gray-200);
+      }
+    }
+
+    /* 
+     * COMPONENT: Header
+     */
+    .chat-header {
+      padding: var(--spacing-16);
+      background-color: var(--color-white);
+      border-bottom: 1px solid var(--color-gray-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-12);
+    }
+
+    .back-button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--color-gray-600);
+      padding: var(--spacing-4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+    
+    .back-button:hover, .back-button:focus {
+      background-color: var(--color-gray-100);
+      outline: 2px solid var(--color-primary-600);
+    }
+
+    .tech-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tech-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-gray-900);
+    }
+
+    .tech-status {
+      font-size: 12px;
+      color: var(--color-gray-500);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--color-gray-400);
+    }
+
+    .status-dot.online {
+      background-color: var(--color-success-text); /* Using success green */
+    }
+
+    .ticket-id {
+      font-size: 12px;
+      font-family: monospace;
+      background-color: var(--color-gray-100);
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+      color: var(--color-gray-600);
+    }
+
+    /* 
+     * COMPONENT: Status Banner (Connecting/Offline)
+     */
+    .status-banner {
+      padding: 6px 12px;
+      font-size: 12px;
+      text-align: center;
+      font-weight: 500;
+      display: none; /* Hidden by default */
+    }
+
+    .status-banner.connecting {
+      background-color: var(--color-primary-100);
+      color: var(--color-primary-900);
+      display: block;
+    }
+
+    .status-banner.offline {
+      background-color: var(--color-gray-800);
+      color: var(--color-white);
+      display: block;
+    }
+
+    /* 
+     * COMPONENT: Chat Area
+     */
+    .chat-area {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: var(--spacing-16);
+      background-color: var(--color-gray-50);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-16);
+      scroll-behavior: smooth;
+    }
+
+    .chat-date-separator {
+      text-align: center;
+      font-size: 11px;
+      color: var(--color-gray-500);
+      margin: var(--spacing-8) 0;
+      position: relative;
+    }
+
+    .chat-date-separator span {
+      background-color: var(--color-gray-200);
+      padding: 4px 12px;
+      border-radius: var(--radius-pill);
+    }
+
+    /* Message Bubbles */
+    .message-row {
+      display: flex;
+      flex-direction: column;
+      max-width: 85%;
+    }
+
+    .message-row.received {
+      align-self: flex-start;
+    }
+
+    .message-row.sent {
+      align-self: flex-end;
+      align-items: flex-end;
+    }
+
+    .message-sender {
+      font-size: 11px;
+      color: var(--color-gray-500);
+      margin-bottom: 4px;
+      margin-left: 4px;
+    }
+
+    .message-bubble {
+      padding: 10px 14px;
+      border-radius: 18px;
+      position: relative;
+      font-size: 14px;
+      line-height: 1.4;
+      box-shadow: var(--shadow-sm);
+      word-wrap: break-word;
+    }
+
+    .received .message-bubble {
+      background-color: var(--color-white);
+      color: var(--color-gray-900);
+      border-bottom-left-radius: 4px;
+      border: 1px solid var(--color-gray-200);
+    }
+
+    .sent .message-bubble {
+      background-color: var(--color-primary-600);
+      color: var(--color-white);
+      border-bottom-right-radius: 4px;
+    }
+    
+    .sent.sending .message-bubble {
+      opacity: 0.7;
+    }
+
+    .message-meta {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+      margin-top: 4px;
+      font-size: 10px;
+      color: var(--color-gray-500);
+      padding: 0 4px;
+    }
+
+    .message-time {
+      opacity: 0.8;
+    }
+
+    /* Typing Indicator */
+    .typing-indicator {
+      align-self: flex-start;
+      background-color: var(--color-white);
+      padding: 8px 12px;
+      border-radius: 18px;
+      border-bottom-left-radius: 4px;
+      border: 1px solid var(--color-gray-200);
+      display: none; /* Toggled via JS */
+      align-items: center;
+      gap: 4px;
+      margin-bottom: var(--spacing-8);
+      width: fit-content;
+    }
+
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background-color: var(--color-gray-400);
+      border-radius: 50%;
+      animation: typing 1.4s infinite ease-in-out both;
+    }
+
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes typing {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+
+    /* 
+     * COMPONENT: Input Area
+     */
+    .input-area {
+      background-color: var(--color-white);
+      border-top: 1px solid var(--color-gray-200);
+      padding: var(--spacing-12) var(--spacing-16);
+      display: flex;
+      align-items: flex-end;
+      gap: var(--spacing-12);
+      flex-shrink: 0;
+    }
+
+    .attach-button {
+      background: none;
+      border: none;
+      color: var(--color-gray-500);
+      padding: 10px;
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+    }
+
+    .attach-button:hover {
+      background-color: var(--color-gray-100);
+      color: var(--color-primary-600);
+    }
+
+    .message-input-wrapper {
+      flex-grow: 1;
+      position: relative;
+    }
+
+    .message-input {
+      width: 100%;
+      border: 1px solid var(--color-gray-300);
+      border-radius: 20px;
+      padding: 10px 16px;
+      font-family: inherit;
+      font-size: 14px;
+      resize: none;
+      max-height: 100px;
+      outline: none;
+      transition: border-color 0.2s;
+      background-color: var(--color-gray-50);
+      display: block; /* Removes bottom space */
+    }
+
+    .message-input:focus {
+      border-color: var(--color-primary-500);
+      background-color: var(--color-white);
+      box-shadow: 0 0 0 3px var(--color-primary-100);
+    }
+
+    .send-button {
+      background-color: var(--color-primary-600);
+      color: var(--color-white);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      flex-shrink: 0;
+    }
+
+    .send-button:hover:not(:disabled) {
+      background-color: var(--color-primary-700);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .send-button:active:not(:disabled) {
+      transform: scale(0.95);
+    }
+
+    .send-button:disabled {
+      background-color: var(--color-gray-200);
+      color: var(--color-gray-400);
+      cursor: not-allowed;
+    }
+
+    .send-button svg {
+      margin-left: 2px; /* Visual correction */
+    }
+
+    /* Scrollbar Styling */
+    .chat-area::-webkit-scrollbar {
+      width: 6px;
+    }
+    .chat-area::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .chat-area::-webkit-scrollbar-thumb {
+      background-color: var(--color-gray-300);
+      border-radius: 20px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="app-screen">
+    
+    <!-- Status Banners (Conditional) -->
+    <div id="connecting-banner" class="status-banner connecting" aria-live="polite">
+      Connecting to chat server...
+    </div>
+    <div id="offline-banner" class="status-banner offline" role="alert">
+      You are offline. Messages will be sent when connection is restored.
+    </div>
+
+    <!-- Header -->
+    <header class="chat-header">
+      <div class="header-left">
+        <button class="back-button" aria-label="Go back">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <div class="tech-info">
+          <span class="tech-name">Mike (Technician)</span>
+          <div class="tech-status">
+            <span class="status-dot online"></span>
+            <span>Online</span>
+          </div>
+        </div>
+      </div>
+      <span class="ticket-id">#SR-9284</span>
+    </header>
+
+    <!-- Main Chat Area -->
+    <main class="chat-area" id="chat-feed" role="log" aria-live="polite" aria-atomic="false">
+      
+      <div class="chat-date-separator">
+        <span>Today</span>
+      </div>
+
+      <!-- System Message -->
+      <div style="text-align: center; color: var(--color-gray-500); font-size: 12px; margin: 8px 0;">
+        You are now connected with Mike.
+      </div>
+
+      <!-- Technician Message -->
+      <div class="message-row received">
+        <span class="message-sender">Mike</span>
+        <div class="message-bubble">
+          Hello! I'm on my way to your location for the dishwasher repair. My ETA is 10:30 AM.
+        </div>
+        <div class="message-meta">
+          <span class="message-time">10:05 AM</span>
+        </div>
+      </div>
+
+      <!-- User Message -->
+      <div class="message-row sent">
+        <div class="message-bubble">
+          Thanks for the update. The gate code is 1234 if you need it.
+        </div>
+        <div class="message-meta">
+          <span class="message-time">10:06 AM</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6L9 17l-5-5"/>
+            <path d="M20 12L13 19"/> <!-- Double check icon simulation -->
+          </svg>
+        </div>
+      </div>
+
+      <!-- Technician Message -->
+      <div class="message-row received">
+        <span class="message-sender">Mike</span>
+        <div class="message-bubble">
+          Got it, thanks!
+        </div>
+        <div class="message-meta">
+          <span class="message-time">10:07 AM</span>
+        </div>
+      </div>
+
+      <!-- Typing Indicator -->
+      <div class="typing-indicator" id="typing-indicator">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+
+    </main>
+
+    <!-- Footer Input -->
+    <footer class="input-area">
+      <button class="attach-button" aria-label="Attach file" onclick="document.getElementById('file-upload').click()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+        </svg>
+      </button>
+      <input type="file" id="file-upload" hidden aria-hidden="true" accept="image/*">
+      
+      <div class="message-input-wrapper">
+        <textarea 
+          id="message-input" 
+          class="message-input" 
+          placeholder="Type a message..." 
+          rows="1"
+          aria-label="Type a message"
+        ></textarea>
+      </div>
+
+      <button id="send-btn" class="send-button" aria-label="Send message" disabled>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </footer>
+
+  </div>
+
+  <script>
+    // Simple script to demonstrate interaction logic
+    const input = document.getElementById('message-input');
+    const sendBtn = document.getElementById('send-btn');
+    const chatFeed = document.getElementById('chat-feed');
+    const connectingBanner = document.getElementById('connecting-banner');
+    const typingIndicator = document.getElementById('typing-indicator');
+
+    // Simulate initial connection sequence
+    setTimeout(() => {
+      connectingBanner.style.display = 'none';
+    }, 2000);
+
+    // Auto-resize textarea and enable button
+    input.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = (this.scrollHeight) + 'px';
+      
+      if (this.value.trim().length > 0) {
+        sendBtn.removeAttribute('disabled');
+      } else {
+        sendBtn.setAttribute('disabled', 'true');
+      }
+    });
+
+    // Send Message Logic
+    function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+
+      // Create message bubble HTML
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'message-row sent sending'; // Initial optimistic state
+      
+      // Get current time
+      const now = new Date();
+      const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      msgDiv.innerHTML = `
+        <div class="message-bubble">
+          ${escapeHtml(text)}
+        </div>
+        <div class="message-meta">
+          <span class="message-time">${timeString}</span>
+           <!-- Single check for sent -->
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6L9 17l-5-5"/>
+          </svg>
+        </div>
+      `;
+
+      // Insert before typing indicator
+      chatFeed.insertBefore(msgDiv, typingIndicator);
+      
+      // Scroll to bottom
+      chatFeed.scrollTop = chatFeed.scrollHeight;
+
+      // Clear input
+      input.value = '';
+      input.style.height = 'auto';
+      sendBtn.setAttribute('disabled', 'true');
+      input.focus();
+
+      // Simulate server confirmation (remove 'sending' class) after delay
+      setTimeout(() => {
+        msgDiv.classList.remove('sending');
+        // Update to double check
+        const metaIcon = msgDiv.querySelector('.message-meta svg');
+        metaIcon.innerHTML = '<path d="M20 6L9 17l-5-5"/><path d="M20 12L13 19"/>';
+      }, 1000);
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    // Utility to prevent XSS in demo
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+
+<!-- VARIANTS SECTION -->
+<div style="max-width: 480px; margin: 40px auto; font-family: sans-serif;">
+  <h3>Screen Variants</h3>
+  
+  <div style="background: #fff; padding: 15px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 8px;">
+    <h4>1. Connection Statuses</h4>
+    <p>The screen includes a header banner that changes based on socket status:</p>
+    <ul>
+      <li><strong>Connecting:</strong> Light indigo banner shown on load.</li>
+      <li><strong>Offline:</strong> Dark gray banner shown when network is lost.</li>
+      <li><strong>Connected:</strong> Banner hidden (default state).</li>
+    </ul>
+  </div>
+
+  <div style="background: #fff; padding: 15px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 8px;">
+    <h4>2. Message States</h4>
+    <p>Messages demonstrate different lifecycle states:</p>
+    <ul>
+      <li><strong>Sending:</strong> Lower opacity on the bubble.</li>
+      <li><strong>Sent:</strong> Full opacity, single checkmark.</li>
+      <li><strong>Delivered:</strong> Double checkmark (simulated in JS).</li>
+    </ul>
+  </div>
+
+  <div style="background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
+    <h4>3. Empty State</h4>
+    <p>If the chat history is empty, the "You are now connected" system message acts as the initial state marker.</p>
+  </div>
+</div>
+
+</body>
+</html>

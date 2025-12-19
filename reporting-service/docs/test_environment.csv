@@ -1,0 +1,3 @@
+"environment_name","environment_type","deployment_frequency","data_refresh_frequency","infrastructure_stack","service_dependencies","monitoring_tools","access_control","backup_strategy","disaster_recovery","cost_optimization","maintenance_window"
+"Dev/PR","Ephemeral","Per Commit","On Creation (Seeded)","Docker Compose (Local)","Mocks for Azure Services; Local Postgres/Redis","Local Logs","Developer Only","None","N/A","Runs only during test execution","N/A"
+"Staging","Persistent","Daily","Weekly (Sanitized Prod Data)","Azure AKS (Scaled Down)","Real Azure Services (B2C, Blob, Service Bus)","Azure Monitor; Sentry","Team + QA","Daily Snapshots","Tested Monthly","Shutdown nights/weekends","Planned outages allowed"

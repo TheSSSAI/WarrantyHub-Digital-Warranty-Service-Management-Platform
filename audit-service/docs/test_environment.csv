@@ -1,0 +1,3 @@
+"environment_name","environment_type","deployment_frequency","data_refresh_frequency","infrastructure_stack","service_dependencies","monitoring_tools","access_control","backup_strategy","disaster_recovery","cost_optimization","maintenance_window"
+"Development","Ephemeral","On Commit","On Reset","Docker Compose (Local)","Mocks for Azure AD B2C, Blob Storage, Maps","Local Logs","Open to Devs","None","Rebuild from source","Runs on dev machine","N/A"
+"Staging","Persistent","Daily","Weekly (Sanitized Prod Data)","Azure AKS; PostgreSQL Flex; Redis","Full Azure Integrations (Test Instances)","Azure Monitor; Application Insights","Dev Team; QA; Product Owner","Daily Snapshots","24-hour RTO","Scale down off-hours","Weekends"

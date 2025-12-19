@@ -1,0 +1,38 @@
+sequenceDiagram
+    participant "InvoiceOcrWorker" as InvoiceOcrWorker
+    participant "Azure AI Document Intelligence" as AzureAIDocumentIntelligence
+    participant "Azure Service Bus" as AzureServiceBus
+    participant "Azure Monitor" as AzureMonitor
+
+    activate InvoiceOcrWorker
+    AzureServiceBus->>InvoiceOcrWorker: 1. 1. [async] Receive 'InvoiceUploadedForProcessing' message
+    InvoiceOcrWorker->>InvoiceOcrWorker: 2. 2. Begin processing within Polly Resilience Pipeline (Retry + CircuitBreaker)
+    activate AzureAIDocumentIntelligence
+    InvoiceOcrWorker->>AzureAIDocumentIntelligence: 3. 2a. Call OCR Service (Attempt 1/5)
+    AzureAIDocumentIntelligence-->>InvoiceOcrWorker: 2b. 503 Service Unavailable
+    InvoiceOcrWorker->>InvoiceOcrWorker: 4. 2c. Polly: Handle failure, wait exponential backoff (e.g., 2s)
+    InvoiceOcrWorker->>AzureAIDocumentIntelligence: 5. 2d. Call OCR Service (Attempts 2-5 fail similarly)
+    AzureAIDocumentIntelligence-->>InvoiceOcrWorker: 503 Service Unavailable
+    InvoiceOcrWorker->>InvoiceOcrWorker: 6. 3. Polly: Failure threshold (5) reached. Transition Circuit Breaker to OPEN state.
+    InvoiceOcrWorker->>AzureMonitor: 7. 4. [async] Emit metric 'dependency.circuit_breaker.state' (State=1/Open)
+    AzureMonitor->>AzureMonitor: 8. 5. Alert rule fires: 'Circuit Breaker for OCR Service is Open'
+    AzureMonitor-->>AzureMonitor: [async] Send notification to PagerDuty/Ops Team
+    InvoiceOcrWorker->>InvoiceOcrWorker: 9. 6. Catch final exception from pipeline and initiate graceful failure logic
+    InvoiceOcrWorker->>AzureMonitor: 10. 7. [async] Log error: 'OCR processing failed after all retries. Circuit breaker is now open.'
+    InvoiceOcrWorker->>AzureServiceBus: 11. 8. [async] Send message to a retry-queue with 5-min delayed visibility
+    InvoiceOcrWorker->>InvoiceOcrWorker: 12. 9. Acknowledge and complete original message
+    AzureServiceBus->>InvoiceOcrWorker: 13. 10. [async] Receive another message while circuit is OPEN
+    InvoiceOcrWorker->>InvoiceOcrWorker: 14. 11. Polly: Circuit is OPEN. Reject call immediately (fail-fast).
+    InvoiceOcrWorker-->>InvoiceOcrWorker: Throw BrokenCircuitException
+    InvoiceOcrWorker->>InvoiceOcrWorker: 15. 12. Catch BrokenCircuitException and execute graceful failure logic (repeat steps 7-9)
+    InvoiceOcrWorker->>InvoiceOcrWorker: 16. 13. After 30s, Polly: Transition Circuit Breaker to HALF-OPEN state.
+    InvoiceOcrWorker->>AzureAIDocumentIntelligence: 17. 14. Permit a single trial call to the OCR Service
+    AzureAIDocumentIntelligence-->>InvoiceOcrWorker: 15a. 202 Accepted (Service Recovered)
+    InvoiceOcrWorker->>InvoiceOcrWorker: 18. 15b. Polly: Trial call successful. Transition Circuit Breaker to CLOSED state.
+    InvoiceOcrWorker->>AzureMonitor: 19. 16. [async] Emit metric 'dependency.circuit_breaker.state' (State=0/Closed)
+
+    note over InvoiceOcrWorker: Polly Resilience Pipeline Configuration: - Retry Strategy: Exponential backoff with jitter. - Ret...
+    note over AzureServiceBus: Using a separate retry-queue with delayed visibility prevents a poison message from blocking the ...
+
+    deactivate AzureAIDocumentIntelligence
+    deactivate InvoiceOcrWorker

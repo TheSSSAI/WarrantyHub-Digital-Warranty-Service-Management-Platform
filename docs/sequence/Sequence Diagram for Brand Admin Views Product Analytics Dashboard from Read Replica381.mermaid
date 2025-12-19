@@ -1,0 +1,16 @@
+sequenceDiagram
+    actor "Admin Web Client" as AdminWebClient
+    participant "API Gateway" as APIGateway
+    participant "Reporting Service" as ReportingService
+
+    activate APIGateway
+    AdminWebClient->>APIGateway: 1. 1. GET /api/reports/registrations-by-month
+    APIGateway-->>AdminWebClient: 9. [200 OK] { data: [...] }
+    activate ReportingService
+    APIGateway->>ReportingService: 2. 2. GET /registrations-by-month
+    ReportingService-->>APIGateway: 8. [200 OK] { data: [...] }
+
+    note over ReportingService: Read Replica: All database queries within this service are executed against a PostgreSQL Read Rep...
+
+    deactivate ReportingService
+    deactivate APIGateway

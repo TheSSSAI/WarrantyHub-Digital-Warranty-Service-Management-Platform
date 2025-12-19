@@ -1,0 +1,3 @@
+"optimization_area","current_state","recommended_action","expected_benefit","implementation_cost","timeline","success_metrics","roi_calculation"
+"Frontend -> Mobile Cross-training","Frontend Dev 0% utilized in Sprint 2; Mobile Lead 115% utilized","Allocate 10hrs in Sprint 1 for Frontend Dev to learn React Native basics","Balances load, removes single point of failure for mobile","650","Sprint 1","Frontend dev completes 1 mobile ticket in Sprint 2","Prevents 1 week slip ($5k+ value)"
+"DevOps Task Distribution","Platform Architect overloaded in Sprint 1","Move TASK-DEVOPS-001 (GitHub Actions) to Backend Developer","Frees up Architect for critical AKS networking tasks","","Sprint 1","Architect utilization drops to <90%","Reduces risk of foundational infra errors"

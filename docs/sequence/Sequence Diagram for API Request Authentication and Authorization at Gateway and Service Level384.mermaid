@@ -1,0 +1,31 @@
+sequenceDiagram
+    actor "Mobile Client" as MobileClient
+    participant "API Gateway" as APIGateway
+    participant "Product Service" as ProductService
+
+    activate APIGateway
+    MobileClient->>APIGateway: 1. 1. Request Protected Resource: GET /api/v1/products/{productId}
+    APIGateway->>APIGateway: 2. 2. Perform JWT Validation (1st Layer Authentication)
+    APIGateway-->>APIGateway: Validation Result (Valid/Invalid)
+    APIGateway->>APIGateway: 2.1. 2.1. Validate token signature against Identity Service's public key (retrieved from JWKS endpoint).
+    APIGateway->>APIGateway: 2.2. 2.2. Verify token has not expired by checking the 'exp' claim against current UTC time.
+    APIGateway->>APIGateway: 2.3. 2.3. Validate 'iss' (issuer) and 'aud' (audience) claims against configured values.
+    APIGateway->>MobileClient: 3. 3a. [ALT: Validation Fails] Return 401 Unauthorized
+    activate ProductService
+    APIGateway->>ProductService: 4. 3b. [SUCCESS] Forward Request with User Claims
+    ProductService->>ProductService: 5. 4. Execute Authorization Middleware (2nd Layer Authorization)
+    ProductService-->>ProductService: Authorization Result (Authorized/Forbidden)
+    ProductService->>ProductService: 5.1. 4.1. [ZERO TRUST] Optionally re-validate token signature and expiry.
+    ProductService->>ProductService: 5.2. 4.2. Apply endpoint's authorization policy (e.g., [Authorize(Roles = "BrandAdmin")]).
+    ProductService->>ProductService: 5.3. 4.3. Check if user's roles from 'X-User-Roles' header satisfy the policy requirements.
+    ProductService->>APIGateway: 6. 5a. [ALT: Authorization Fails] Return 403 Forbidden
+    APIGateway-->>ProductService: HTTP/1.1 403 Forbidden; Body: {"error": "User is not authorized to perform this action"}
+    ProductService->>APIGateway: 7. 5b. [SUCCESS] Process request in controller and return 200 OK
+    APIGateway-->>ProductService: HTTP/1.1 200 OK; Body: <Product Data JSON>
+    APIGateway->>MobileClient: 8. 6. Forward Backend Response
+
+    note over APIGateway: Defense in Depth: Authentication is handled at the Gateway (Layer 1), while fine-grained Authoriz...
+    note over ProductService: Zero Trust: The backend service does not implicitly trust the gateway. It re-validates the user's...
+
+    deactivate ProductService
+    deactivate APIGateway

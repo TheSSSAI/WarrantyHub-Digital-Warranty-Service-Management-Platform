@@ -1,0 +1,2 @@
+"total_risks_identified","critical_risks","high_priority_risks","average_risk_score","key_risk_themes","immediate_actions_required"
+"6","1","3","16","[""Mobile Background Execution Reliability"",""Offline Data Integrity"",""Geospatial Performance""]","[""Prototype React Native background location service to validate OS constraints"",""Benchmark PostGIS queries with synthetic volume data (1M+ rows)"",""Define conflict resolution strategy for WatermelonDB sync""]"

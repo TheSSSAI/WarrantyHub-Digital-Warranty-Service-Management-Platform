@@ -1,0 +1,15 @@
+PUT /audit_record
+{
+  "mappings": {
+    "properties": {
+      "auditLogId": { "type": "keyword" },
+      "userId": { "type": "keyword" },
+      "actionType": { "type": "keyword" },
+      "targetEntity": { "type": "keyword" },
+      "targetEntityId": { "type": "keyword" },
+      "changeDetails": { "type": "object" },
+      "sourceIpAddress": { "type": "ip" },
+      "timestamp": { "type": "date" }
+    }
+  }
+}

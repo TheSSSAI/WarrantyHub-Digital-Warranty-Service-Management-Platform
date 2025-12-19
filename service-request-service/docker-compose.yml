@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  service-request-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    command: npm run start:dev
+    ports:
+      - "3004:3000" # Mapped to 3004 to avoid conflicts with other microservices
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=warranty_user
+      - DB_PASSWORD=warranty_pass
+      - DB_NAME=warranty_service_requests
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PRODUCT_SERVICE_URL=http://product-service:3002
+      - SERVICE_CENTER_SERVICE_URL=http://service-center-service:3003
+      - JWT_SECRET=dev_secret_key_change_in_prod
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - warranty-network
+
+  postgres:
+    image: postgis/postgis:16-3.4-alpine
+    ports:
+      - "5434:5432" # Mapped to 5434
+    environment:
+      - POSTGRES_USER=warranty_user
+      - POSTGRES_PASSWORD=warranty_pass
+      - POSTGRES_DB=warranty_service_requests
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - warranty-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - warranty-network
+
+networks:
+  warranty-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

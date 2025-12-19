@@ -1,0 +1,340 @@
+
+{
+  "component_inventory": {
+    "atomic_components": [
+      {
+        "component_name": "Mobile Button",
+        "category": "actions",
+        "variants": ["primary", "secondary", "outline", "ghost", "floating_action"],
+        "states": ["default", "pressed", "disabled", "loading"],
+        "responsive_needs": "Minimum 44x44pt touch target",
+        "dependencies": ["theme_tokens"],
+        "complexity_level": "low",
+        "implementation_priority": 1,
+        "estimated_effort": "2 hours"
+      },
+      {
+        "component_name": "Status Badge",
+        "category": "data_display",
+        "variants": ["warranty_active", "warranty_expiring", "warranty_expired", "job_assigned", "job_in_progress", "job_resolved"],
+        "states": ["default"],
+        "responsive_needs": "Scale text for accessibility",
+        "dependencies": ["theme_tokens"],
+        "complexity_level": "low",
+        "implementation_priority": 1,
+        "estimated_effort": "2 hours"
+      },
+      {
+        "component_name": "Icon Set",
+        "category": "visual",
+        "variants": ["navigation", "actions", "status_indicators"],
+        "states": ["default", "active", "disabled"],
+        "responsive_needs": "Vector scaling (SVG)",
+        "dependencies": ["react-native-svg"],
+        "complexity_level": "low",
+        "implementation_priority": 1,
+        "estimated_effort": "3 hours"
+      },
+      {
+        "component_name": "Input Field",
+        "category": "form_controls",
+        "variants": ["text", "password", "email", "number", "text_area"],
+        "states": ["default", "focused", "error", "disabled"],
+        "responsive_needs": "Auto-adjust keyboard type",
+        "dependencies": ["theme_tokens"],
+        "complexity_level": "low",
+        "implementation_priority": 1,
+        "estimated_effort": "3 hours"
+      }
+    ],
+    "molecular_components": [
+      {
+        "component_name": "Product Card",
+        "category": "cards",
+        "variants": ["list_view", "compact"],
+        "states": ["default", "loading_skeleton", "pressed"],
+        "responsive_needs": "Fluid width",
+        "dependencies": ["Status Badge", "Mobile Button"],
+        "complexity_level": "medium",
+        "implementation_priority": 2,
+        "estimated_effort": "4 hours"
+      },
+      {
+        "component_name": "Technician Job Card",
+        "category": "cards",
+        "variants": ["default", "urgent", "completed"],
+        "states": ["default", "loading_skeleton", "pressed"],
+        "responsive_needs": "Expandable details",
+        "dependencies": ["Status Badge", "Icon Set"],
+        "complexity_level": "medium",
+        "implementation_priority": 2,
+        "estimated_effort": "5 hours"
+      },
+      {
+        "component_name": "Upload Attachment",
+        "category": "media",
+        "variants": ["photo_preview", "document_preview"],
+        "states": ["empty", "uploading", "uploaded", "error"],
+        "responsive_needs": "Thumbnail resizing",
+        "dependencies": ["Icon Set", "Progress Bar"],
+        "complexity_level": "medium",
+        "implementation_priority": 2,
+        "estimated_effort": "6 hours"
+      },
+      {
+        "component_name": "OTP Input Group",
+        "category": "form_controls",
+        "variants": ["default"],
+        "states": ["empty", "filled", "error"],
+        "responsive_needs": "Auto-focus flow",
+        "dependencies": ["Input Field"],
+        "complexity_level": "medium",
+        "implementation_priority": 2,
+        "estimated_effort": "3 hours"
+      },
+      {
+        "component_name": "Chat Message Bubble",
+        "category": "communication",
+        "variants": ["sender", "receiver", "system"],
+        "states": ["sent", "delivered", "read", "failed"],
+        "responsive_needs": "Dynamic height based on text",
+        "dependencies": ["theme_tokens"],
+        "complexity_level": "low",
+        "implementation_priority": 3,
+        "estimated_effort": "3 hours"
+      }
+    ],
+    "organism_components": [
+      {
+        "component_name": "Digital Warranty Card",
+        "category": "data_display",
+        "variants": ["single_warranty", "multi_warranty_tabs"],
+        "states": ["default", "loading"],
+        "responsive_needs": "Scrollable content",
+        "dependencies": ["Product Card", "Status Badge", "Mobile Button"],
+        "complexity_level": "high",
+        "implementation_priority": 3,
+        "estimated_effort": "8 hours"
+      },
+      {
+        "component_name": "Map Tracking View",
+        "category": "geo_location",
+        "variants": ["technician_view", "customer_view"],
+        "states": ["locating", "tracking", "error", "arrived"],
+        "responsive_needs": "Full screen overlay",
+        "dependencies": ["react-native-maps", "Icon Set"],
+        "complexity_level": "high",
+        "implementation_priority": 4,
+        "estimated_effort": "16 hours"
+      },
+      {
+        "component_name": "Signature Canvas",
+        "category": "input",
+        "variants": ["portrait", "landscape"],
+        "states": ["empty", "signed", "locked"],
+        "responsive_needs": "Orientation changes",
+        "dependencies": ["react-native-signature-capture", "Mobile Button"],
+        "complexity_level": "medium",
+        "implementation_priority": 3,
+        "estimated_effort": "6 hours"
+      },
+      {
+        "component_name": "QR/Barcode Scanner",
+        "category": "input",
+        "variants": ["full_screen"],
+        "states": ["active", "permission_denied", "scanning", "success"],
+        "responsive_needs": "Camera viewport adaptation",
+        "dependencies": ["react-native-vision-camera"],
+        "complexity_level": "high",
+        "implementation_priority": 3,
+        "estimated_effort": "8 hours"
+      },
+      {
+        "component_name": "Service Request Timeline",
+        "category": "data_display",
+        "variants": ["vertical_stepper"],
+        "states": ["pending", "active", "completed", "cancelled"],
+        "responsive_needs": "Vertical scrolling",
+        "dependencies": ["Icon Set", "Status Badge"],
+        "complexity_level": "medium",
+        "implementation_priority": 3,
+        "estimated_effort": "5 hours"
+      }
+    ]
+  },
+  "screen_inventory": [
+    {
+      "screen_name": "Auth - Login",
+      "screen_type": "form",
+      "variants": ["default"],
+      "states": ["default", "loading", "error"],
+      "required_components": ["Input Field", "Mobile Button", "Link"],
+      "platform_optimizations": "Keyboard avoidance view",
+      "implementation_priority": 1,
+      "estimated_effort": "6 hours",
+      "user_flow_criticality": "critical"
+    },
+    {
+      "screen_name": "Auth - MFA/OTP",
+      "screen_type": "form",
+      "variants": ["default"],
+      "states": ["awaiting_code", "verifying", "resend_cooldown", "error"],
+      "required_components": ["OTP Input Group", "Mobile Button", "Timer"],
+      "platform_optimizations": "Auto-fill from SMS",
+      "implementation_priority": 1,
+      "estimated_effort": "4 hours",
+      "user_flow_criticality": "critical"
+    },
+    {
+      "screen_name": "Consumer - My Products List",
+      "screen_type": "list",
+      "variants": ["default"],
+      "states": ["loading", "populated", "empty", "offline_cached"],
+      "required_components": ["Product Card", "Floating Action Button", "Search Bar", "Offline Indicator"],
+      "platform_optimizations": "Pull to refresh, Infinite scroll",
+      "implementation_priority": 2,
+      "estimated_effort": "8 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Consumer - Product Details (Warranty Card)",
+      "screen_type": "detail",
+      "variants": ["single_warranty", "multiple_warranties"],
+      "states": ["loading", "loaded", "error"],
+      "required_components": ["Digital Warranty Card", "Mobile Button (Request Service)", "Service History List"],
+      "platform_optimizations": "Tab navigation for multiple warranties",
+      "implementation_priority": 2,
+      "estimated_effort": "10 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Consumer - Add Product",
+      "screen_type": "form",
+      "variants": ["manual_entry", "scan_flow"],
+      "states": ["form_input", "scanning", "ocr_processing", "ocr_verification"],
+      "required_components": ["QR/Barcode Scanner", "Input Field", "Upload Attachment", "Mobile Button"],
+      "platform_optimizations": "Camera integration, File system access",
+      "implementation_priority": 2,
+      "estimated_effort": "12 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Consumer - Invoice Vault",
+      "screen_type": "list",
+      "variants": ["default"],
+      "states": ["loading", "populated", "empty", "viewing_document"],
+      "required_components": ["Search Bar", "Filter Modal", "Document List Item", "PDF Viewer"],
+      "platform_optimizations": "Native share sheet integration",
+      "implementation_priority": 3,
+      "estimated_effort": "8 hours",
+      "user_flow_criticality": "medium"
+    },
+    {
+      "screen_name": "Consumer - Service Request Details",
+      "screen_type": "detail",
+      "variants": ["tracking_mode", "standard"],
+      "states": ["requested", "assigned", "technician_en_route", "resolved"],
+      "required_components": ["Service Request Timeline", "Map Tracking View", "Technician Profile Card", "Chat Button"],
+      "platform_optimizations": "Live location updates (WebSocket), Push notification linking",
+      "implementation_priority": 3,
+      "estimated_effort": "14 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Consumer - Chat",
+      "screen_type": "interaction",
+      "variants": ["default"],
+      "states": ["connecting", "connected", "offline", "sending"],
+      "required_components": ["Chat Message Bubble", "Input Field", "Send Button"],
+      "platform_optimizations": "Keyboard handling, Real-time socket events",
+      "implementation_priority": 3,
+      "estimated_effort": "10 hours",
+      "user_flow_criticality": "medium"
+    },
+    {
+      "screen_name": "Technician - Assigned Jobs",
+      "screen_type": "list",
+      "variants": ["default"],
+      "states": ["loading", "populated", "empty", "offline_cached"],
+      "required_components": ["Date Picker", "Technician Job Card", "Offline Indicator"],
+      "platform_optimizations": "Offline data persistence (WatermelonDB)",
+      "implementation_priority": 2,
+      "estimated_effort": "10 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Technician - Job Execution",
+      "screen_type": "detail",
+      "variants": ["status_update", "travel_mode", "completion"],
+      "states": ["assigned", "traveling", "working", "signing"],
+      "required_components": ["Map Tracking View", "Action Buttons", "Signature Canvas", "Upload Attachment"],
+      "platform_optimizations": "Background location services, Offline sync queue",
+      "implementation_priority": 2,
+      "estimated_effort": "16 hours",
+      "user_flow_criticality": "critical"
+    },
+    {
+      "screen_name": "Notification Center",
+      "screen_type": "list",
+      "variants": ["default"],
+      "states": ["loading", "populated", "empty"],
+      "required_components": ["Notification List Item", "Filter Tabs"],
+      "platform_optimizations": "Deep linking handler",
+      "implementation_priority": 4,
+      "estimated_effort": "6 hours",
+      "user_flow_criticality": "medium"
+    }
+  ],
+  "implementation_plan": {
+    "phase_1_foundation": {
+      "components": ["Mobile Button", "Input Field", "Icon Set", "Status Badge"],
+      "rationale": "Establish core UI primitives and theme tokens (colors, typography) required for all screens.",
+      "estimated_duration": "3-4 days"
+    },
+    "phase_2_auth_and_navigation": {
+      "components": ["OTP Input Group", "Bottom Tab Navigation", "Stack Navigation Header"],
+      "screens": ["Auth - Login", "Auth - MFA/OTP"],
+      "rationale": "Enable user entry and basic app structure navigation before building feature-specific content.",
+      "estimated_duration": "4-5 days"
+    },
+    "phase_3_consumer_core": {
+      "components": ["Product Card", "Digital Warranty Card", "Upload Attachment", "QR/Barcode Scanner"],
+      "screens": ["Consumer - My Products List", "Consumer - Product Details", "Consumer - Add Product"],
+      "rationale": "Implement the primary value proposition for consumers (Warranty Management).",
+      "estimated_duration": "8-10 days"
+    },
+    "phase_4_technician_core": {
+      "components": ["Technician Job Card", "Signature Canvas"],
+      "screens": ["Technician - Assigned Jobs", "Technician - Job Execution"],
+      "rationale": "Enable the workforce management side of the application, including offline capabilities.",
+      "estimated_duration": "8-10 days"
+    },
+    "phase_5_realtime_features": {
+      "components": ["Map Tracking View", "Chat Message Bubble", "Service Request Timeline"],
+      "screens": ["Consumer - Service Request Details", "Consumer - Chat"],
+      "rationale": "Add complex real-time interactions (Location tracking, Chat) once static flows are stable.",
+      "estimated_duration": "6-8 days"
+    },
+    "phase_6_polish_and_offline": {
+      "components": ["Offline Indicator", "Error Boundaries", "Loading Skeletons"],
+      "screens": ["Consumer - Invoice Vault", "Notification Center"],
+      "rationale": "Finalize secondary features and harden offline/error states across the app.",
+      "estimated_duration": "5-7 days"
+    }
+  },
+  "platform_implementation_strategy": {
+    "target_platform": "iOS and Android (React Native)",
+    "implementation_approach": "Mobile-First Cross-Platform",
+    "responsive_strategy": "Flexbox layout for fluid adaptation to different screen sizes. Platform-specific files (.ios.tsx, .android.tsx) only where native behaviors differ significantly (e.g., Shadow vs Elevation).",
+    "progressive_enhancement": "Core CRUD works offline. Real-time features (Map/Chat) degrade gracefully when connectivity is lost.",
+    "browser_support": "N/A (Native App)",
+    "accessibility_integration": "Native accessibility roles, scaling dynamic type, minimum touch targets (44px), and VoiceOver/TalkBack testing."
+  },
+  "quality_assurance_plan": {
+    "component_testing": "Jest + React Native Testing Library for unit testing interaction logic and rendering.",
+    "integration_testing": "Detox for E2E flows on simulators (Login -> Add Product -> View Card).",
+    "responsive_testing": "Manual verification on small (iPhone SE) and large (Pixel Pro/iPhone Max) screens.",
+    "accessibility_testing": "Manual audit using Accessibility Inspector (iOS) and Accessibility Scanner (Android).",
+    "performance_testing": "Flashlight/Flipper for profiling render counts, memory usage, and bridge traffic, specifically for Map and Chat components."
+  }
+}

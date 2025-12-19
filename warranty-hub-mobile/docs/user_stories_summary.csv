@@ -1,0 +1,2 @@
+"total_stories","total_story_points","must_have_stories","should_have_stories","could_have_stories","epics_identified","estimated_sprints","key_dependencies"
+"10","73","7","2","0","[""Cloud Infrastructure & DevOps Foundation"",""Core Backend Services & API"",""Admin & Web Portals"",""Mobile Applications""]","6","[""US-INFRA-001 (AKS Cluster)"",""US-BE-001 (RBAC)""]"

@@ -1,0 +1,843 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-BP-004
+
+## 1.2 Name
+
+Brand Admin Resolves a Disputed Service Request
+
+## 1.3 Description
+
+A Brand Administrator reviews the details of a disputed service request, including chat history and technician notes. They then make a decision (e.g., approve further action, reject dispute) and close the escalation loop.
+
+## 1.4 Type
+
+🔹 BusinessProcess
+
+## 1.5 Purpose
+
+To provide a final resolution path for escalated customer issues, ensuring brand-level quality control and adherence to service level agreements.
+
+## 1.6 Complexity
+
+Medium
+
+## 1.7 Priority
+
+🔴 High
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- web-client-012
+- api-gateway-001
+- service-request-service-005
+- notification-service-006
+
+## 1.10 Key Interactions
+
+- Brand Admin selects a 'Disputed' ticket from their queue in the web portal.
+- The client fetches all ticket details, including service history and chat logs, from the ServiceRequestService.
+- After review, the admin chooses a resolution action (e.g., 'Re-assign Technician', 'Offer Goodwill', 'Reject Dispute').
+- The admin submits the resolution with comments.
+- The client sends an API request to the ServiceRequestService to update the ticket status (e.g., back to 'Acknowledged' or to 'Closed').
+- ServiceRequestService updates the ticket and publishes a 'ServiceRequestStatusChanged' event.
+- The NotificationService consumes the event and sends a push notification to the customer with the resolution update.
+
+## 1.11 Triggers
+
+- A Brand Admin takes action on a disputed ticket.
+
+## 1.12 Outcomes
+
+- The disputed ticket is actioned and its status is updated.
+- The customer is notified of the brand's decision.
+- The resolution is logged against the ticket history.
+
+## 1.13 Business Rules
+
+- Disputed service requests must be reviewed and actioned within 5 business days.
+
+## 1.14 Error Scenarios
+
+- The Brand Admin is unable to view the full service history.
+- The API call to update the ticket status fails.
+
+## 1.15 Integration Points
+
+- Azure Service Bus
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-BP-004
+
+## 2.2 Name
+
+Brand Admin Resolves a Disputed Service Request
+
+## 2.3 Description
+
+Technical sequence for a Brand Administrator reviewing and actioning a service request that has been escalated to 'Disputed' status. The process involves fetching detailed ticket information, making a resolution decision, updating the ticket state, and triggering an asynchronous notification to the end user.
+
+## 2.4 Participants
+
+### 2.4.1 Human
+
+#### 2.4.1.1 Repository Id
+
+brand-admin-actor
+
+#### 2.4.1.2 Display Name
+
+Brand Admin
+
+#### 2.4.1.3 Type
+
+🔹 Human
+
+#### 2.4.1.4 Technology
+
+Web Browser
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #9063CD |
+| Stereotype | Actor |
+
+### 2.4.2.0 Client
+
+#### 2.4.2.1 Repository Id
+
+web-client-012
+
+#### 2.4.2.2 Display Name
+
+AdminWebClient
+
+#### 2.4.2.3 Type
+
+🔹 Client
+
+#### 2.4.2.4 Technology
+
+React 18, TypeScript
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | rectangle |
+| Color | #1F77B4 |
+| Stereotype | Client |
+
+### 2.4.3.0 Gateway
+
+#### 2.4.3.1 Repository Id
+
+api-gateway-001
+
+#### 2.4.3.2 Display Name
+
+APIGateway
+
+#### 2.4.3.3 Type
+
+🔹 Gateway
+
+#### 2.4.3.4 Technology
+
+YARP on .NET 8
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | rectangle |
+| Color | #FF7F0E |
+| Stereotype | Gateway |
+
+### 2.4.4.0 Service
+
+#### 2.4.4.1 Repository Id
+
+service-request-service-005
+
+#### 2.4.4.2 Display Name
+
+ServiceRequestService
+
+#### 2.4.4.3 Type
+
+🔹 Service
+
+#### 2.4.4.4 Technology
+
+.NET 8, SignalR
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | rectangle |
+| Color | #2CA02C |
+| Stereotype | Microservice |
+
+### 2.4.5.0 Messaging
+
+#### 2.4.5.1 Repository Id
+
+messaging-infra-015
+
+#### 2.4.5.2 Display Name
+
+Azure Service Bus
+
+#### 2.4.5.3 Type
+
+🔹 Messaging
+
+#### 2.4.5.4 Technology
+
+AMQP
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | rectangle |
+| Color | #D62728 |
+| Stereotype | Message Broker |
+
+### 2.4.6.0 Service
+
+#### 2.4.6.1 Repository Id
+
+notification-service-006
+
+#### 2.4.6.2 Display Name
+
+NotificationService
+
+#### 2.4.6.3 Type
+
+🔹 Service
+
+#### 2.4.6.4 Technology
+
+.NET 8 Worker Service
+
+#### 2.4.6.5 Order
+
+6
+
+#### 2.4.6.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | rectangle |
+| Color | #8C564B |
+| Stereotype | Microservice |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 User Interaction
+
+#### 2.5.1.1 Source Id
+
+brand-admin-actor
+
+#### 2.5.1.2 Target Id
+
+web-client-012
+
+#### 2.5.1.3 Message
+
+1. Selects 'Disputed' service request with ID: {ticketId} from dashboard.
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 User Interaction
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Has Return
+
+❌ No
+
+#### 2.5.1.8 Is Activation
+
+✅ Yes
+
+### 2.5.2.0 API Request
+
+#### 2.5.2.1 Source Id
+
+web-client-012
+
+#### 2.5.2.2 Target Id
+
+api-gateway-001
+
+#### 2.5.2.3 Message
+
+2. GET /api/v1/service-requests/{ticketId}?include=history,chat
+
+#### 2.5.2.4 Sequence Number
+
+2
+
+#### 2.5.2.5 Type
+
+🔹 API Request
+
+#### 2.5.2.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7 Return Message
+
+8. 200 OK with ServiceRequestDetailsDTO
+
+#### 2.5.2.8 Has Return
+
+✅ Yes
+
+#### 2.5.2.9 Is Activation
+
+✅ Yes
+
+#### 2.5.2.10 Technical Details
+
+##### 2.5.2.10.1 Protocol
+
+HTTPS/1.1
+
+##### 2.5.2.10.2 Method
+
+GET
+
+##### 2.5.2.10.3 Parameters
+
+###### 2.5.2.10.3.1 UUID
+
+####### 2.5.2.10.3.1.1 Name
+
+ticketId
+
+####### 2.5.2.10.3.1.2 Type
+
+🔹 UUID
+
+####### 2.5.2.10.3.1.3 In
+
+path
+
+###### 2.5.2.10.3.2.0 string[]
+
+####### 2.5.2.10.3.2.1 Name
+
+include
+
+####### 2.5.2.10.3.2.2 Type
+
+🔹 string[]
+
+####### 2.5.2.10.3.2.3 In
+
+query
+
+####### 2.5.2.10.3.2.4 Value
+
+history,chat
+
+##### 2.5.2.10.4.0.0 Authentication
+
+Requires JWT Bearer Token (BrandAdmin role)
+
+##### 2.5.2.10.5.0.0 Error Handling
+
+Handles 401, 403, 404, 5xx responses.
+
+##### 2.5.2.10.6.0.0 Performance
+
+###### 2.5.2.10.6.1.0 Latency Slo Ms
+
+500
+
+#### 2.5.2.11.0.0.0 Nested Interactions
+
+- {'sourceId': 'api-gateway-001', 'targetId': 'service-request-service-005', 'message': '3. Forward Request: GET /service-requests/{ticketId}?include=history,chat', 'sequenceNumber': 3, 'type': 'Internal Request', 'isSynchronous': True, 'returnMessage': '7. 200 OK with ServiceRequestDetailsDTO', 'hasReturn': True, 'isActivation': True, 'technicalDetails': {'protocol': 'HTTP/2', 'method': 'GET', 'parameters': 'Propagates original parameters', 'authentication': 'Internal service trust (mTLS) or JWT passthrough', 'errorHandling': 'Returns detailed error codes to gateway.', 'performance': {'latency_slo_ms': 450}}, 'nestedInteractions': [{'sourceId': 'service-request-service-005', 'targetId': 'service-request-service-005', 'message': "4. Authorize: Check if BrandAdmin's brand matches ticket's brand.", 'sequenceNumber': 4, 'type': 'Security Check', 'isSynchronous': True, 'hasReturn': False, 'isActivation': False}, {'sourceId': 'service-request-service-005', 'targetId': 'service-request-service-005', 'message': '5. Query Database: Fetch ticket, chat logs, and service history.', 'sequenceNumber': 5, 'type': 'Data Access', 'isSynchronous': True, 'hasReturn': False, 'isActivation': False}, {'sourceId': 'service-request-service-005', 'targetId': 'service-request-service-005', 'message': '6. Construct ServiceRequestDetailsDTO', 'sequenceNumber': 6, 'type': 'Data Transformation', 'isSynchronous': True, 'hasReturn': False, 'isActivation': False}]}
+
+### 2.5.3.0.0.0.0 UI Render
+
+#### 2.5.3.1.0.0.0 Source Id
+
+web-client-012
+
+#### 2.5.3.2.0.0.0 Target Id
+
+brand-admin-actor
+
+#### 2.5.3.3.0.0.0 Message
+
+9. Display full service request details for review.
+
+#### 2.5.3.4.0.0.0 Sequence Number
+
+9
+
+#### 2.5.3.5.0.0.0 Type
+
+🔹 UI Render
+
+#### 2.5.3.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.3.8.0.0.0 Is Activation
+
+❌ No
+
+### 2.5.4.0.0.0.0 User Interaction
+
+#### 2.5.4.1.0.0.0 Source Id
+
+brand-admin-actor
+
+#### 2.5.4.2.0.0.0 Target Id
+
+web-client-012
+
+#### 2.5.4.3.0.0.0 Message
+
+10. Submits resolution (e.g., 'Reject Dispute') with comments.
+
+#### 2.5.4.4.0.0.0 Sequence Number
+
+10
+
+#### 2.5.4.5.0.0.0 Type
+
+🔹 User Interaction
+
+#### 2.5.4.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.4.8.0.0.0 Is Activation
+
+✅ Yes
+
+### 2.5.5.0.0.0.0 API Request
+
+#### 2.5.5.1.0.0.0 Source Id
+
+web-client-012
+
+#### 2.5.5.2.0.0.0 Target Id
+
+api-gateway-001
+
+#### 2.5.5.3.0.0.0 Message
+
+11. PATCH /api/v1/service-requests/{ticketId}/resolve-dispute
+
+#### 2.5.5.4.0.0.0 Sequence Number
+
+11
+
+#### 2.5.5.5.0.0.0 Type
+
+🔹 API Request
+
+#### 2.5.5.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7.0.0.0 Return Message
+
+18. 200 OK
+
+#### 2.5.5.8.0.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.5.9.0.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.5.10.0.0.0 Technical Details
+
+##### 2.5.5.10.1.0.0 Protocol
+
+HTTPS/1.1
+
+##### 2.5.5.10.2.0.0 Method
+
+PATCH
+
+##### 2.5.5.10.3.0.0 Parameters
+
+###### 2.5.5.10.3.1.0 UUID
+
+####### 2.5.5.10.3.1.1 Name
+
+ticketId
+
+####### 2.5.5.10.3.1.2 Type
+
+🔹 UUID
+
+####### 2.5.5.10.3.1.3 In
+
+path
+
+###### 2.5.5.10.3.2.0 ResolveDisputeDTO
+
+####### 2.5.5.10.3.2.1 Name
+
+body
+
+####### 2.5.5.10.3.2.2 Type
+
+🔹 ResolveDisputeDTO
+
+####### 2.5.5.10.3.2.3 In
+
+body
+
+####### 2.5.5.10.3.2.4 Schema
+
+######## 2.5.5.10.3.2.4.1 New Status
+
+string (enum)
+
+######## 2.5.5.10.3.2.4.2 Resolution Comment
+
+string
+
+##### 2.5.5.10.4.0.0.0 Authentication
+
+Requires JWT Bearer Token (BrandAdmin role)
+
+##### 2.5.5.10.5.0.0.0 Error Handling
+
+Handles validation errors (400), auth errors (401/403), and server errors (5xx).
+
+##### 2.5.5.10.6.0.0.0 Performance
+
+###### 2.5.5.10.6.1.0.0 Latency Slo Ms
+
+300
+
+#### 2.5.5.11.0.0.0.0 Nested Interactions
+
+- {'sourceId': 'api-gateway-001', 'targetId': 'service-request-service-005', 'message': '12. Forward Request: PATCH /service-requests/{ticketId}/resolve-dispute', 'sequenceNumber': 12, 'type': 'Internal Request', 'isSynchronous': True, 'returnMessage': '17. 200 OK', 'hasReturn': True, 'isActivation': True, 'technicalDetails': {'protocol': 'HTTP/2', 'method': 'PATCH', 'parameters': 'Propagates original body and parameters', 'authentication': 'Internal service trust (mTLS)', 'errorHandling': 'Returns detailed error codes to gateway.', 'performance': {'latency_slo_ms': 250}}, 'nestedInteractions': [{'sourceId': 'service-request-service-005', 'targetId': 'service-request-service-005', 'message': '13. Validate & Authorize: Check payload and BrandAdmin permissions.', 'sequenceNumber': 13, 'type': 'Security Check', 'isSynchronous': True, 'hasReturn': False, 'isActivation': False}, {'sourceId': 'service-request-service-005', 'targetId': 'service-request-service-005', 'message': '14. Persist State: Update ticket status and add resolution comment to history. [TRANSACTION START]', 'sequenceNumber': 14, 'type': 'Data Access', 'isSynchronous': True, 'hasReturn': False, 'isActivation': False}, {'sourceId': 'service-request-service-005', 'targetId': 'messaging-infra-015', 'message': '15. Publish Event: `ServiceRequestStatusChanged` [TRANSACTION END]', 'sequenceNumber': 15, 'type': 'Message Publish', 'isSynchronous': True, 'hasReturn': True, 'isActivation': False, 'technicalDetails': {'protocol': 'AMQP', 'method': 'PUBLISH', 'parameters': {'topic': 'domain-events-topic', 'payload': {'serviceRequestId': 'UUID', 'userId': 'UUID', 'oldStatus': 'Disputed', 'newStatus': 'Closed'}}, 'authentication': 'Managed Identity', 'errorHandling': 'Handled by Transactional Outbox Pattern to ensure atomicity with database update.', 'performance': {'latency_slo_ms': 50}}}, {'sourceId': 'service-request-service-005', 'targetId': 'service-request-service-005', 'message': '16. Create Audit Log: Log the resolution action.', 'sequenceNumber': 16, 'type': 'Auditing', 'isSynchronous': True, 'hasReturn': False, 'isActivation': False}]}
+
+### 2.5.6.0.0.0.0.0 UI Render
+
+#### 2.5.6.1.0.0.0.0 Source Id
+
+web-client-012
+
+#### 2.5.6.2.0.0.0.0 Target Id
+
+brand-admin-actor
+
+#### 2.5.6.3.0.0.0.0 Message
+
+19. Update UI to reflect ticket resolution.
+
+#### 2.5.6.4.0.0.0.0 Sequence Number
+
+19
+
+#### 2.5.6.5.0.0.0.0 Type
+
+🔹 UI Render
+
+#### 2.5.6.6.0.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7.0.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.6.8.0.0.0.0 Is Activation
+
+❌ No
+
+### 2.5.7.0.0.0.0.0 Message Consume
+
+#### 2.5.7.1.0.0.0.0 Source Id
+
+messaging-infra-015
+
+#### 2.5.7.2.0.0.0.0 Target Id
+
+notification-service-006
+
+#### 2.5.7.3.0.0.0.0 Message
+
+20. Consume `ServiceRequestStatusChanged` event
+
+#### 2.5.7.4.0.0.0.0 Sequence Number
+
+20
+
+#### 2.5.7.5.0.0.0.0 Type
+
+🔹 Message Consume
+
+#### 2.5.7.6.0.0.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.7.7.0.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.7.8.0.0.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.7.9.0.0.0.0 Technical Details
+
+##### 2.5.7.9.1.0.0.0 Protocol
+
+AMQP
+
+##### 2.5.7.9.2.0.0.0 Method
+
+CONSUME
+
+##### 2.5.7.9.3.0.0.0 Parameters
+
+| Property | Value |
+|----------|-------|
+| Subscription | notifications-subscription |
+
+##### 2.5.7.9.4.0.0.0 Authentication
+
+Managed Identity
+
+##### 2.5.7.9.5.0.0.0 Error Handling
+
+Consumer must be idempotent. Uses broker's retry and DLQ mechanism for failures.
+
+##### 2.5.7.9.6.0.0.0 Performance
+
+###### 2.5.7.9.6.1.0.0 Latency Slo Ms
+
+N/A (async)
+
+#### 2.5.7.10.0.0.0.0 Nested Interactions
+
+##### 2.5.7.10.1.0.0.0 Data Access
+
+###### 2.5.7.10.1.1.0.0 Source Id
+
+notification-service-006
+
+###### 2.5.7.10.1.2.0.0 Target Id
+
+notification-service-006
+
+###### 2.5.7.10.1.3.0.0 Message
+
+21. Process Event: Fetch user's device token.
+
+###### 2.5.7.10.1.4.0.0 Sequence Number
+
+21
+
+###### 2.5.7.10.1.5.0.0 Type
+
+🔹 Data Access
+
+###### 2.5.7.10.1.6.0.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.7.10.1.7.0.0 Has Return
+
+❌ No
+
+###### 2.5.7.10.1.8.0.0 Is Activation
+
+❌ No
+
+##### 2.5.7.10.2.0.0.0 External API Call
+
+###### 2.5.7.10.2.1.0.0 Source Id
+
+notification-service-006
+
+###### 2.5.7.10.2.2.0.0 Target Id
+
+notification-service-006
+
+###### 2.5.7.10.2.3.0.0 Message
+
+22. Send Push Notification via FCM
+
+###### 2.5.7.10.2.4.0.0 Sequence Number
+
+22
+
+###### 2.5.7.10.2.5.0.0 Type
+
+🔹 External API Call
+
+###### 2.5.7.10.2.6.0.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.7.10.2.7.0.0 Has Return
+
+❌ No
+
+###### 2.5.7.10.2.8.0.0 Is Activation
+
+❌ No
+
+###### 2.5.7.10.2.9.0.0 Technical Details
+
+####### 2.5.7.10.2.9.1.0 Protocol
+
+HTTPS
+
+####### 2.5.7.10.2.9.2.0 Method
+
+POST to FCM API
+
+####### 2.5.7.10.2.9.3.0 Parameters
+
+FCM payload including device token and message content
+
+####### 2.5.7.10.2.9.4.0 Authentication
+
+FCM Server Key
+
+####### 2.5.7.10.2.9.5.0 Error Handling
+
+Retry policy for transient errors. Circuit breaker for sustained failures.
+
+####### 2.5.7.10.2.9.6.0 Performance
+
+######## 2.5.7.10.2.9.6.1 Latency Slo Ms
+
+1,000
+
+## 2.6.0.0.0.0.0.0 Notes
+
+### 2.6.1.0.0.0.0.0 Content
+
+#### 2.6.1.1.0.0.0.0 Content
+
+Business Rule (SLA): Disputed requests must be actioned by the Brand Admin within 5 business days. Monitoring should be in place to alert on tickets approaching this deadline.
+
+#### 2.6.1.2.0.0.0.0 Position
+
+top-right
+
+#### 2.6.1.3.0.0.0.0 Participant Id
+
+*Not specified*
+
+#### 2.6.1.4.0.0.0.0 Sequence Number
+
+*Not specified*
+
+### 2.6.2.0.0.0.0.0 Content
+
+#### 2.6.2.1.0.0.0.0 Content
+
+The database update (Step 14) and event publication (Step 15) must be atomic. This is achieved using the Transactional Outbox pattern to guarantee data consistency.
+
+#### 2.6.2.2.0.0.0.0 Position
+
+bottom-left
+
+#### 2.6.2.3.0.0.0.0 Participant Id
+
+service-request-service-005
+
+#### 2.6.2.4.0.0.0.0 Sequence Number
+
+15
+
+### 2.6.3.0.0.0.0.0 Content
+
+#### 2.6.3.1.0.0.0.0 Content
+
+The notification flow (Steps 20-22) is fully asynchronous and decoupled from the primary resolution flow. A failure here will not cause the ticket update to fail.
+
+#### 2.6.3.2.0.0.0.0 Position
+
+bottom-right
+
+#### 2.6.3.3.0.0.0.0 Participant Id
+
+notification-service-006
+
+#### 2.6.3.4.0.0.0.0 Sequence Number
+
+20
+
+## 2.7.0.0.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | Role-Based Access Control (RBAC) must be strictly ... |
+| Performance Targets | API response times for fetching and updating ticke... |
+| Error Handling Strategy | Synchronous API calls should use standard HTTP err... |
+| Testing Considerations | End-to-end tests must cover the entire flow: loggi... |
+| Monitoring Requirements | A dashboard should be created to monitor the numbe... |
+| Deployment Considerations | Changes to the event schema for `ServiceRequestSta... |
+

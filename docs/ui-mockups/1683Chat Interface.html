@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Interface Component</title>
+  <style>
+    /* =========================================
+       1. DESIGN TOKENS (Shared Foundation)
+       ========================================= */
+    :root {
+      /* Colors: Primary (Indigo) */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-500: #6366f1;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      
+      /* Colors: Neutrals */
+      --color-white: #ffffff;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-600: #4b5563;
+      --color-gray-700: #374151;
+      --color-gray-800: #1f2937;
+      --color-gray-900: #111827;
+
+      /* Colors: Semantic */
+      --color-success-bg: #d1e7dd;
+      --color-success-text: #0f5132;
+      --color-success-main: #22c55e;
+      --color-warning-bg: #fff3cd;
+      --color-warning-text: #664d03;
+      --color-error-bg: #f8d7da;
+      --color-error-text: #842029;
+      --color-info-bg: #cff4fc;
+      --color-info-text: #055160;
+
+      /* Overlay */
+      --color-backdrop: rgba(17, 24, 39, 0.75);
+
+      /* Typography */
+      --font-family-base: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-size-xs: 12px;
+      --font-size-sm: 14px;
+      --font-size-md: 16px;
+
+      /* Spacing */
+      --spacing-1: 4px;
+      --spacing-2: 8px;
+      --spacing-3: 12px;
+      --spacing-4: 16px;
+      --spacing-6: 24px;
+
+      /* Radius */
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 12px;
+      --radius-full: 9999px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.3);
+
+      /* Transitions */
+      --transition-fast: 150ms ease-in-out;
+    }
+
+    /* =========================================
+       2. RESET & BASE STYLES
+       ========================================= */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family-base);
+      background-color: #f3f4f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* =========================================
+       3. CHAT INTERFACE ORGANISM CSS
+       ========================================= */
+    
+    /* Component Base */
+    .chat-interface {
+      display: flex;
+      flex-direction: column;
+      background-color: var(--color-white);
+      border: 1px solid var(--color-gray-200);
+      overflow: hidden;
+      position: relative;
+      font-family: var(--font-family-base);
+      transition: all 0.3s ease;
+    }
+
+    /* Variants */
+    .chat-interface--embedded {
+      height: 600px;
+      width: 100%;
+      max-width: 400px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .chat-interface--fullscreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 100vh;
+      height: 100dvh; /* Dynamic viewport height for mobile browsers */
+      width: 100%;
+      border: none;
+      border-radius: 0;
+      max-width: none;
+      z-index: 9999;
+    }
+
+    .chat-interface--modal {
+      position: fixed;
+      bottom: 0;
+      right: 20px;
+      height: 500px;
+      width: 340px;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+      border-bottom: none;
+    }
+
+    /* Header */
+    .chat-header {
+      padding: var(--spacing-3) var(--spacing-4);
+      background-color: var(--color-white);
+      border-bottom: 1px solid var(--color-gray-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .chat-header__profile {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-3);
+    }
+
+    .chat-header__avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-full);
+      background-color: var(--color-primary-100);
+      color: var(--color-primary-700);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .chat-header__status-dot {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 10px;
+      height: 10px;
+      background-color: var(--color-success-main);
+      border: 2px solid var(--color-white);
+      border-radius: 50%;
+    }
+    
+    .chat-header__status-dot--offline {
+       background-color: var(--color-gray-400);
+    }
+
+    .chat-header__info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-header__name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-gray-900);
+      line-height: 1.2;
+    }
+
+    .chat-header__status-text {
+      font-size: 12px;
+      color: var(--color-gray-500);
+    }
+
+    .chat-header__actions {
+      display: flex;
+      gap: var(--spacing-2);
+    }
+
+    /* Actions Button (Atomic) */
+    .chat-btn-icon {
+      background: transparent;
+      border: none;
+      color: var(--color-gray-500);
+      padding: var(--spacing-2);
+      cursor: pointer;
+      border-radius: var(--radius-md);
+      transition: background-color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chat-btn-icon:hover {
+      background-color: var(--color-gray-100);
+      color: var(--color-gray-700);
+    }
+
+    .chat-btn-icon:focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring);
+    }
+
+    /* Message Body */
+    .chat-body {
+      flex: 1;
+      padding: var(--spacing-4);
+      overflow-y: auto;
+      background-color: var(--color-gray-50);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-3);
+      scroll-behavior: smooth;
+    }
+    
+    /* Scrollbar Styling */
+    .chat-body::-webkit-scrollbar {
+      width: 6px;
+    }
+    .chat-body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .chat-body::-webkit-scrollbar-thumb {
+      background-color: var(--color-gray-300);
+      border-radius: 3px;
+    }
+
+    /* Connection State Banner */
+    .chat-connection-status {
+      background-color: var(--color-warning-bg);
+      color: var(--color-warning-text);
+      font-size: 12px;
+      text-align: center;
+      padding: 4px;
+      position: absolute;
+      top: 65px; /* Height of header + border */
+      left: 0;
+      right: 0;
+      z-index: 5;
+      opacity: 0;
+      transform: translateY(-100%);
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+
+    .chat-connection-status--visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Date Separator */
+    .chat-date-separator {
+      text-align: center;
+      margin: var(--spacing-2) 0;
+      position: relative;
+      display: flex;
+      justify-content: center;
+    }
+
+    .chat-date-separator__text {
+      background-color: var(--color-gray-200);
+      color: var(--color-gray-600);
+      font-size: 11px;
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      font-weight: 500;
+    }
+
+    /* Message Bubbles (Molecular) */
+    .chat-message {
+      display: flex;
+      flex-direction: column;
+      max-width: 80%;
+      animation: messageSlideIn 0.3s ease forwards;
+    }
+
+    .chat-message--incoming {
+      align-self: flex-start;
+    }
+
+    .chat-message--outgoing {
+      align-self: flex-end;
+      align-items: flex-end;
+    }
+    
+    .chat-message--system {
+      align-self: center;
+      max-width: 90%;
+      align-items: center;
+    }
+
+    .chat-message__bubble {
+      padding: 10px 14px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.4;
+      position: relative;
+      word-wrap: break-word;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .chat-message--incoming .chat-message__bubble {
+      background-color: var(--color-white);
+      color: var(--color-gray-900);
+      border: 1px solid var(--color-gray-200);
+      border-bottom-left-radius: 4px;
+    }
+
+    .chat-message--outgoing .chat-message__bubble {
+      background-color: var(--color-primary-600);
+      color: var(--color-white);
+      border: 1px solid var(--color-primary-600);
+      border-bottom-right-radius: 4px;
+    }
+    
+    .chat-message--system .chat-message__bubble {
+      background-color: var(--color-info-bg);
+      color: var(--color-info-text);
+      border: 1px solid var(--color-info-text);
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      padding: 8px 12px;
+      text-align: center;
+      box-shadow: none;
+    }
+
+    .chat-message__meta {
+      font-size: 11px;
+      margin-top: 4px;
+      color: var(--color-gray-500);
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      padding: 0 4px;
+    }
+    
+    .chat-message--outgoing .chat-message__meta {
+      justify-content: flex-end;
+    }
+
+    /* Typing Indicator */
+    .chat-typing {
+      align-self: flex-start;
+      background-color: var(--color-white);
+      border: 1px solid var(--color-gray-200);
+      padding: 12px 16px;
+      border-radius: 18px;
+      border-bottom-left-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: var(--spacing-2);
+      width: fit-content;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      background-color: var(--color-gray-400);
+      border-radius: 50%;
+      animation: typingBounce 1.4s infinite ease-in-out both;
+    }
+
+    .dot:nth-child(1) { animation-delay: -0.32s; }
+    .dot:nth-child(2) { animation-delay: -0.16s; }
+
+    /* Footer / Input Area */
+    .chat-footer {
+      padding: var(--spacing-3);
+      background-color: var(--color-white);
+      border-top: 1px solid var(--color-gray-200);
+      flex-shrink: 0;
+    }
+
+    .chat-input-wrapper {
+      display: flex;
+      align-items: flex-end;
+      gap: var(--spacing-2);
+      background-color: var(--color-gray-50);
+      border-radius: 24px;
+      padding: 8px 8px 8px 16px;
+      border: 1px solid var(--color-gray-200);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .chat-input-wrapper:focus-within {
+      border-color: var(--color-primary-600);
+      background-color: var(--color-white);
+      box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+    }
+
+    .chat-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      resize: none;
+      max-height: 100px;
+      padding: 8px 0;
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.5;
+      outline: none;
+      color: var(--color-gray-900);
+    }
+
+    .chat-input::placeholder {
+      color: var(--color-gray-400);
+    }
+
+    .chat-send-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background-color: var(--color-primary-600);
+      color: var(--color-white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .chat-send-btn:hover {
+      background-color: var(--color-primary-700);
+      transform: scale(1.05);
+    }
+    
+    .chat-send-btn:focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring);
+    }
+
+    .chat-send-btn:disabled {
+      background-color: var(--color-gray-300);
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .chat-send-btn svg {
+      margin-left: 2px; /* Visual centering adjustment for send icon */
+    }
+
+    .chat-attach-btn {
+      color: var(--color-gray-500);
+      padding: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      background: none;
+      border: none;
+      border-radius: 50%;
+    }
+
+    .chat-attach-btn:hover {
+      color: var(--color-primary-600);
+      background-color: var(--color-gray-100);
+    }
+    
+    .chat-attach-btn:focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring);
+    }
+
+    /* Animations */
+    @keyframes typingBounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+
+    @keyframes messageSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Accessibility */
+    @media (prefers-reduced-motion: reduce) {
+      .chat-message, .dot, .chat-interface {
+        animation: none;
+        transition: none;
+      }
+    }
+    
+    /* Screen Reader Only Class */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+
+    /* Responsive Mobile Styles */
+    @media (max-width: 480px) {
+      .chat-interface--embedded {
+        height: 100vh;
+        height: 100dvh;
+        max-width: 100%;
+        border-radius: 0;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 9999;
+        box-shadow: none;
+      }
+      
+      .chat-message {
+        max-width: 85%;
+      }
+      
+      .chat-header {
+        padding: var(--spacing-2) var(--spacing-4);
+      }
+    }
+    
+    /* Showcase Layout Styles (Not part of component) */
+    .showcase-wrapper {
+      width: 100%;
+      max-width: 1200px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+    
+    .variant-section {
+      margin-bottom: 40px;
+    }
+    
+    .variant-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-gray-900);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .variant-desc {
+      font-size: 14px;
+      color: var(--color-gray-600);
+      margin-bottom: 20px;
+    }
+    
+    .demo-container {
+      display: flex;
+      justify-content: center;
+      background: #e5e7eb;
+      padding: 40px;
+      border-radius: 12px;
+      min-height: 700px;
+      align-items: center;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="showcase-wrapper">
+    
+    <!-- VARIANT 1: EMBEDDED WIDGET -->
+    <div class="variant-section">
+      <h2 class="variant-title">
+        <span>Variant 1: Embedded / Sidebar Widget</span>
+        <span style="font-size: 12px; padding: 4px 8px; background: #e0e7ff; color: #4f46e5; border-radius: 4px;">Default</span>
+      </h2>
+      <p class="variant-desc">Standard chat interface used within a dashboard or sidebar context. Includes connection status, typing indicators, and message history.</p>
+      
+      <div class="demo-container">
+        
+        <!-- Component Start -->
+        <section class="chat-interface chat-interface--embedded" aria-label="Support Chat">
+          
+          <!-- Connection Status Banner (Hidden by default, toggled via JS/State) -->
+          <div class="chat-connection-status chat-connection-status--visible">
+            Connecting to secure server...
+          </div>
+
+          <!-- Header -->
+          <header class="chat-header">
+            <div class="chat-header__profile">
+              <div class="chat-header__avatar">
+                JD
+                <span class="chat-header__status-dot" title="Online"></span>
+              </div>
+              <div class="chat-header__info">
+                <span class="chat-header__name">John Doe (Tech)</span>
+                <span class="chat-header__status-text">Active Now</span>
+              </div>
+            </div>
+            <div class="chat-header__actions">
+              <button class="chat-btn-icon" aria-label="Options">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+              </button>
+              <button class="chat-btn-icon" aria-label="Close Chat">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+          </header>
+
+          <!-- Body (Log) -->
+          <div class="chat-body" id="chat-log-1" role="log" aria-live="polite" aria-relevant="additions">
+            
+            <div class="chat-date-separator">
+              <span class="chat-date-separator__text">Today</span>
+            </div>
+
+            <!-- System Message -->
+            <div class="chat-message chat-message--system">
+              <div class="chat-message__bubble">
+                Technician assigned to Ticket #SR-12345
+              </div>
+              <div class="chat-message__meta">
+                <span>10:30 AM</span>
+              </div>
+            </div>
+
+            <!-- Incoming Message -->
+            <div class="chat-message chat-message--incoming">
+              <div class="chat-message__bubble">
+                Hello! I'm John, your assigned technician. I'm currently finishing up another job nearby.
+              </div>
+              <div class="chat-message__meta">
+                <span>John Doe</span>
+                <span>•</span>
+                <span>10:32 AM</span>
+              </div>
+            </div>
+
+            <!-- Outgoing Message -->
+            <div class="chat-message chat-message--outgoing">
+              <div class="chat-message__bubble">
+                Hi John. Thanks for the update. Do you have an ETA?
+              </div>
+              <div class="chat-message__meta">
+                <span>10:33 AM</span>
+                <!-- Read Receipt Icon -->
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-primary-600);"><polyline points="20 6 9 17 4 12"></polyline><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+            </div>
+
+            <!-- Incoming Message -->
+            <div class="chat-message chat-message--incoming">
+              <div class="chat-message__bubble">
+                I should be there in about 45 minutes. Is the gate code still 1234?
+              </div>
+              <div class="chat-message__meta">
+                <span>John Doe</span>
+                <span>•</span>
+                <span>10:34 AM</span>
+              </div>
+            </div>
+
+             <!-- Typing Indicator -->
+             <div class="chat-typing" role="status" aria-label="John is typing">
+              <div class="dot"></div>
+              <div class="dot"></div>
+              <div class="dot"></div>
+            </div>
+
+          </div>
+
+          <!-- Footer (Input) -->
+          <footer class="chat-footer">
+            <form class="chat-input-wrapper" onsubmit="event.preventDefault();">
+              <button type="button" class="chat-attach-btn" aria-label="Attach file">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+              </button>
+              <textarea class="chat-input" placeholder="Type a message..." rows="1" aria-label="Message input"></textarea>
+              <button type="submit" class="chat-send-btn" aria-label="Send message">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+              </button>
+            </form>
+          </footer>
+        </section>
+        <!-- Component End -->
+
+      </div>
+    </div>
+
+    <!-- VARIANT 2: MODAL POPUP -->
+    <div class="variant-section">
+      <h2 class="variant-title">
+        <span>Variant 2: Modal Popup</span>
+        <span style="font-size: 12px; padding: 4px 8px; background: #f3f4f6; color: #374151; border-radius: 4px;">Desktop Context</span>
+      </h2>
+      <p class="variant-desc">Fixed to the bottom right of the screen. Typically used for support chats or quick interactions without leaving the current page context.</p>
+      
+      <div class="demo-container" style="align-items: flex-end; justify-content: flex-end; height: 600px;">
+        
+        <!-- Component Start -->
+        <section class="chat-interface chat-interface--modal" aria-label="Support Chat">
+          
+          <header class="chat-header" style="background: var(--color-primary-600); color: white; border-radius: 12px 12px 0 0;">
+            <div class="chat-header__profile">
+              <div class="chat-header__avatar" style="background: white; color: var(--color-primary-600);">
+                S
+              </div>
+              <div class="chat-header__info">
+                <span class="chat-header__name" style="color: white;">Support Team</span>
+                <span class="chat-header__status-text" style="color: rgba(255,255,255,0.8);">Reply time: ~5m</span>
+              </div>
+            </div>
+            <div class="chat-header__actions">
+              <button class="chat-btn-icon" aria-label="Minimize" style="color: white;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              </button>
+            </div>
+          </header>
+
+          <div class="chat-body" role="log">
+            <div class="chat-message chat-message--incoming">
+              <div class="chat-message__bubble">
+                Hi there! How can we help you with your warranty claim today?
+              </div>
+              <div class="chat-message__meta">
+                <span>Support Bot</span>
+                <span>•</span>
+                <span>Just now</span>
+              </div>
+            </div>
+          </div>
+
+          <footer class="chat-footer">
+            <form class="chat-input-wrapper" onsubmit="event.preventDefault();">
+              <textarea class="chat-input" placeholder="Type a message..." rows="1"></textarea>
+              <button type="submit" class="chat-send-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+              </button>
+            </form>
+          </footer>
+        </section>
+        <!-- Component End -->
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Simple script to auto-resize textarea
+    document.querySelectorAll('.chat-input').forEach(textarea => {
+      textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+        if(this.value === '') {
+             this.style.height = 'auto';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+"gate_id","gate_name","sprint","gate_type","criteria","responsible_team","gate_date","approval_required","approver","bypass_criteria","automation_level","tools_used","success_metrics"
+"QG-001","Infrastructure Readiness","Sprint 1","Infrastructure","Terraform apply clean; Connectivity verified; Security scan passed","DevOps","2024-02-09","true","tech.lead@company.com","None","Fully Automated","Terraform,tfsec,curl","Environment accessible to all devs"
+"QG-002","Auth Integration Check","Sprint 1","Security","B2C issues token; Backend validates signature; Roles work","Backend","2024-02-16","true","security.architect@company.com","Use mock auth for dev only","Partially Automated","Postman,jwt.ms","End-to-end auth flow working"

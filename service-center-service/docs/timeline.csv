@@ -1,0 +1,3 @@
+"scenario_name","team_size","estimated_duration_weeks","total_cost","risk_level","capacity_utilization","skill_constraints","critical_path_duration","parallel_work_percentage","resource_bottlenecks","mitigation_strategies","success_probability","quality_risk","timeline_buffer"
+"Standard Phased Delivery","8","6","159600","High","82","Mobile Sync Logic & Background Location","4.5","40","Mobile Developer in Sprint 3 (91% util)","Shift TASK-MOB-007 (Queue Logic) to Mobile Architect","75","Medium","0.5"
+"Front-Loaded Mobile Development","8","5","159600","Medium","90","Requires Mock APIs before Backend complete","4","65","Dependency on API definitions (DEP-002, DEP-003)","DevOps Lead creates Mock Servers in Sprint 1","65","High","1"

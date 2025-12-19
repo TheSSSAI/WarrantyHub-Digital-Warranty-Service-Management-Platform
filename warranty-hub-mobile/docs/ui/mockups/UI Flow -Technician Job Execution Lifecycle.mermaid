@@ -1,0 +1,76 @@
+flowchart TD
+    %% Definitions
+    Start((Start))
+    End((End))
+
+    %% Subgraphs for Stages/States
+    subgraph Stage_Assigned [State: Technician Assigned]
+        ViewList[View 'My Jobs' List] --> SelectJob[Select Service Request]
+        SelectJob --> ViewDetails[View Job Details]
+        ViewDetails --> DecTravel{Start Travel?}
+    end
+
+    subgraph Stage_Travel [State: On The Way]
+        DecTravel -- Yes --> PromptLoc{Activate Travel Mode?}
+        PromptLoc -- Yes --> CheckPerm{Location Perm Granted?}
+        
+        CheckPerm -- No --> ErrPerm[Display: Permission Required Error]
+        ErrPerm --> ViewDetails
+        
+        CheckPerm -- Yes --> StartWSS[Init WebSocket Location Stream]
+        StartWSS --> UpdateStatusOTW[API: Update Status 'On The Way']
+        PromptLoc -- No --> UpdateStatusOTW
+        
+        UpdateStatusOTW --> NotifyCust[System: Notify Customer & Show Map]
+        NotifyCust --> Drive[Technician Travels to Site]
+        Drive --> Arrive{Arrived at Site?}
+    end
+
+    subgraph Stage_WIP [State: Work In Progress]
+        Arrive -- Yes --> StopTravel[Deactivate Travel Mode]
+        StopTravel --> UpdateStatusWIP[API: Update Status 'Work In Progress']
+        UpdateStatusWIP --> PerformService[Perform Service / Diagnosis]
+        
+        PerformService --> AddData[Enter Completion Notes & Parts Used]
+        PerformService --> CapSig[Capture Customer Signature]
+        
+        AddData --> ReadyCheck{Ready to Resolve?}
+        CapSig --> ReadyCheck
+    end
+
+    subgraph Stage_Resolution [Validation & Closure]
+        ReadyCheck -- Tap 'Mark Resolved' --> ValidateData{Data Complete?}
+        
+        ValidateData -- Missing Sig/Notes --> ErrData[Display: Mandatory Fields Missing]
+        ErrData --> PerformService
+        
+        ValidateData -- Valid --> NetCheck{Network Available?}
+        
+        NetCheck -- No --> QueueOffline[Queue 'Resolve' Action Locally]
+        QueueOffline --> ShowPending[Display: Pending Sync Status]
+        
+        NetCheck -- Yes --> CallResolveAPI[API: PATCH /service-requests/{id}/status]
+    end
+
+    subgraph System_Finalization [Backend Processing]
+        CallResolveAPI --> DBUpdate[Update DB Status: 'Resolved']
+        DBUpdate --> KillTravel[Force Stop Location Sharing]
+        DBUpdate --> AuditLog[Log Action in Audit Trail]
+        AuditLog --> TriggerFeedback[Event: Trigger Customer Feedback Prompt]
+    end
+
+    ShowPending -.-> |Conn Restored| CallResolveAPI
+    TriggerFeedback --> End
+
+    %% Styling
+    classDef process fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef decision fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,color:#000
+    classDef system fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef error fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c
+    classDef state fill:#f3e5f5,stroke:#4a148c,stroke-width:1px,stroke-dasharray: 5 5
+
+    class ViewList,SelectJob,ViewDetails,Drive,PerformService,AddData,CapSig,QueueOffline process
+    class DecTravel,PromptLoc,CheckPerm,Arrive,ReadyCheck,ValidateData,NetCheck decision
+    class StartWSS,UpdateStatusOTW,NotifyCust,StopTravel,UpdateStatusWIP,CallResolveAPI,DBUpdate,KillTravel,AuditLog,TriggerFeedback system
+    class ErrPerm,ErrData error
+    class Stage_Assigned,Stage_Travel,Stage_WIP,Stage_Resolution state

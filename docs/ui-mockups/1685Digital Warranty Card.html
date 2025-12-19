@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Warranty Card Component</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+  <style>
+    /* =========================================
+       DESIGN SYSTEM TOKENS (Embedded)
+       ========================================= */
+    :root {
+      /* Palette */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      
+      --color-white: #ffffff;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-500: #6b7280;
+      --color-gray-700: #374151;
+      --color-gray-900: #111827;
+
+      /* Semantic Status Colors */
+      --color-success-bg: #d1e7dd;
+      --color-success-text: #0f5132;
+      --color-success-main: #28a745;
+      
+      --color-warning-bg: #fff3cd;
+      --color-warning-text: #664d03;
+      --color-warning-main: #ffc107;
+      
+      --color-error-bg: #f8d7da;
+      --color-error-text: #842029;
+      --color-error-main: #dc3545;
+
+      /* Typography */
+      --font-family-base: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-family-mono: 'JetBrains Mono', monospace;
+      --font-size-xs: 12px;
+      --font-size-sm: 14px;
+      --font-size-lg: 18px;
+      
+      /* Spacing */
+      --spacing-1: 4px;
+      --spacing-2: 8px;
+      --spacing-3: 12px;
+      --spacing-4: 16px;
+      --spacing-6: 24px;
+      
+      /* Radius */
+      --radius-md: 6px;
+      --radius-lg: 12px;
+      
+      /* Shadows */
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      --focus-ring: 0 0 0 3px rgba(79, 70, 229, 0.3);
+    }
+
+    /* Reset & Base */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-family-base);
+      background-color: var(--color-gray-100);
+      color: var(--color-gray-900);
+      padding: 40px 20px;
+      line-height: 1.5;
+    }
+
+    /* Showcase Layout */
+    .showcase-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 32px;
+    }
+    
+    .variant-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .variant-label {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-gray-500);
+      font-weight: 600;
+      border-bottom: 2px solid var(--color-gray-200);
+      padding-bottom: 8px;
+    }
+
+    /* =========================================
+       COMPONENT: DIGITAL WARRANTY CARD
+       ========================================= */
+    
+    /* Component Scoped Variables */
+    .warranty-card {
+      --card-padding: var(--spacing-6);
+      --card-radius: var(--radius-lg);
+      --card-border: 1px solid var(--color-gray-200);
+      
+      background: var(--color-white);
+      border-radius: var(--card-radius);
+      box-shadow: var(--shadow-md);
+      border: var(--card-border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      height: 100%;
+      position: relative;
+    }
+
+    /* 1. Header */
+    .warranty-card__header {
+      padding: var(--spacing-4) var(--spacing-6);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--color-gray-200);
+      background-color: var(--color-gray-50);
+    }
+
+    .warranty-card__brand {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-3);
+    }
+
+    .warranty-card__brand-logo {
+      width: 32px;
+      height: 32px;
+      background: var(--color-white);
+      border: 1px solid var(--color-gray-200);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: var(--color-gray-900);
+      font-size: 10px;
+    }
+
+    .warranty-card__brand-name {
+      font-weight: 600;
+      color: var(--color-gray-700);
+      font-size: var(--font-size-sm);
+    }
+
+    /* Status Badge */
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      line-height: 1;
+    }
+
+    .status-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: currentColor;
+    }
+
+    /* Variant: Active */
+    .warranty-card--active .status-badge {
+      background-color: var(--color-success-bg);
+      color: var(--color-success-text);
+      border: 1px solid var(--color-success-main);
+    }
+
+    /* Variant: Expiring Soon */
+    .warranty-card--expiring .status-badge {
+      background-color: var(--color-warning-bg);
+      color: var(--color-warning-text);
+      border: 1px solid var(--color-warning-main);
+    }
+
+    /* Variant: Expired */
+    .warranty-card--expired .status-badge {
+      background-color: var(--color-error-bg);
+      color: var(--color-error-text);
+      border: 1px solid var(--color-error-main);
+    }
+    
+    .warranty-card--expired .warranty-card__image {
+      filter: grayscale(100%);
+      opacity: 0.8;
+    }
+
+    /* 2. Body */
+    .warranty-card__body {
+      padding: var(--spacing-6);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-6);
+    }
+
+    .warranty-card__main-info {
+      display: flex;
+      gap: var(--spacing-4);
+      align-items: flex-start;
+    }
+
+    .warranty-card__image {
+      width: 72px;
+      height: 72px;
+      border-radius: var(--radius-md);
+      background-color: var(--color-gray-100);
+      object-fit: cover;
+      border: 1px solid var(--color-gray-200);
+    }
+
+    .warranty-card__details {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .warranty-card__title {
+      font-size: var(--font-size-lg);
+      font-weight: 700;
+      color: var(--color-gray-900);
+      margin-bottom: 4px;
+      line-height: 1.2;
+    }
+
+    .warranty-card__model {
+      color: var(--color-gray-500);
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--spacing-2);
+    }
+
+    /* Meta Data (Serial) */
+    .warranty-card__meta {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .meta-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--color-gray-500);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .meta-value {
+      font-family: var(--font-family-mono);
+      font-size: 12px;
+      color: var(--color-gray-700);
+      background: var(--color-gray-50);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--color-gray-200);
+      align-self: flex-start;
+    }
+
+    /* Dates Grid */
+    .warranty-card__dates {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-4);
+      padding: var(--spacing-3);
+      background: var(--color-gray-50);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-gray-100);
+    }
+
+    .date-block {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .date-block__label {
+      font-size: 11px;
+      color: var(--color-gray-500);
+      margin-bottom: 2px;
+      font-weight: 500;
+    }
+
+    .date-block__value {
+      font-weight: 600;
+      color: var(--color-gray-900);
+      font-size: 13px;
+    }
+
+    .warranty-card--expiring .date-block__value--expiry {
+      color: var(--color-warning-text);
+    }
+    
+    .warranty-card--expired .date-block__value--expiry {
+      color: var(--color-error-text);
+      text-decoration: line-through;
+    }
+
+    /* 3. Footer / Actions */
+    .warranty-card__footer {
+      padding: var(--spacing-4) var(--spacing-6);
+      background: var(--color-white);
+      border-top: 1px solid var(--color-gray-100);
+      display: flex;
+      gap: var(--spacing-2);
+      flex-wrap: wrap;
+    }
+
+    .wc-btn {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
+      text-decoration: none;
+      min-height: 40px;
+    }
+    
+    .wc-btn:focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring);
+    }
+
+    .wc-btn--primary {
+      background: var(--color-primary-600);
+      color: var(--color-white);
+    }
+    .wc-btn--primary:hover { background: var(--color-primary-700); }
+
+    .wc-btn--secondary {
+      background: var(--color-white);
+      border-color: var(--color-gray-200);
+      color: var(--color-gray-700);
+    }
+    .wc-btn--secondary:hover { background: var(--color-gray-50); border-color: var(--color-gray-300); }
+
+    .wc-btn--ghost {
+      background: transparent;
+      color: var(--color-gray-500);
+      padding: 8px;
+      flex: 0 0 auto; /* Don't grow */
+    }
+    .wc-btn--ghost:hover { color: var(--color-primary-600); background: var(--color-primary-50); }
+
+    .wc-icon {
+      width: 16px;
+      height: 16px;
+      margin-right: 6px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+    
+    .wc-btn--ghost .wc-icon { margin-right: 0; }
+
+    /* QR Code Absolute Position */
+    .warranty-card__qr {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 32px;
+      height: 32px;
+      opacity: 0.2;
+      transition: opacity 0.2s;
+    }
+    .warranty-card:hover .warranty-card__qr { opacity: 1; }
+
+    /* Loading State */
+    .warranty-card--loading .warranty-card__image,
+    .warranty-card--loading .warranty-card__title,
+    .warranty-card--loading .warranty-card__model,
+    .warranty-card--loading .meta-value,
+    .warranty-card--loading .status-badge,
+    .warranty-card--loading .date-block__value,
+    .warranty-card--loading .wc-btn {
+      background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      color: transparent !important;
+      border-color: transparent !important;
+      pointer-events: none;
+    }
+    
+    .warranty-card--loading .warranty-card__image { border: none; }
+    .warranty-card--loading .wc-icon { opacity: 0; }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .warranty-card__header { padding: 12px 16px; }
+      .warranty-card__body { padding: 16px; }
+      
+      .warranty-card__product {
+        grid-template-columns: 60px 1fr;
+        gap: 12px;
+      }
+      .warranty-card__image { width: 60px; height: 60px; }
+      
+      .warranty-card__footer {
+        flex-direction: column;
+      }
+      .wc-btn { width: 100%; }
+      .wc-btn--ghost { width: 100%; justify-content: center; }
+      .wc-btn--ghost .wc-icon { margin-right: 6px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="showcase-container">
+
+    <!-- VARIANT 1: ACTIVE -->
+    <div class="variant-section">
+      <div class="variant-label">Variant: Active</div>
+      
+      <article class="warranty-card warranty-card--active">
+        <header class="warranty-card__header">
+          <div class="warranty-card__brand">
+            <div class="warranty-card__brand-logo">SONY</div>
+            <span class="warranty-card__brand-name">Sony Electronics</span>
+          </div>
+          <div class="status-badge">Active</div>
+        </header>
+
+        <div class="warranty-card__body">
+          <div class="warranty-card__product">
+            <img src="https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=100&q=80" alt="Headphones" class="warranty-card__image">
+            <div class="warranty-card__details">
+              <h3 class="warranty-card__title">WH-1000XM5 Headphones</h3>
+              <p class="warranty-card__model">Noise Canceling / Silver</p>
+              <div class="warranty-card__meta">
+                <div class="meta-item">
+                  <span class="meta-label">Serial Number</span>
+                  <code class="meta-value">S01-99823-X9</code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="warranty-card__dates">
+            <div class="date-block">
+              <span class="date-block__label">Purchase Date</span>
+              <span class="date-block__value">Oct 12, 2023</span>
+            </div>
+            <div class="date-block">
+              <span class="date-block__label">Warranty Expiry</span>
+              <span class="date-block__value date-block__value--expiry">Oct 12, 2025</span>
+            </div>
+          </div>
+        </div>
+
+        <footer class="warranty-card__footer">
+          <button class="wc-btn wc-btn--primary">Request Service</button>
+          <button class="wc-btn wc-btn--secondary">View Invoice</button>
+          <button class="wc-btn wc-btn--ghost" aria-label="More options">
+            <svg class="wc-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+          </button>
+        </footer>
+        
+        <!-- Decoration -->
+        <svg class="warranty-card__qr" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h6v6H3V3zm2 2v2h2V5H5zm8-2h6v6h-6V3zm2 2v2h2V5h-2zM3 13h6v6H3v-6zm2 2v2h2v-2H5zm13-2h3v2h-3v-2zm-3 0h2v3h-2v-3zm3 3h3v3h-3v-3zm-3 2h2v1h-2v-1zm-2-6h1v2h-1v-2zm-1 2h1v4h-1v-4z"/></svg>
+      </article>
+    </div>
+
+    <!-- VARIANT 2: EXPIRING SOON -->
+    <div class="variant-section">
+      <div class="variant-label">Variant: Expiring Soon</div>
+      
+      <article class="warranty-card warranty-card--expiring">
+        <header class="warranty-card__header">
+          <div class="warranty-card__brand">
+            <div class="warranty-card__brand-logo">LG</div>
+            <span class="warranty-card__brand-name">LG Appliances</span>
+          </div>
+          <div class="status-badge">Expiring Soon</div>
+        </header>
+
+        <div class="warranty-card__body">
+          <div class="warranty-card__product">
+            <img src="https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=100&q=80" alt="Kitchen Appliance" class="warranty-card__image">
+            <div class="warranty-card__details">
+              <h3 class="warranty-card__title">InstaView Refrigerator</h3>
+              <p class="warranty-card__model">LFXS26973S / Stainless</p>
+              <div class="warranty-card__meta">
+                <div class="meta-item">
+                  <span class="meta-label">Serial Number</span>
+                  <code class="meta-value">LG-REF-2021-004</code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="warranty-card__dates">
+            <div class="date-block">
+              <span class="date-block__label">Purchase Date</span>
+              <span class="date-block__value">Jan 15, 2021</span>
+            </div>
+            <div class="date-block">
+              <span class="date-block__label">Warranty Expiry</span>
+              <span class="date-block__value date-block__value--expiry">Jan 15, 2024</span>
+            </div>
+          </div>
+        </div>
+
+        <footer class="warranty-card__footer">
+          <button class="wc-btn wc-btn--primary">Extend Warranty</button>
+          <button class="wc-btn wc-btn--secondary">Request Service</button>
+        </footer>
+      </article>
+    </div>
+
+    <!-- VARIANT 3: EXPIRED -->
+    <div class="variant-section">
+      <div class="variant-label">Variant: Expired</div>
+      
+      <article class="warranty-card warranty-card--expired">
+        <header class="warranty-card__header">
+          <div class="warranty-card__brand">
+            <div class="warranty-card__brand-logo">APPL</div>
+            <span class="warranty-card__brand-name">Apple Inc.</span>
+          </div>
+          <div class="status-badge">Expired</div>
+        </header>
+
+        <div class="warranty-card__body">
+          <div class="warranty-card__product">
+            <img src="https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?auto=format&fit=crop&w=100&q=80" alt="Laptop" class="warranty-card__image">
+            <div class="warranty-card__details">
+              <h3 class="warranty-card__title">MacBook Pro 16"</h3>
+              <p class="warranty-card__model">M1 Max / 32GB / 1TB</p>
+              <div class="warranty-card__meta">
+                <div class="meta-item">
+                  <span class="meta-label">Serial Number</span>
+                  <code class="meta-value">FVFXC12JHKL</code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="warranty-card__dates">
+            <div class="date-block">
+              <span class="date-block__label">Purchase Date</span>
+              <span class="date-block__value">Nov 01, 2020</span>
+            </div>
+            <div class="date-block">
+              <span class="date-block__label">Warranty Expiry</span>
+              <span class="date-block__value date-block__value--expiry">Nov 01, 2021</span>
+            </div>
+          </div>
+        </div>
+
+        <footer class="warranty-card__footer">
+          <button class="wc-btn wc-btn--secondary" style="width: 100%">Find Service Center</button>
+        </footer>
+      </article>
+    </div>
+
+    <!-- VARIANT 4: LOADING -->
+    <div class="variant-section">
+      <div class="variant-label">State: Loading</div>
+      
+      <article class="warranty-card warranty-card--loading">
+        <header class="warranty-card__header">
+          <div class="warranty-card__brand">
+            <div class="warranty-card__brand-logo"></div>
+            <span class="warranty-card__brand-name" style="width: 100px; height: 14px; background: #eee;"></span>
+          </div>
+          <div class="status-badge" style="width: 60px; height: 20px;"></div>
+        </header>
+
+        <div class="warranty-card__body">
+          <div class="warranty-card__product">
+            <div class="warranty-card__image"></div>
+            <div class="warranty-card__details">
+              <div class="warranty-card__title" style="width: 80%; height: 20px; margin-bottom: 8px;"></div>
+              <div class="warranty-card__model" style="width: 50%; height: 14px; margin-bottom: 12px;"></div>
+              <div class="meta-value" style="width: 100px; height: 20px;"></div>
+            </div>
+          </div>
+
+          <div class="warranty-card__dates">
+            <div class="date-block">
+              <span class="date-block__label" style="width: 60px; height: 10px; margin-bottom: 4px; background: #eee;"></span>
+              <span class="date-block__value" style="width: 80px; height: 14px;"></span>
+            </div>
+            <div class="date-block">
+              <span class="date-block__label" style="width: 60px; height: 10px; margin-bottom: 4px; background: #eee;"></span>
+              <span class="date-block__value" style="width: 80px; height: 14px;"></span>
+            </div>
+          </div>
+        </div>
+
+        <footer class="warranty-card__footer">
+          <button class="wc-btn" style="height: 40px;"></button>
+          <button class="wc-btn" style="height: 40px;"></button>
+        </footer>
+      </article>
+    </div>
+
+  </div>
+
+</body>
+</html>

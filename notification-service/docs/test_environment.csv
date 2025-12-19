@@ -1,0 +1,3 @@
+"environment_name","environment_type","deployment_frequency","data_refresh_frequency","infrastructure_stack","service_dependencies","monitoring_tools","access_control","backup_strategy","disaster_recovery","cost_optimization","maintenance_window"
+"Staging (Pre-Prod)","Mirror","On Merge to Main","Weekly (Sanitized)","AKS; Azure SQL (Geo-Replica); Redis","Azure AD B2C (Staging Tenant); Maps (Dev Key)","Azure Monitor; Grafana","QA; Product; Dev Leads","Daily","Tested Monthly","Scaled down 8pm-6am","On-demand"
+"Performance","Ephemeral","On Demand","Per Run (Synthetic)","AKS (Scalable); Azure SQL (High Performance)","Mocks for B2C/Maps/Notification","k6 Cloud; Azure Insights","DevOps; Perf Engineers","None","N/A","Destroyed after test","N/A"

@@ -1,0 +1,456 @@
+
+{
+  "component_inventory": {
+    "atomic_components": [
+      {
+        "component_name": "Button",
+        "category": "actions",
+        "variants": ["primary", "secondary", "outline", "ghost", "destructive", "link"],
+        "states": ["default", "hover", "active", "focus", "disabled", "loading"],
+        "responsive_needs": "full width on mobile",
+        "dependencies": ["theme_tokens"],
+        "complexity_level": "low",
+        "implementation_priority": 1,
+        "estimated_effort": "4 hours"
+      },
+      {
+        "component_name": "Input",
+        "category": "form_elements",
+        "variants": ["text", "password", "email", "number", "search", "tel"],
+        "states": ["default", "focus", "filled", "error", "disabled", "readonly"],
+        "responsive_needs": "100% width on mobile",
+        "dependencies": ["theme_tokens", "typography"],
+        "complexity_level": "low",
+        "implementation_priority": 1,
+        "estimated_effort": "4 hours"
+      },
+      {
+        "component_name": "Select",
+        "category": "form_elements",
+        "variants": ["default", "searchable", "multi-select"],
+        "states": ["default", "open", "selected", "disabled", "error"],
+        "responsive_needs": "native select fallback on mobile",
+        "dependencies": ["theme_tokens", "input"],
+        "complexity_level": "medium",
+        "implementation_priority": 2,
+        "estimated_effort": "8 hours"
+      },
+      {
+        "component_name": "Checkbox & Radio",
+        "category": "form_elements",
+        "variants": ["default", "card-like"],
+        "states": ["checked", "unchecked", "indeterminate", "disabled", "focus"],
+        "responsive_needs": "large touch targets",
+        "dependencies": ["theme_tokens"],
+        "complexity_level": "low",
+        "implementation_priority": 1,
+        "estimated_effort": "4 hours"
+      },
+      {
+        "component_name": "Badge",
+        "category": "data_display",
+        "variants": ["status (success/warning/error/info)", "counter", "outlined"],
+        "states": ["default"],
+        "responsive_needs": "none",
+        "dependencies": ["theme_tokens"],
+        "complexity_level": "low",
+        "implementation_priority": 1,
+        "estimated_effort": "2 hours"
+      },
+      {
+        "component_name": "Avatar",
+        "category": "data_display",
+        "variants": ["circle", "square", "image", "initials", "icon"],
+        "states": ["default", "loading"],
+        "responsive_needs": "none",
+        "dependencies": ["theme_tokens"],
+        "complexity_level": "low",
+        "implementation_priority": 2,
+        "estimated_effort": "2 hours"
+      },
+      {
+        "component_name": "Icon",
+        "category": "visual",
+        "variants": ["outline", "solid", "duotone"],
+        "states": ["default", "hover", "active", "disabled"],
+        "responsive_needs": "scalable vector",
+        "dependencies": ["react-icons" ],
+        "complexity_level": "low",
+        "implementation_priority": 1,
+        "estimated_effort": "2 hours"
+      },
+      {
+        "component_name": "Loader",
+        "category": "feedback",
+        "variants": ["spinner", "dots", "progress-bar"],
+        "states": ["active"],
+        "responsive_needs": "centered overlay on mobile",
+        "dependencies": ["theme_tokens"],
+        "complexity_level": "low",
+        "implementation_priority": 1,
+        "estimated_effort": "3 hours"
+      },
+      {
+        "component_name": "Tooltip",
+        "category": "overlay",
+        "variants": ["top", "bottom", "left", "right"],
+        "states": ["visible", "hidden"],
+        "responsive_needs": "click-to-toggle on touch devices",
+        "dependencies": ["theme_tokens"],
+        "complexity_level": "medium",
+        "implementation_priority": 3,
+        "estimated_effort": "4 hours"
+      },
+      {
+        "component_name": "OTP Input",
+        "category": "form_elements",
+        "variants": ["4-digit", "6-digit"],
+        "states": ["default", "focus", "filled", "error"],
+        "responsive_needs": "auto-advance focus",
+        "dependencies": ["input"],
+        "complexity_level": "medium",
+        "implementation_priority": 2,
+        "estimated_effort": "6 hours"
+      }
+    ],
+    "molecular_components": [
+      {
+        "component_name": "Form Field",
+        "category": "form_layouts",
+        "variants": ["vertical", "horizontal"],
+        "states": ["default", "error", "required"],
+        "responsive_needs": "stack vertically on mobile",
+        "dependencies": ["label", "input", "error-message", "helper-text"],
+        "complexity_level": "low",
+        "implementation_priority": 1,
+        "estimated_effort": "4 hours"
+      },
+      {
+        "component_name": "Alert",
+        "category": "feedback",
+        "variants": ["success", "warning", "error", "info", "toast"],
+        "states": ["visible", "dismissing"],
+        "responsive_needs": "full width on mobile",
+        "dependencies": ["icon", "button"],
+        "complexity_level": "medium",
+        "implementation_priority": 2,
+        "estimated_effort": "5 hours"
+      },
+      {
+        "component_name": "Modal",
+        "category": "overlay",
+        "variants": ["default", "alert", "fullscreen-mobile", "slide-over"],
+        "states": ["open", "closed"],
+        "responsive_needs": "full screen on mobile, centered card on desktop",
+        "dependencies": ["button", "icon", "portal"],
+        "complexity_level": "medium",
+        "implementation_priority": 2,
+        "estimated_effort": "8 hours"
+      },
+      {
+        "component_name": "Card",
+        "category": "layout",
+        "variants": ["default", "interactive", "bordered", "elevated"],
+        "states": ["default", "hover", "selected"],
+        "responsive_needs": "100% width on mobile",
+        "dependencies": ["theme_tokens"],
+        "complexity_level": "low",
+        "implementation_priority": 1,
+        "estimated_effort": "3 hours"
+      },
+      {
+        "component_name": "Pagination",
+        "category": "navigation",
+        "variants": ["simple (prev/next)", "numbered"],
+        "states": ["first-page", "last-page", "middle"],
+        "responsive_needs": "simplified view on mobile",
+        "dependencies": ["button", "icon"],
+        "complexity_level": "medium",
+        "implementation_priority": 3,
+        "estimated_effort": "5 hours"
+      },
+      {
+        "component_name": "Tabs",
+        "category": "navigation",
+        "variants": ["line", "enclosed", "pills"],
+        "states": ["active", "inactive"],
+        "responsive_needs": "scrollable horizontal list on mobile",
+        "dependencies": ["button"],
+        "complexity_level": "medium",
+        "implementation_priority": 2,
+        "estimated_effort": "6 hours"
+      },
+      {
+        "component_name": "File Uploader",
+        "category": "form_elements",
+        "variants": ["dropzone", "button-trigger"],
+        "states": ["idle", "dragging", "uploading", "complete", "error"],
+        "responsive_needs": "native file picker integration",
+        "dependencies": ["button", "icon", "progress-bar"],
+        "complexity_level": "medium",
+        "implementation_priority": 2,
+        "estimated_effort": "8 hours"
+      },
+      {
+        "component_name": "Statistic Card",
+        "category": "data_display",
+        "variants": ["simple", "with-trend", "with-chart"],
+        "states": ["loading", "error", "populated"],
+        "responsive_needs": "responsive grid layout",
+        "dependencies": ["card", "icon", "typography"],
+        "complexity_level": "medium",
+        "implementation_priority": 2,
+        "estimated_effort": "5 hours"
+      }
+    ],
+    "organism_components": [
+      {
+        "component_name": "Data Table",
+        "category": "data_display",
+        "variants": ["basic", "sortable", "filterable", "selectable", "expandable"],
+        "states": ["loading", "empty", "populated", "error"],
+        "responsive_needs": "horizontal scroll or card view transformation on mobile",
+        "dependencies": ["table", "pagination", "checkbox", "badge", "button", "input"],
+        "complexity_level": "high",
+        "implementation_priority": 3,
+        "estimated_effort": "24 hours"
+      },
+      {
+        "component_name": "Navigation Bar",
+        "category": "layout",
+        "variants": ["public", "authenticated", "admin"],
+        "states": ["default", "sticky"],
+        "responsive_needs": "hamburger menu transformation",
+        "dependencies": ["logo", "button", "avatar", "menu", "drawer"],
+        "complexity_level": "high",
+        "implementation_priority": 2,
+        "estimated_effort": "16 hours"
+      },
+      {
+        "component_name": "Sidebar Navigation",
+        "category": "layout",
+        "variants": ["fixed", "collapsible", "floating"],
+        "states": ["expanded", "collapsed", "mobile-hidden"],
+        "responsive_needs": "drawer (off-canvas) on mobile",
+        "dependencies": ["menu-item", "icon", "logo"],
+        "complexity_level": "medium",
+        "implementation_priority": 2,
+        "estimated_effort": "12 hours"
+      },
+      {
+        "component_name": "Status Timeline",
+        "category": "data_display",
+        "variants": ["vertical", "horizontal"],
+        "states": ["pending", "in-progress", "completed", "error"],
+        "responsive_needs": "vertical layout on mobile",
+        "dependencies": ["icon", "typography", "badge"],
+        "complexity_level": "medium",
+        "implementation_priority": 3,
+        "estimated_effort": "8 hours"
+      },
+      {
+        "component_name": "Chat Interface",
+        "category": "communication",
+        "variants": ["embedded", "fullscreen", "modal"],
+        "states": ["connecting", "connected", "typing", "message-received"],
+        "responsive_needs": "full viewport height on mobile",
+        "dependencies": ["input", "button", "avatar", "message-bubble", "scroll-area"],
+        "complexity_level": "high",
+        "implementation_priority": 4,
+        "estimated_effort": "20 hours"
+      },
+      {
+        "component_name": "Digital Warranty Card",
+        "category": "business_logic",
+        "variants": ["active", "expired", "expiring-soon"],
+        "states": ["loading", "data", "error"],
+        "responsive_needs": "stack content on mobile",
+        "dependencies": ["card", "badge", "button", "qr-code"],
+        "complexity_level": "high",
+        "implementation_priority": 3,
+        "estimated_effort": "12 hours"
+      },
+      {
+        "component_name": "Analytics Chart",
+        "category": "data_display",
+        "variants": ["line", "bar", "pie", "funnel"],
+        "states": ["loading", "no-data", "populated"],
+        "responsive_needs": "responsive container sizing, tooltip adjustment",
+        "dependencies": ["recharts (or similar)", "card", "typography"],
+        "complexity_level": "high",
+        "implementation_priority": 4,
+        "estimated_effort": "16 hours"
+      },
+      {
+        "component_name": "Map Widget",
+        "category": "data_display",
+        "variants": ["view-only", "interactive", "selector"],
+        "states": ["loading", "pins-loaded", "error"],
+        "responsive_needs": "touch gestures, fullscreen toggle",
+        "dependencies": ["mapbox-gl (or similar)", "card"],
+        "complexity_level": "high",
+        "implementation_priority": 4,
+        "estimated_effort": "16 hours"
+      }
+    ]
+  },
+  "screen_inventory": [
+    {
+      "screen_name": "Authentication - Login",
+      "screen_type": "form_page",
+      "variants": ["consumer", "admin"],
+      "states": ["initial", "submitting", "error", "mfa_challenge"],
+      "required_components": ["form_layout", "input", "button", "link", "otp_input"],
+      "platform_optimizations": "center alignment on desktop, full width on mobile",
+      "implementation_priority": 1,
+      "estimated_effort": "8 hours",
+      "user_flow_criticality": "critical"
+    },
+    {
+      "screen_name": "Authentication - Register",
+      "screen_type": "form_page",
+      "variants": ["default"],
+      "states": ["step_1", "step_2", "verification", "success"],
+      "required_components": ["stepper", "form_field", "checkbox (terms)", "button"],
+      "platform_optimizations": "step-by-step wizard on mobile",
+      "implementation_priority": 1,
+      "estimated_effort": "10 hours",
+      "user_flow_criticality": "critical"
+    },
+    {
+      "screen_name": "Super Admin - Dashboard",
+      "screen_type": "dashboard",
+      "variants": ["default"],
+      "states": ["loading", "loaded"],
+      "required_components": ["sidebar", "navbar", "statistic_card", "analytics_chart"],
+      "platform_optimizations": "grid layout reflow",
+      "implementation_priority": 2,
+      "estimated_effort": "12 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Super Admin - Brand Management",
+      "screen_type": "list_view",
+      "variants": ["pending", "all"],
+      "states": ["loading", "loaded", "empty"],
+      "required_components": ["data_table", "filters", "modal (approval/rejection)"],
+      "platform_optimizations": "horizontal scroll table on mobile",
+      "implementation_priority": 2,
+      "estimated_effort": "10 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Brand Admin - Analytics",
+      "screen_type": "dashboard",
+      "variants": ["default"],
+      "states": ["loading", "loaded", "no_data"],
+      "required_components": ["map_widget", "analytics_chart", "date_picker"],
+      "platform_optimizations": "stacked charts on mobile",
+      "implementation_priority": 3,
+      "estimated_effort": "14 hours",
+      "user_flow_criticality": "medium"
+    },
+    {
+      "screen_name": "Consumer - My Products",
+      "screen_type": "grid_view",
+      "variants": ["grid", "list"],
+      "states": ["loading", "loaded", "empty"],
+      "required_components": ["product_card", "search_bar", "filter_button", "fab (add)"],
+      "platform_optimizations": "list view default on mobile",
+      "implementation_priority": 2,
+      "estimated_effort": "8 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Consumer - Product Detail",
+      "screen_type": "detail_view",
+      "variants": ["default"],
+      "states": ["loading", "loaded"],
+      "required_components": ["digital_warranty_card", "service_history_list", "action_buttons"],
+      "platform_optimizations": "tabbed interface for history/details on mobile",
+      "implementation_priority": 2,
+      "estimated_effort": "10 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Consumer - Create Service Request",
+      "screen_type": "form_page",
+      "variants": ["default"],
+      "states": ["input", "submitting", "success"],
+      "required_components": ["form_field", "file_uploader", "date_time_picker", "map_preview"],
+      "platform_optimizations": "native file picker trigger",
+      "implementation_priority": 3,
+      "estimated_effort": "12 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Service Center - Request Management",
+      "screen_type": "kanban_or_list",
+      "variants": ["list", "kanban"],
+      "states": ["loading", "loaded"],
+      "required_components": ["data_table", "status_badge", "modal (assign tech)"],
+      "platform_optimizations": "simplified list on mobile",
+      "implementation_priority": 3,
+      "estimated_effort": "16 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Consumer - Invoice Vault",
+      "screen_type": "gallery",
+      "variants": ["grid", "list"],
+      "states": ["loading", "loaded", "empty", "preview"],
+      "required_components": ["document_card", "image_viewer_modal", "search_bar"],
+      "platform_optimizations": "grid layout on mobile",
+      "implementation_priority": 4,
+      "estimated_effort": "8 hours",
+      "user_flow_criticality": "medium"
+    }
+  ],
+  "implementation_plan": {
+    "phase_1_foundation": {
+      "components": ["Button", "Input", "Typography", "Icon", "Badge", "Loader"],
+      "rationale": "Establish design system tokens and atomic elements required for all other components.",
+      "estimated_duration": "3 days"
+    },
+    "phase_2_core_layout_navigation": {
+      "components": ["Form Field", "Card", "Modal", "Alert", "Navigation Bar", "Sidebar Navigation"],
+      "rationale": "Build the shell application structure and containers for content.",
+      "estimated_duration": "5 days"
+    },
+    "phase_3_data_input_forms": {
+      "components": ["Select", "Checkbox & Radio", "OTP Input", "File Uploader", "Date Picker"],
+      "rationale": "Enable user registration, login, and data entry workflows.",
+      "estimated_duration": "5 days"
+    },
+    "phase_4_data_display_tables": {
+      "components": ["Data Table", "Pagination", "Tabs", "Status Timeline", "Digital Warranty Card"],
+      "rationale": "Enable the visualization of complex data sets for Admin and Consumer dashboards.",
+      "estimated_duration": "8 days"
+    },
+    "phase_5_advanced_visualizations": {
+      "components": ["Analytics Chart", "Map Widget", "Statistic Card", "Chat Interface"],
+      "rationale": "Develop complex, library-dependent components for analytics and real-time features.",
+      "estimated_duration": "10 days"
+    },
+    "phase_6_screen_assembly": {
+      "screens": ["Auth Screens", "Admin Dashboards", "Consumer Product Views", "Service Request Flows"],
+      "rationale": "Assemble components into final page templates and conduct integration testing.",
+      "estimated_duration": "10 days"
+    }
+  },
+  "platform_implementation_strategy": {
+    "target_platform": "Web (React 18)",
+    "implementation_approach": "Mobile-First Responsive Web Design",
+    "responsive_strategy": "CSS Grid/Flexbox with media queries for breakpoints (sm, md, lg, xl). Components use 100% width on mobile and fixed/max-widths on desktop.",
+    "progressive_enhancement": "Core forms work without JS where possible. enhanced interactions (charts, maps, drag-drop) load progressively.",
+    "browser_support": "Latest 2 versions of Chrome, Firefox, Safari, Edge.",
+    "accessibility_integration": "Strict adherence to WCAG 2.1 AA. Storybook a11y addon integration for component testing."
+  },
+  "quality_assurance_plan": {
+    "component_testing": "Storybook for visual regression and isolated state testing.",
+    "integration_testing": "Jest + React Testing Library for interaction and logic testing.",
+    "responsive_testing": "Chromatic (or similar) for visual regression across viewports.",
+    "accessibility_testing": "Axe-core automated scans + Manual keyboard navigation testing.",
+    "performance_testing": "Bundle size monitoring and render performance profiling."
+  }
+}

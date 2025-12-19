@@ -1,0 +1,901 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-UJ-001
+
+## 1.2 Name
+
+User Registers a New Product with Manual Invoice Upload
+
+## 1.3 Description
+
+A consumer registers a new product by manually entering its details (brand, model, serial number) and uploading a digital copy of the invoice. The system creates a digital warranty card, calculates the warranty expiration, and triggers an asynchronous OCR process for the invoice.
+
+## 1.4 Type
+
+🔹 UserJourney
+
+## 1.5 Purpose
+
+To allow a user to add a product to their account, creating a digital record of ownership, warranty, and purchase for future service requests.
+
+## 1.6 Complexity
+
+Medium
+
+## 1.7 Priority
+
+🔴 High
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- mobile-client-013
+- api-gateway-001
+- product-service-003
+
+## 1.10 Key Interactions
+
+- User fills out the product registration form in the client app, providing Brand, Model, Serial Number, and Purchase Date.
+- User selects and uploads an invoice file (PDF, JPG, PNG).
+- Client sends product data and the multipart/form-data file to the ProductService via the API Gateway.
+- ProductService validates the data, ensuring Purchase Date is not in the future and serial number format is valid for the brand.
+- ProductService saves the product record to the database, calculates the warranty expiry date, and stores the invoice file in Azure Blob Storage.
+- ProductService publishes an event to trigger asynchronous OCR processing (as in SEQ-EP-001).
+- ProductService returns the newly created digital warranty card details to the client.
+
+## 1.11 Triggers
+
+- User chooses to add a new product in the application.
+
+## 1.12 Outcomes
+
+- A new product record is created and associated with the user.
+- A digital warranty card is generated.
+- The uploaded invoice is securely stored and linked to the product.
+
+## 1.13 Business Rules
+
+- Purchase Date cannot be in the future.
+- Invoice file size must be under 10MB.
+- Warranty expiry date is auto-calculated based on purchase date and warranty duration.
+- Critical product details become non-editable after the first service request is raised (REQ-3.2).
+
+## 1.14 Error Scenarios
+
+- User provides an invalid serial number format.
+- File upload fails or the file type is unsupported.
+- Product service is unable to save the record due to a database error.
+
+## 1.15 Integration Points
+
+- Azure Blob Storage (for invoice file)
+- Azure Service Bus (for OCR event)
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-OP-001
+
+## 2.2 Name
+
+Operator-Initiated Application Rollback via CI/CD
+
+## 2.3 Description
+
+A comprehensive technical sequence detailing the operational runbook for rolling back a failed application deployment in production. An Operator, alerted by the monitoring system, identifies the last stable version and triggers a parameterized CI/CD pipeline to redeploy the stable container image from ACR to AKS. This sequence is a direct implementation of the procedure defined in US-132, focusing on minimizing Mean Time To Recovery (MTTR) and ensuring service reliability.
+
+## 2.4 Participants
+
+### 2.4.1 Human Actor
+
+#### 2.4.1.1 Repository Id
+
+human-operator
+
+#### 2.4.1.2 Display Name
+
+Operator (SRE/DevOps)
+
+#### 2.4.1.3 Type
+
+🔹 Human Actor
+
+#### 2.4.1.4 Technology
+
+CLI (kubectl, gh), Web UI
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #E67E22 |
+| Stereotype | Human |
+
+### 2.4.2.0 Observability Platform
+
+#### 2.4.2.1 Repository Id
+
+monitoring-dashboard
+
+#### 2.4.2.2 Display Name
+
+Monitoring Dashboard
+
+#### 2.4.2.3 Type
+
+🔹 Observability Platform
+
+#### 2.4.2.4 Technology
+
+Grafana / Azure Monitor
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #F1C40F |
+| Stereotype | System |
+
+### 2.4.3.0 CI/CD Pipeline
+
+#### 2.4.3.1 Repository Id
+
+github-actions-cicd
+
+#### 2.4.3.2 Display Name
+
+GitHub Actions CI/CD
+
+#### 2.4.3.3 Type
+
+🔹 CI/CD Pipeline
+
+#### 2.4.3.4 Technology
+
+GitHub Actions
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #3498DB |
+| Stereotype | System |
+
+### 2.4.4.0 Container Orchestrator
+
+#### 2.4.4.1 Repository Id
+
+azure-kubernetes-service
+
+#### 2.4.4.2 Display Name
+
+Azure Kubernetes Service (AKS)
+
+#### 2.4.4.3 Type
+
+🔹 Container Orchestrator
+
+#### 2.4.4.4 Technology
+
+Kubernetes 1.29.x
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #2ECC71 |
+| Stereotype | System |
+
+### 2.4.5.0 Container Registry
+
+#### 2.4.5.1 Repository Id
+
+azure-container-registry
+
+#### 2.4.5.2 Display Name
+
+Azure Container Registry (ACR)
+
+#### 2.4.5.3 Type
+
+🔹 Container Registry
+
+#### 2.4.5.4 Technology
+
+ACR
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #9B59B6 |
+| Stereotype | System |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Alert Notification
+
+#### 2.5.1.1 Source Id
+
+monitoring-dashboard
+
+#### 2.5.1.2 Target Id
+
+human-operator
+
+#### 2.5.1.3 Message
+
+1. [Alert] Critical SLO Breach Detected
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Alert Notification
+
+#### 2.5.1.6 Is Synchronous
+
+❌ No
+
+#### 2.5.1.7 Return Message
+
+
+
+#### 2.5.1.8 Has Return
+
+❌ No
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+##### 2.5.1.10.1 Protocol
+
+PagerDuty/Slack
+
+##### 2.5.1.10.2 Method
+
+Webhook
+
+##### 2.5.1.10.3 Parameters
+
+Payload containing alert rule name ('P95 Latency > 500ms'), severity ('Critical'), and link to dashboard.
+
+##### 2.5.1.10.4 Authentication
+
+N/A
+
+##### 2.5.1.10.5 Error Handling
+
+Alertmanager handles retry/escalation policies.
+
+##### 2.5.1.10.6 Performance
+
+###### 2.5.1.10.6.1 Latency
+
+< 10s
+
+### 2.5.2.0.0.0 Manual Query
+
+#### 2.5.2.1.0.0 Source Id
+
+human-operator
+
+#### 2.5.2.2.0.0 Target Id
+
+monitoring-dashboard
+
+#### 2.5.2.3.0.0 Message
+
+2. [Investigate] Analyze dashboard to confirm deployment failure
+
+#### 2.5.2.4.0.0 Sequence Number
+
+2
+
+#### 2.5.2.5.0.0 Type
+
+🔹 Manual Query
+
+#### 2.5.2.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7.0.0 Return Message
+
+Correlate high error rate with recent deployment annotation
+
+#### 2.5.2.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.2.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.2.10.0.0 Technical Details
+
+##### 2.5.2.10.1.0 Protocol
+
+HTTPS
+
+##### 2.5.2.10.2.0 Method
+
+Web UI Interaction
+
+##### 2.5.2.10.3.0 Parameters
+
+Time range selection, filter by deployment version.
+
+##### 2.5.2.10.4.0 Authentication
+
+Azure AD SSO
+
+##### 2.5.2.10.5.0 Error Handling
+
+N/A (Manual process)
+
+##### 2.5.2.10.6.0 Performance
+
+###### 2.5.2.10.6.1 Latency
+
+< 5s query response
+
+### 2.5.3.0.0.0 Manual Process
+
+#### 2.5.3.1.0.0 Source Id
+
+human-operator
+
+#### 2.5.3.2.0.0 Target Id
+
+human-operator
+
+#### 2.5.3.3.0.0 Message
+
+3. [Decision] Consult runbook and decide to execute rollback
+
+#### 2.5.3.4.0.0 Sequence Number
+
+3
+
+#### 2.5.3.5.0.0 Type
+
+🔹 Manual Process
+
+#### 2.5.3.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.3.7.0.0 Return Message
+
+
+
+#### 2.5.3.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.3.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.3.10.0.0 Technical Details
+
+##### 2.5.3.10.1.0 Protocol
+
+N/A
+
+##### 2.5.3.10.2.0 Method
+
+Following documented procedure
+
+##### 2.5.3.10.3.0 Parameters
+
+N/A
+
+##### 2.5.3.10.4.0 Authentication
+
+N/A
+
+##### 2.5.3.10.5.0 Error Handling
+
+Runbook provides escalation path if rollback is not feasible.
+
+##### 2.5.3.10.6.0 Performance
+
+*No data available*
+
+### 2.5.4.0.0.0 API Call / UI Interaction
+
+#### 2.5.4.1.0.0 Source Id
+
+human-operator
+
+#### 2.5.4.2.0.0 Target Id
+
+github-actions-cicd
+
+#### 2.5.4.3.0.0 Message
+
+4. [Identify & Trigger] Initiate 'Deploy' workflow with previous stable image tag
+
+#### 2.5.4.4.0.0 Sequence Number
+
+4
+
+#### 2.5.4.5.0.0 Type
+
+🔹 API Call / UI Interaction
+
+#### 2.5.4.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7.0.0 Return Message
+
+Workflow run started successfully (HTTP 204)
+
+#### 2.5.4.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.4.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.4.10.0.0 Technical Details
+
+##### 2.5.4.10.1.0 Protocol
+
+HTTPS (GitHub API)
+
+##### 2.5.4.10.2.0 Method
+
+POST /repos/{org}/{repo}/actions/workflows/deploy.yml/dispatches
+
+##### 2.5.4.10.3.0 Parameters
+
+Body: `{"ref": "main", "inputs": {"imageTag": "v1.2.3"}}`
+
+##### 2.5.4.10.4.0 Authentication
+
+GitHub PAT or OAuth Token with 'workflow' scope
+
+##### 2.5.4.10.5.0 Error Handling
+
+Handle 401/403 for auth errors, 404 for wrong workflow, 422 for invalid inputs. Operator must verify input tag.
+
+##### 2.5.4.10.6.0 Performance
+
+###### 2.5.4.10.6.1 Latency
+
+< 2s
+
+### 2.5.5.0.0.0 API Call
+
+#### 2.5.5.1.0.0 Source Id
+
+github-actions-cicd
+
+#### 2.5.5.2.0.0 Target Id
+
+azure-kubernetes-service
+
+#### 2.5.5.3.0.0 Message
+
+5. [Execute Deployment] Apply new deployment state
+
+#### 2.5.5.4.0.0 Sequence Number
+
+5
+
+#### 2.5.5.5.0.0 Type
+
+🔹 API Call
+
+#### 2.5.5.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7.0.0 Return Message
+
+Deployment update acknowledged
+
+#### 2.5.5.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.5.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.5.10.0.0 Technical Details
+
+##### 2.5.5.10.1.0 Protocol
+
+HTTPS (Kubernetes API)
+
+##### 2.5.5.10.2.0 Method
+
+PATCH /apis/apps/v1/namespaces/{ns}/deployments/{name}
+
+##### 2.5.5.10.3.0 Parameters
+
+Command: `kubectl set image deployment/{name} app=myregistry.azurecr.io/app:v1.2.3 --record`
+
+##### 2.5.5.10.4.0 Authentication
+
+Azure Service Principal with AKS Cluster User Role
+
+##### 2.5.5.10.5.0 Error Handling
+
+Pipeline fails if kubectl command exits with non-zero code. Log stderr for debugging.
+
+##### 2.5.5.10.6.0 Performance
+
+###### 2.5.5.10.6.1 Latency
+
+< 5s
+
+### 2.5.6.0.0.0 Container Image Pull
+
+#### 2.5.6.1.0.0 Source Id
+
+azure-kubernetes-service
+
+#### 2.5.6.2.0.0 Target Id
+
+azure-container-registry
+
+#### 2.5.6.3.0.0 Message
+
+6. [Pull Image] Request stable image 'v1.2.3'
+
+#### 2.5.6.4.0.0 Sequence Number
+
+6
+
+#### 2.5.6.5.0.0 Type
+
+🔹 Container Image Pull
+
+#### 2.5.6.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7.0.0 Return Message
+
+Image layers data
+
+#### 2.5.6.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.6.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.6.10.0.0 Technical Details
+
+##### 2.5.6.10.1.0 Protocol
+
+HTTPS
+
+##### 2.5.6.10.2.0 Method
+
+Docker Registry API v2
+
+##### 2.5.6.10.3.0 Parameters
+
+Image name and tag
+
+##### 2.5.6.10.4.0 Authentication
+
+AKS Kubelet Identity authenticates with ACR (ACRAttach)
+
+##### 2.5.6.10.5.0 Error Handling
+
+AKS reports `ImagePullBackOff` error if image not found or auth fails. This will halt the rolling update.
+
+##### 2.5.6.10.6.0 Performance
+
+###### 2.5.6.10.6.1 Throughput
+
+Dependent on image size and network bandwidth
+
+### 2.5.7.0.0.0 Internal State Change
+
+#### 2.5.7.1.0.0 Source Id
+
+azure-kubernetes-service
+
+#### 2.5.7.2.0.0 Target Id
+
+azure-kubernetes-service
+
+#### 2.5.7.3.0.0 Message
+
+7. [Internal] Perform rolling update of pods
+
+#### 2.5.7.4.0.0 Sequence Number
+
+7
+
+#### 2.5.7.5.0.0 Type
+
+🔹 Internal State Change
+
+#### 2.5.7.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.7.7.0.0 Return Message
+
+
+
+#### 2.5.7.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.7.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.7.10.0.0 Technical Details
+
+##### 2.5.7.10.1.0 Protocol
+
+Internal Scheduler
+
+##### 2.5.7.10.2.0 Method
+
+RollingUpdate Strategy
+
+##### 2.5.7.10.3.0 Parameters
+
+`maxUnavailable`: 25%, `maxSurge`: 25%
+
+##### 2.5.7.10.4.0 Authentication
+
+N/A
+
+##### 2.5.7.10.5.0 Error Handling
+
+Update pauses if new pods fail readiness probes. Operator can manually abort via `kubectl rollout undo`.
+
+##### 2.5.7.10.6.0 Performance
+
+*No data available*
+
+### 2.5.8.0.0.0 Manual Query
+
+#### 2.5.8.1.0.0 Source Id
+
+human-operator
+
+#### 2.5.8.2.0.0 Target Id
+
+monitoring-dashboard
+
+#### 2.5.8.3.0.0 Message
+
+8. [Validate] Monitor system health and deployment status
+
+#### 2.5.8.4.0.0 Sequence Number
+
+8
+
+#### 2.5.8.5.0.0 Type
+
+🔹 Manual Query
+
+#### 2.5.8.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.8.7.0.0 Return Message
+
+Observe metrics returning to baseline (error rate drops)
+
+#### 2.5.8.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.8.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.8.10.0.0 Technical Details
+
+##### 2.5.8.10.1.0 Protocol
+
+HTTPS
+
+##### 2.5.8.10.2.0 Method
+
+Web UI Interaction
+
+##### 2.5.8.10.3.0 Parameters
+
+Dashboard refresh, `kubectl rollout status deployment/{name}`
+
+##### 2.5.8.10.4.0 Authentication
+
+Azure AD SSO
+
+##### 2.5.8.10.5.0 Error Handling
+
+If metrics do not improve, escalate incident and consider DB rollback (PITR) as per runbook.
+
+##### 2.5.8.10.6.0 Performance
+
+###### 2.5.8.10.6.1 Latency
+
+< 5s query response
+
+### 2.5.9.0.0.0 Manual Process
+
+#### 2.5.9.1.0.0 Source Id
+
+human-operator
+
+#### 2.5.9.2.0.0 Target Id
+
+human-operator
+
+#### 2.5.9.3.0.0 Message
+
+9. [Confirm & Communicate] Declare incident resolved
+
+#### 2.5.9.4.0.0 Sequence Number
+
+9
+
+#### 2.5.9.5.0.0 Type
+
+🔹 Manual Process
+
+#### 2.5.9.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.9.7.0.0 Return Message
+
+
+
+#### 2.5.9.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.9.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.9.10.0.0 Technical Details
+
+##### 2.5.9.10.1.0 Protocol
+
+N/A
+
+##### 2.5.9.10.2.0 Method
+
+Update status page, notify stakeholders
+
+##### 2.5.9.10.3.0 Parameters
+
+N/A
+
+##### 2.5.9.10.4.0 Authentication
+
+N/A
+
+##### 2.5.9.10.5.0 Error Handling
+
+N/A
+
+##### 2.5.9.10.6.0 Performance
+
+*No data available*
+
+## 2.6.0.0.0.0 Notes
+
+### 2.6.1.0.0.0 Content
+
+#### 2.6.1.1.0.0 Content
+
+Business Rule BR-002 Mandate: A blameless post-mortem is required after any production rollback to identify the root cause and prevent recurrence.
+
+#### 2.6.1.2.0.0 Position
+
+top-right
+
+#### 2.6.1.3.0.0 Participant Id
+
+*Not specified*
+
+#### 2.6.1.4.0.0 Sequence Number
+
+9
+
+### 2.6.2.0.0.0 Content
+
+#### 2.6.2.1.0.0 Content
+
+Assumption: Immutable container image tags (e.g., SemVer, Git SHA) are used. Mutable tags like 'latest' are forbidden in production.
+
+#### 2.6.2.2.0.0 Position
+
+bottom-left
+
+#### 2.6.2.3.0.0 Participant Id
+
+azure-container-registry
+
+#### 2.6.2.4.0.0 Sequence Number
+
+6
+
+### 2.6.3.0.0.0 Content
+
+#### 2.6.3.1.0.0 Content
+
+This sequence only covers application code rollback. A separate, more critical procedure exists for database rollback using Point-in-Time Recovery (PITR).
+
+#### 2.6.3.2.0.0 Position
+
+bottom-right
+
+#### 2.6.3.3.0.0 Participant Id
+
+*Not specified*
+
+#### 2.6.3.4.0.0 Sequence Number
+
+*Not specified*
+
+## 2.7.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | Role-Based Access Control (RBAC) must be strictly ... |
+| Performance Targets | The end-to-end rollback process (from trigger to v... |
+| Error Handling Strategy | The runbook must contain a fallback plan for a fai... |
+| Testing Considerations | This entire rollback procedure MUST be tested quar... |
+| Monitoring Requirements | Monitoring dashboards must be configured to overla... |
+| Deployment Considerations | AKS deployments must use the `RollingUpdate` strat... |
+

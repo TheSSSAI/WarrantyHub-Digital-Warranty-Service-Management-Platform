@@ -1,0 +1,4 @@
+"gate_id","gate_name","sprint","gate_type","criteria","responsible_team","gate_date","approval_required"
+"QG-001","Sprint 1 Infrastructure Gate","Sprint 1","Infrastructure Verification","Terraform plan clean; VNet peering verified; DB accessible via Private Link","DevOps","2024-06-07","true"
+"QG-002","Mobile Offline Sync Gate","Sprint 2","Testing","Data persists offline; Sync resolves conflicts correctly; No data loss on app kill","QA","2024-06-21","true"
+"QG-003","Location Tracking Performance Gate","Sprint 3","Performance","Location latency < 2s; Battery drain < 5% per hour in Travel Mode","QA","2024-07-05","true"

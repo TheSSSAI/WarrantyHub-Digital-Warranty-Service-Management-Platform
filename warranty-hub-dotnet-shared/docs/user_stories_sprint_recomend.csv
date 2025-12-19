@@ -1,0 +1,4 @@
+"sprint_number","story_ids","total_points","sprint_goal","dependencies_resolved"
+"1","[""TS-INFRA-001"",""TS-INFRA-002"",""US-129"",""US-018""]","18","Establish core infrastructure, CI/CD pipeline, and secure user authentication foundation.","true"
+"2","[""US-019"",""US-017"",""US-098"",""US-032""]","21","Implement core product registration, document management, and basic mobile warranty view.","true"
+"3","[""US-074"",""US-079"",""US-086""]","24","Deliver advanced features: offline mobile access, technician tracking, and brand analytics.","true"

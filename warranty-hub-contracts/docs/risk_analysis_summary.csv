@@ -1,0 +1,2 @@
+"total_risks_identified","critical_risks","high_priority_risks","average_risk_score","key_risk_themes","immediate_actions_required"
+"6","2","2","15.8","[""Mobile Device Limitations"",""Distributed Data Consistency"",""Identity Management Complexity""]","[""Prototype React Native background location tracking with 'react-native-background-geolocation' immediately to validate feasibility."",""Assign senior resource to Azure AD B2C Custom Policy configuration."",""Define conflict resolution rules for Offline Data Sync manager.""]"

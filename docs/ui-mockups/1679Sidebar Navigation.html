@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sidebar Navigation Component</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* =========================================
+       1. DESIGN TOKENS
+       ========================================= */
+    :root {
+      /* Colors */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-500: #6366f1;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      
+      --color-white: #ffffff;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-600: #4b5563;
+      --color-gray-700: #374151;
+      --color-gray-800: #1f2937;
+      --color-gray-900: #111827;
+
+      --color-backdrop: rgba(17, 24, 39, 0.5);
+
+      /* Layout & Spacing */
+      --sidebar-width-expanded: 280px;
+      --sidebar-width-collapsed: 72px;
+      --header-height: 64px;
+      
+      --spacing-1: 4px;
+      --spacing-2: 8px;
+      --spacing-3: 12px;
+      --spacing-4: 16px;
+      --spacing-6: 24px;
+      --spacing-8: 32px;
+
+      /* Typography */
+      --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-size-xs: 12px;
+      --font-size-sm: 14px;
+      --font-size-md: 16px;
+      --font-weight-regular: 400;
+      --font-weight-medium: 500;
+      --font-weight-semibold: 600;
+
+      /* Effects */
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --transition-fast: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* =========================================
+       2. GLOBAL RESET & BASE
+       ========================================= */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-900);
+      line-height: 1.5;
+    }
+
+    /* Screen Reader Only Utility */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+
+    /* Demo Layout Structure */
+    .app-layout {
+      display: flex;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: var(--spacing-6);
+      transition: margin-left var(--transition-normal);
+      /* Default left margin accounts for expanded sidebar on desktop */
+      margin-left: 0; 
+      width: 100%;
+    }
+
+    @media (min-width: 769px) {
+      .main-content {
+        margin-left: var(--sidebar-width-expanded);
+      }
+      /* When collapsed, adjust margin */
+      body.sidebar-is-collapsed .main-content {
+        margin-left: var(--sidebar-width-collapsed);
+      }
+    }
+
+    /* =========================================
+       3. SIDEBAR COMPONENT
+       ========================================= */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      background-color: var(--color-white);
+      border-right: 1px solid var(--color-gray-200);
+      display: flex;
+      flex-direction: column;
+      z-index: 50;
+      transition: width var(--transition-normal), transform var(--transition-normal);
+      width: var(--sidebar-width-expanded);
+    }
+
+    /* --- Header Area --- */
+    .sidebar__header {
+      height: var(--header-height);
+      padding: 0 var(--spacing-4);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid transparent; /* Optional separator */
+      flex-shrink: 0;
+    }
+
+    .sidebar__logo-area {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-3);
+      overflow: hidden;
+      white-space: nowrap;
+      transition: opacity var(--transition-fast);
+    }
+
+    .sidebar__logo {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-500));
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .sidebar__app-name {
+      font-weight: var(--font-weight-semibold);
+      font-size: var(--font-size-md);
+      color: var(--color-gray-900);
+      opacity: 1;
+      transition: opacity var(--transition-fast);
+    }
+
+    /* Toggle Button (Desktop) */
+    .sidebar__toggle {
+      width: 24px;
+      height: 24px;
+      border: 1px solid var(--color-gray-200);
+      background: var(--color-white);
+      border-radius: 4px;
+      color: var(--color-gray-500);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: absolute;
+      right: -12px;
+      top: 20px;
+      z-index: 60;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .sidebar__toggle:hover {
+      color: var(--color-primary-600);
+      border-color: var(--color-primary-600);
+    }
+
+    /* --- Navigation Area --- */
+    .sidebar__content {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: var(--spacing-4) var(--spacing-3);
+    }
+
+    .sidebar__group-label {
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: var(--spacing-6) 0 var(--spacing-2) var(--spacing-3);
+      white-space: nowrap;
+      overflow: hidden;
+      transition: opacity var(--transition-fast), height var(--transition-fast);
+    }
+
+    .sidebar__nav-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .sidebar__nav-item {
+      position: relative;
+    }
+
+    .sidebar__link {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-3);
+      padding: 10px 12px;
+      color: var(--color-gray-600);
+      text-decoration: none;
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-medium);
+      transition: all var(--transition-fast);
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .sidebar__link:hover {
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-900);
+    }
+
+    .sidebar__link:focus-visible {
+      outline: 2px solid var(--color-primary-600);
+      outline-offset: -2px;
+    }
+
+    /* Active State */
+    .sidebar__link--active {
+      background-color: var(--color-primary-50);
+      color: var(--color-primary-700);
+    }
+    
+    .sidebar__link--active:hover {
+      background-color: var(--color-primary-50); /* Maintain active bg on hover */
+      color: var(--color-primary-700);
+    }
+
+    .sidebar__icon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      color: inherit;
+    }
+
+    .sidebar__badge {
+      margin-left: auto;
+      background-color: var(--color-primary-100);
+      color: var(--color-primary-700);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 99px;
+    }
+
+    /* --- Footer Area --- */
+    .sidebar__footer {
+      border-top: 1px solid var(--color-gray-200);
+      padding: var(--spacing-4);
+      flex-shrink: 0;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-3);
+      padding: 8px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: background-color var(--transition-fast);
+      text-decoration: none;
+      color: inherit;
+      overflow: hidden;
+    }
+
+    .user-profile:hover {
+      background-color: var(--color-gray-50);
+    }
+
+    .user-profile__avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--color-gray-200);
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .user-profile__info {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .user-profile__name {
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-medium);
+      color: var(--color-gray-900);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-profile__role {
+      font-size: var(--font-size-xs);
+      color: var(--color-gray-500);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* =========================================
+       4. VARIANTS & STATES
+       ========================================= */
+
+    /* --- Collapsed State (Desktop) --- */
+    .sidebar.sidebar--collapsed {
+      width: var(--sidebar-width-collapsed);
+    }
+
+    .sidebar.sidebar--collapsed .sidebar__app-name,
+    .sidebar.sidebar--collapsed .sidebar__link-text,
+    .sidebar.sidebar--collapsed .sidebar__badge,
+    .sidebar.sidebar--collapsed .user-profile__info,
+    .sidebar.sidebar--collapsed .sidebar__group-label {
+      opacity: 0;
+      width: 0;
+      display: none; /* Hide content for layout */
+    }
+
+    .sidebar.sidebar--collapsed .sidebar__header {
+      justify-content: center;
+      padding: 0;
+    }
+
+    .sidebar.sidebar--collapsed .sidebar__logo-area {
+      gap: 0;
+    }
+    
+    .sidebar.sidebar--collapsed .sidebar__content {
+      padding-left: var(--spacing-2);
+      padding-right: var(--spacing-2);
+    }
+
+    .sidebar.sidebar--collapsed .sidebar__link {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .sidebar.sidebar--collapsed .sidebar__toggle {
+      transform: rotate(180deg);
+    }
+    
+    .sidebar.sidebar--collapsed .user-profile {
+      justify-content: center;
+      padding: 8px 0;
+    }
+
+    /* --- Floating Variant --- */
+    .sidebar.sidebar--floating {
+      height: calc(100vh - 32px);
+      top: 16px;
+      left: 16px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-gray-200);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* --- Mobile Adaptations --- */
+    /* Hamburger Menu Trigger (only visible on mobile) */
+    .mobile-nav-trigger {
+      display: none;
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 40;
+      background: var(--color-white);
+      border: 1px solid var(--color-gray-200);
+      padding: 8px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+    }
+
+    /* Mobile Backdrop */
+    .sidebar-backdrop {
+      position: fixed;
+      inset: 0;
+      background-color: var(--color-backdrop);
+      z-index: 45;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--transition-fast);
+      display: none; /* Only for mobile */
+    }
+
+    @media (max-width: 768px) {
+      /* Show Mobile Trigger */
+      .mobile-nav-trigger {
+        display: flex;
+      }
+      
+      .main-content {
+        padding-top: 60px; /* Space for trigger */
+      }
+
+      /* Sidebar Off-Canvas behavior */
+      .sidebar {
+        transform: translateX(-100%);
+        width: var(--sidebar-width-expanded); /* Always full width on mobile when open */
+      }
+
+      /* Hide the collapse toggle button on mobile */
+      .sidebar__toggle {
+        display: none;
+      }
+
+      /* Open State on Mobile */
+      .sidebar.sidebar--mobile-open {
+        transform: translateX(0);
+        box-shadow: var(--shadow-lg);
+      }
+
+      /* Show backdrop when mobile menu is open */
+      .sidebar-backdrop.is-visible {
+        display: block;
+        opacity: 1;
+        pointer-events: auto;
+      }
+    }
+    
+    /* Utility for demo showcase */
+    .demo-controls {
+      margin-bottom: 24px;
+      padding: 16px;
+      background: white;
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-md);
+    }
+    .demo-controls h2 { font-size: 1.25rem; margin-bottom: 12px; }
+    .btn {
+      padding: 8px 16px;
+      background: var(--color-white);
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: 0.875rem;
+      margin-right: 8px;
+    }
+    .btn:hover { background: var(--color-gray-50); }
+
+  </style>
+</head>
+<body id="app-body">
+
+  <!-- Mobile Trigger -->
+  <button class="mobile-nav-trigger" aria-label="Open navigation menu" onclick="toggleMobileMenu()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </button>
+
+  <!-- Mobile Backdrop -->
+  <div class="sidebar-backdrop" onclick="toggleMobileMenu()" aria-hidden="true"></div>
+
+  <!-- Sidebar Component -->
+  <aside class="sidebar" id="sidebar-nav">
+    <!-- Header -->
+    <div class="sidebar__header">
+      <div class="sidebar__logo-area">
+        <div class="sidebar__logo">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <span class="sidebar__app-name">WarrantyPro</span>
+      </div>
+      
+      <!-- Desktop Collapse Toggle -->
+      <button class="sidebar__toggle" onclick="toggleCollapse()" aria-label="Toggle sidebar width">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Navigation List -->
+    <nav class="sidebar__content" aria-label="Main Navigation">
+      <div class="sidebar__group-label">Overview</div>
+      <ul class="sidebar__nav-list">
+        <li class="sidebar__nav-item">
+          <a href="#" class="sidebar__link sidebar__link--active" aria-current="page">
+            <svg class="sidebar__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            <span class="sidebar__link-text">Dashboard</span>
+          </a>
+        </li>
+        <li class="sidebar__nav-item">
+          <a href="#" class="sidebar__link">
+            <svg class="sidebar__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span class="sidebar__link-text">Messages</span>
+            <span class="sidebar__badge">3</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar__group-label">Management</div>
+      <ul class="sidebar__nav-list">
+        <li class="sidebar__nav-item">
+          <a href="#" class="sidebar__link">
+            <svg class="sidebar__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path>
+              <line x1="16" y1="8" x2="2" y2="22"></line>
+              <line x1="17.5" y1="15" x2="9" y2="15"></line>
+            </svg>
+            <span class="sidebar__link-text">Products</span>
+          </a>
+        </li>
+        <li class="sidebar__nav-item">
+          <a href="#" class="sidebar__link">
+            <svg class="sidebar__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <span class="sidebar__link-text">Invoices</span>
+          </a>
+        </li>
+        <li class="sidebar__nav-item">
+          <a href="#" class="sidebar__link">
+            <svg class="sidebar__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span class="sidebar__link-text">Customers</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar__group-label">Settings</div>
+      <ul class="sidebar__nav-list">
+        <li class="sidebar__nav-item">
+          <a href="#" class="sidebar__link">
+            <svg class="sidebar__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span class="sidebar__link-text">Configuration</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Footer -->
+    <div class="sidebar__footer">
+      <a href="#" class="user-profile">
+        <img src="https://ui-avatars.com/api/?name=Admin+User&background=random" alt="Admin User Avatar" class="user-profile__avatar">
+        <div class="user-profile__info">
+          <span class="user-profile__name">Admin User</span>
+          <span class="user-profile__role">Platform Admin</span>
+        </div>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content Area (Demo Purpose) -->
+  <main class="main-content">
+    <div class="demo-controls">
+      <h2>Sidebar Variants Demo</h2>
+      <p style="margin-bottom: 16px; color: var(--color-gray-500);">Use these controls to test different states of the component on desktop. Resize browser window (< 768px) to test mobile drawer.</p>
+      <button class="btn" onclick="toggleCollapse()">Toggle Collapse (Desktop)</button>
+      <button class="btn" onclick="toggleFloating()">Toggle Floating Style</button>
+    </div>
+
+    <!-- Dummy Content -->
+    <div style="background: white; border-radius: var(--radius-lg); padding: 32px; border: 1px solid var(--color-gray-200); height: 2000px;">
+      <h1 style="margin-bottom: 16px; font-size: 24px; font-weight: 700;">Dashboard</h1>
+      <p style="color: var(--color-gray-600);">Main content area adjusts margin based on sidebar state.</p>
+    </div>
+  </main>
+
+  <script>
+    // Component Interaction Logic
+    
+    // 1. Toggle Collapse State (Desktop)
+    function toggleCollapse() {
+      const sidebar = document.getElementById('sidebar-nav');
+      const body = document.body;
+      
+      sidebar.classList.toggle('sidebar--collapsed');
+      body.classList.toggle('sidebar-is-collapsed');
+      
+      // Update ARIA expanded state if needed on toggle button
+      const toggleBtn = document.querySelector('.sidebar__toggle');
+      const isCollapsed = sidebar.classList.contains('sidebar--collapsed');
+      toggleBtn.setAttribute('aria-expanded', !isCollapsed);
+    }
+
+    // 2. Toggle Mobile Drawer
+    function toggleMobileMenu() {
+      const sidebar = document.getElementById('sidebar-nav');
+      const backdrop = document.querySelector('.sidebar-backdrop');
+      const trigger = document.querySelector('.mobile-nav-trigger');
+      
+      sidebar.classList.toggle('sidebar--mobile-open');
+      backdrop.classList.toggle('is-visible');
+      
+      const isOpen = sidebar.classList.contains('sidebar--mobile-open');
+      trigger.setAttribute('aria-expanded', isOpen);
+      
+      // Prevent body scrolling when menu is open on mobile
+      document.body.style.overflow = isOpen ? 'hidden' : '';
+    }
+
+    // 3. Toggle Floating Variant (Visual Demo)
+    function toggleFloating() {
+      const sidebar = document.getElementById('sidebar-nav');
+      sidebar.classList.toggle('sidebar--floating');
+    }
+  </script>
+</body>
+</html>

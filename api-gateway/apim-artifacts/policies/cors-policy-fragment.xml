@@ -1,0 +1,34 @@
+<!--
+    IMPORTANT: This fragment handles Cross-Origin Resource Sharing.
+    It should be included in the inbound section of the global policy or specific APIs.
+-->
+<fragment>
+    <cors allow-credentials="true">
+        <allowed-origins>
+            <!-- Origins are dynamically loaded from Named Values to support multiple environments -->
+            <origin>{{allowed-cors-origins}}</origin>
+        </allowed-origins>
+        <allowed-methods>
+            <method>GET</method>
+            <method>POST</method>
+            <method>PUT</method>
+            <method>DELETE</method>
+            <method>PATCH</method>
+            <method>OPTIONS</method>
+        </allowed-methods>
+        <allowed-headers>
+            <header>Authorization</header>
+            <header>Content-Type</header>
+            <header>Accept</header>
+            <header>Origin</header>
+            <header>X-Requested-With</header>
+            <header>If-Match</header>
+            <header>If-None-Match</header>
+        </allowed-headers>
+        <expose-headers>
+            <header>WWW-Authenticate</header>
+            <header>Retry-After</header>
+            <header>ETag</header>
+        </expose-headers>
+    </cors>
+</fragment>

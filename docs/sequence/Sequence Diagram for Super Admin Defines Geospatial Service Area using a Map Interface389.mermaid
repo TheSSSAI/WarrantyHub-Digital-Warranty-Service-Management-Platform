@@ -1,0 +1,23 @@
+sequenceDiagram
+    actor "Admin Web Client" as AdminWebClient
+    participant "API Gateway" as APIGateway
+    participant "Service Center Service" as ServiceCenterService
+
+    AdminWebClient->>AdminWebClient: 1. Super Admin draws a polygon using Mapbox tools and enters a list of postal codes. Client-side logic converts the shape to a valid GeoJSON object.
+    activate APIGateway
+    AdminWebClient->>APIGateway: 2. Submits service area definition for a specific ServiceCenter-Brand relationship.
+    APIGateway-->>AdminWebClient: Returns 204 No Content on success or an error object on failure.
+    activate ServiceCenterService
+    APIGateway->>ServiceCenterService: 3. Validates JWT and routes the request to the Service Center Service.
+    ServiceCenterService-->>APIGateway: Forwards the response from the upstream service.
+    ServiceCenterService->>ServiceCenterService: 4. Authorize request based on user claims.
+    ServiceCenterService-->>ServiceCenterService: Throws AuthorizationException on failure.
+    ServiceCenterService->>ServiceCenterService: 5. Validate DTO, parse GeoJSON string into a Geometry object, and prepare for persistence.
+    ServiceCenterService-->>ServiceCenterService: Returns a domain entity or throws ValidationException.
+    ServiceCenterService->>ServiceCenterService: 6. Persist the Geometry object and postal codes to the database.
+    ServiceCenterService-->>ServiceCenterService: Returns success or throws DbUpdateException.
+
+    note over ServiceCenterService: The database table must have a column of type GEOMETRY(Polygon, 4326) to store the data. A spatia...
+
+    deactivate ServiceCenterService
+    deactivate APIGateway

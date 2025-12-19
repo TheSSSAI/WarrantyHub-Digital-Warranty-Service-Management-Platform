@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Registration Wizard</title>
+  <style>
+    /* =========================================
+       DESIGN TOKENS
+       ========================================= */
+    :root {
+      /* Colors */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-500: #6366f1;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      
+      --color-white: #ffffff;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-600: #4b5563;
+      --color-gray-700: #374151;
+      --color-gray-900: #111827;
+
+      --color-success-bg: #ecfdf5;
+      --color-success-text: #065f46;
+      --color-success-border: #10b981;
+
+      /* Typography */
+      --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-size-sm: 0.875rem;   /* 14px */
+      --font-size-md: 1rem;       /* 16px */
+      --font-size-lg: 1.125rem;   /* 18px */
+      --font-size-xl: 1.25rem;    /* 20px */
+      --font-size-2xl: 1.5rem;    /* 24px */
+      
+      /* Spacing */
+      --spacing-xs: 0.25rem;
+      --spacing-sm: 0.5rem;
+      --spacing-md: 1rem;
+      --spacing-lg: 1.5rem;
+      --spacing-xl: 2rem;
+
+      /* Borders & Shadows */
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-full: 9999px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --border-default: 1px solid var(--color-gray-200);
+      
+      /* Transitions */
+      --transition-base: 200ms ease-in-out;
+    }
+
+    /* =========================================
+       RESET & BASE
+       ========================================= */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-family);
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-900);
+      line-height: 1.5;
+      padding: var(--spacing-lg);
+    }
+    
+    h1, h2, h3, h4 { line-height: 1.2; font-weight: 600; color: var(--color-gray-900); }
+
+    /* =========================================
+       UTILITY CLASSES
+       ========================================= */
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+    }
+    .mb-md { margin-bottom: var(--spacing-md); }
+    .mb-lg { margin-bottom: var(--spacing-lg); }
+
+    /* =========================================
+       COMPONENT: BUTTONS (Atomic)
+       ========================================= */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius-md);
+      font-weight: 500;
+      font-size: var(--font-size-sm);
+      cursor: pointer;
+      transition: var(--transition-base);
+      border: 1px solid transparent;
+      gap: var(--spacing-sm);
+      text-decoration: none;
+    }
+    
+    .btn--primary {
+      background-color: var(--color-primary-600);
+      color: var(--color-white);
+    }
+    .btn--primary:hover:not(:disabled) {
+      background-color: var(--color-primary-700);
+      transform: translateY(-1px);
+    }
+    
+    .btn--secondary {
+      background-color: var(--color-white);
+      border-color: var(--color-gray-300);
+      color: var(--color-gray-700);
+    }
+    .btn--secondary:hover:not(:disabled) {
+      background-color: var(--color-gray-50);
+      border-color: var(--color-gray-400);
+    }
+
+    .btn--ghost {
+      background-color: transparent;
+      color: var(--color-gray-600);
+    }
+    .btn--ghost:hover {
+      background-color: var(--color-gray-100);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .btn--full-width-mobile {
+      width: auto;
+    }
+
+    /* =========================================
+       COMPONENT: FORM INPUTS (Molecular)
+       ========================================= */
+    .form-group {
+      margin-bottom: var(--spacing-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
+    }
+    
+    .form-label {
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+      color: var(--color-gray-700);
+    }
+    
+    .form-input, .form-select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: var(--font-size-md);
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--radius-md);
+      background-color: var(--color-white);
+      transition: var(--transition-base);
+    }
+    
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--color-primary-600);
+      box-shadow: 0 0 0 3px var(--color-primary-100);
+    }
+    
+    .form-helper {
+      font-size: 0.75rem;
+      color: var(--color-gray-500);
+    }
+
+    /* =========================================
+       COMPONENT: WIZARD ORGANISM
+       ========================================= */
+    .wizard {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--color-white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* --- Wizard Header (Stepper) --- */
+    .wizard__header {
+      padding: var(--spacing-lg) var(--spacing-xl);
+      border-bottom: var(--border-default);
+      background-color: var(--color-gray-50);
+    }
+
+    .stepper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+
+    /* Desktop/Tablet Line connecting steps */
+    .stepper::before {
+      content: '';
+      position: absolute;
+      top: 14px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: var(--color-gray-200);
+      z-index: 0;
+    }
+
+    .step {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--spacing-xs);
+      background-color: var(--color-gray-50); /* Hide line behind text */
+      padding: 0 var(--spacing-sm);
+    }
+
+    .step__indicator {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--color-white);
+      border: 2px solid var(--color-gray-300);
+      color: var(--color-gray-500);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: var(--font-size-sm);
+      transition: var(--transition-base);
+    }
+
+    .step__label {
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+      color: var(--color-gray-500);
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    /* Active Step */
+    .step.is-active .step__indicator {
+      border-color: var(--color-primary-600);
+      color: var(--color-primary-600);
+      box-shadow: 0 0 0 4px var(--color-primary-100);
+    }
+    .step.is-active .step__label {
+      color: var(--color-primary-700);
+      font-weight: 600;
+    }
+
+    /* Completed Step */
+    .step.is-complete .step__indicator {
+      background-color: var(--color-primary-600);
+      border-color: var(--color-primary-600);
+      color: var(--color-white);
+    }
+    .step.is-complete .step__label {
+      color: var(--color-gray-900);
+    }
+
+    /* --- Wizard Content Area --- */
+    .wizard__content {
+      padding: var(--spacing-xl);
+      min-height: 400px;
+    }
+
+    .wizard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-lg);
+    }
+
+    /* --- Wizard Footer (Actions) --- */
+    .wizard__footer {
+      padding: var(--spacing-lg) var(--spacing-xl);
+      border-top: var(--border-default);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--color-white);
+    }
+
+    /* =========================================
+       SUB-COMPONENTS (Variations)
+       ========================================= */
+    
+    /* Method Selection Cards */
+    .method-card {
+      border: 2px solid var(--color-gray-200);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition-base);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--spacing-md);
+      background: var(--color-white);
+    }
+    .method-card:hover {
+      border-color: var(--color-primary-600);
+      background-color: var(--color-primary-50);
+      transform: translateY(-2px);
+    }
+    .method-card__icon {
+      width: 48px;
+      height: 48px;
+      color: var(--color-primary-600);
+      background: var(--color-primary-100);
+      border-radius: 50%;
+      padding: 10px;
+    }
+    .method-card__title {
+      font-weight: 600;
+      color: var(--color-gray-900);
+    }
+    .method-card__desc {
+      font-size: var(--font-size-sm);
+      color: var(--color-gray-500);
+    }
+
+    /* Upload Zone */
+    .upload-zone {
+      border: 2px dashed var(--color-gray-300);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-xl);
+      text-align: center;
+      background-color: var(--color-gray-50);
+      transition: var(--transition-base);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-sm);
+    }
+    .upload-zone:hover, .upload-zone:focus-within {
+      border-color: var(--color-primary-600);
+      background-color: var(--color-primary-50);
+    }
+    .upload-zone__icon {
+      width: 40px;
+      height: 40px;
+      color: var(--color-gray-400);
+    }
+    
+    /* Loading Overlay */
+    .loading-overlay {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-lg);
+      text-align: center;
+      padding: var(--spacing-xl);
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--color-gray-200);
+      border-top-color: var(--color-primary-600);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    /* Success State */
+    .success-state {
+      text-align: center;
+      padding: var(--spacing-xl);
+    }
+    .success-icon {
+      width: 64px;
+      height: 64px;
+      background-color: var(--color-success-bg);
+      color: var(--color-success-text);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto var(--spacing-lg);
+    }
+    .success-icon svg { width: 32px; height: 32px; stroke-width: 3; }
+
+    /* =========================================
+       RESPONSIVE ADAPTATIONS
+       ========================================= */
+    @media (max-width: 768px) {
+      body { padding: var(--spacing-sm); }
+      
+      /* Stepper Collapse */
+      .stepper::before { display: none; }
+      .step__label { display: none; }
+      .step__indicator { font-size: var(--font-size-xs); width: 28px; height: 28px; }
+      /* Just show Step X of Y instead */
+      .wizard__header { text-align: center; padding: var(--spacing-md); }
+      
+      /* Layout Stacking */
+      .wizard-grid { grid-template-columns: 1fr; gap: var(--spacing-md); }
+      
+      /* Footer Stacking */
+      .wizard__footer {
+        flex-direction: column-reverse;
+        gap: var(--spacing-md);
+      }
+      .wizard__footer .btn {
+        width: 100%;
+      }
+      
+      .btn--full-width-mobile { width: 100%; }
+    }
+
+    /* Print Styles */
+    @media print {
+      body { background: white; padding: 0; }
+      .wizard { box-shadow: none; border: 1px solid #000; }
+      .btn { display: none; }
+    }
+    
+    /* Showcase Styles (Not part of component) */
+    .showcase-header { margin: 40px 0 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
+    .variant-container { margin-bottom: 40px; padding: 20px; background: #fff; border-radius: 8px; border: 1px solid #eee; }
+    .variant-title { font-size: 0.85rem; text-transform: uppercase; color: #666; margin-bottom: 15px; font-weight: 700; letter-spacing: 0.05em;}
+  </style>
+</head>
+<body>
+
+  <!-- =========================================================================
+       MAIN COMPONENT SHOWCASE: Product Registration Wizard (Manual Entry State)
+       ========================================================================= -->
+  
+  <div class="wizard" role="region" aria-label="Product Registration Wizard">
+    
+    <!-- HEADER: Stepper -->
+    <div class="wizard__header">
+      <nav aria-label="Progress">
+        <ol class="stepper">
+          <li class="step is-complete">
+            <div class="step__indicator">
+              <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <span class="step__label">Method</span>
+          </li>
+          <li class="step is-active" aria-current="step">
+            <div class="step__indicator">2</div>
+            <span class="step__label">Product Details</span>
+          </li>
+          <li class="step">
+            <div class="step__indicator">3</div>
+            <span class="step__label">Review & Confirm</span>
+          </li>
+        </ol>
+      </nav>
+    </div>
+
+    <!-- CONTENT: Form Entry Step -->
+    <div class="wizard__content">
+      <h2 class="mb-md">Enter Product Details</h2>
+      <p class="mb-lg" style="color: var(--color-gray-500);">Please provide the details found on your product packaging or invoice.</p>
+      
+      <form id="product-form">
+        <div class="wizard-grid">
+          
+          <!-- Column 1 -->
+          <div>
+            <div class="form-group">
+              <label for="brand" class="form-label">Brand Name <span style="color:var(--color-primary-600)">*</span></label>
+              <select id="brand" class="form-select" required>
+                <option value="" disabled selected>Select a brand...</option>
+                <option value="samsung">Samsung</option>
+                <option value="lg">LG</option>
+                <option value="sony">Sony</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="model" class="form-label">Model Number <span style="color:var(--color-primary-600)">*</span></label>
+              <input type="text" id="model" class="form-input" placeholder="e.g., WH-1000XM5" required>
+              <span class="form-helper">Usually found on the back or bottom of the device.</span>
+            </div>
+          </div>
+
+          <!-- Column 2 -->
+          <div>
+            <div class="form-group">
+              <label for="serial" class="form-label">Serial Number <span style="color:var(--color-primary-600)">*</span></label>
+              <input type="text" id="serial" class="form-input" placeholder="e.g., S/N: 123456789" required>
+            </div>
+
+            <div class="form-group">
+              <label for="purchase-date" class="form-label">Date of Purchase <span style="color:var(--color-primary-600)">*</span></label>
+              <input type="date" id="purchase-date" class="form-input" required>
+            </div>
+          </div>
+          
+        </div>
+        
+        <div class="form-group" style="margin-top: var(--spacing-md);">
+          <label class="form-label">Upload Invoice (Optional)</label>
+          <div class="upload-zone" style="padding: var(--spacing-md); min-height: auto; flex-direction: row; justify-content: flex-start;">
+             <svg class="upload-zone__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+             <div style="text-align:left;">
+               <span style="font-weight:500; color:var(--color-primary-600);">Click to upload</span> or drag and drop
+               <div style="font-size:0.75rem; color:var(--color-gray-500);">SVG, PNG, JPG or PDF (max. 10MB)</div>
+             </div>
+             <input type="file" class="sr-only" id="file-upload">
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- FOOTER: Navigation -->
+    <div class="wizard__footer">
+      <button class="btn btn--ghost btn--full-width-mobile" type="button">Back</button>
+      <button class="btn btn--primary btn--full-width-mobile" type="submit" form="product-form">
+        Next Step
+        <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+      </button>
+    </div>
+  </div>
+
+
+  <!-- =========================================================================
+       COMPONENT VARIATIONS & STATES
+       ========================================================================= -->
+
+  <h2 class="showcase-header">Wizard States & Variations</h2>
+
+  <!-- Variation 1: Step 1 Selection -->
+  <div class="variant-container">
+    <div class="variant-title">Variant 1: Method Selection (Step 1)</div>
+    <div class="wizard" style="max-width: 600px;">
+      <div class="wizard__content">
+        <h2 style="text-align:center; margin-bottom: var(--spacing-xl);">How would you like to register?</h2>
+        <div class="wizard-grid">
+          <!-- Card 1 -->
+          <div class="method-card" tabindex="0" role="button" aria-label="Scan Invoice using OCR">
+            <div class="method-card__icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            </div>
+            <div>
+              <div class="method-card__title">Scan Invoice</div>
+              <div class="method-card__desc">Auto-fill details using AI</div>
+            </div>
+          </div>
+          <!-- Card 2 -->
+          <div class="method-card" tabindex="0" role="button" aria-label="Enter details manually">
+            <div class="method-card__icon" style="background: var(--color-gray-100); color: var(--color-gray-600);">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+            </div>
+            <div>
+              <div class="method-card__title">Manual Entry</div>
+              <div class="method-card__desc">Type details yourself</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Variation 2: OCR Upload State -->
+  <div class="variant-container">
+    <div class="variant-title">Variant 2: OCR Upload Zone</div>
+    <div class="wizard" style="max-width: 600px;">
+      <div class="wizard__content">
+        <h3 class="mb-md">Upload your Invoice</h3>
+        <div class="upload-zone" tabindex="0" role="button" aria-label="Upload file area">
+          <svg class="upload-zone__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+          <div>
+            <span style="font-weight:600; color:var(--color-primary-600)">Click to upload</span> or drag and drop
+          </div>
+          <div style="font-size: var(--font-size-sm); color: var(--color-gray-500);">Supported: JPG, PNG, PDF (Max 10MB)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Variation 3: Loading / Processing State -->
+  <div class="variant-container">
+    <div class="variant-title">Variant 3: Processing State</div>
+    <div class="wizard" style="max-width: 600px;">
+      <div class="wizard__content" style="display:flex; align-items:center; justify-content:center;">
+        <div class="loading-overlay" aria-live="polite">
+          <div class="spinner"></div>
+          <div>
+            <h3 class="mb-xs">Analyzing Document...</h3>
+            <p class="form-helper">Extracting product details via OCR</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Variation 4: Success State -->
+  <div class="variant-container">
+    <div class="variant-title">Variant 4: Success / Completion</div>
+    <div class="wizard" style="max-width: 600px;">
+      <div class="wizard__content">
+        <div class="success-state">
+          <div class="success-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+          </div>
+          <h2 class="mb-md">Product Registered!</h2>
+          <p class="mb-lg" style="color: var(--color-gray-600);">Your <strong>Samsung Odyssey G9</strong> has been successfully registered. Your digital warranty card is now active.</p>
+          <div style="display:flex; gap:10px; justify-content:center;">
+            <button class="btn btn--primary">View Warranty Card</button>
+            <button class="btn btn--secondary">Add Another Product</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

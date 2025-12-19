@@ -1,0 +1,3 @@
+"environment_name","environment_type","deployment_frequency","data_refresh_frequency","infrastructure_stack","service_dependencies","monitoring_tools","access_control","backup_strategy","disaster_recovery","cost_optimization","maintenance_window"
+"Development (Local+Cloud)","Hybrid","On Demand","N/A","Docker Compose (DB, Redis) + Azure Dev (B2C, Maps)","Azure B2C, Azure Maps (Shared Dev Tier)","Local Logs","Open to Devs","None","N/A","Local resources; Shared Azure Dev tier","Ad-hoc"
+"Staging (Pre-Prod)","Production Mirror","Per Merge to Main","Weekly (Sanitized)","AKS (3 nodes), Postgres Flexible (HA)","Full Isolation","Azure Monitor, Grafana, Prometheus","VPN / Private Endpoint","Daily","Tested Monthly","Scale down to 0 at night (if possible)","Weekends"

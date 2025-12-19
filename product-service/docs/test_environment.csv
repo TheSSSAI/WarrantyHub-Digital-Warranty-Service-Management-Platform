@@ -1,0 +1,2 @@
+"environment_name","environment_type","deployment_frequency","data_refresh_frequency","infrastructure_stack","service_dependencies","monitoring_tools","access_control","backup_strategy","disaster_recovery","cost_optimization","maintenance_window"
+"Staging","Pre-Production","On Merge to Main","Weekly (Sanitized Prod Data)","AKS; Azure SQL; Redis; SignalR (Standard Tier)","Full mock for Payment; Live for Maps/OCR","Full Observability Stack","VPN Only; QA/Dev/PO","PITR enabled","Tested Monthly","Scale down off-hours","Weekends"

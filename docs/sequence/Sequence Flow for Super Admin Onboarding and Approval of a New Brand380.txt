@@ -1,0 +1,593 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-BP-002
+
+## 1.2 Name
+
+Super Admin Onboarding and Approval of a New Brand
+
+## 1.3 Description
+
+A new Brand registers on the platform. A Super Admin reviews the registration request, verifies the details, and approves it, making the brand active on the platform. The approval action is audited.
+
+## 1.4 Type
+
+🔹 BusinessProcess
+
+## 1.5 Purpose
+
+To provide a controlled workflow for vetting and onboarding new brands, ensuring only legitimate businesses can have their products and services managed on the platform.
+
+## 1.6 Complexity
+
+Medium
+
+## 1.7 Priority
+
+🔴 High
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- web-client-012
+- api-gateway-001
+- product-service-003
+- audit-service-011
+
+## 1.10 Key Interactions
+
+- A prospective brand submits a registration request, which creates a brand record with 'Pending' status.
+- The Super Admin views the pending request in their admin portal.
+- The Super Admin reviews the attached business documents and contact details.
+- The Super Admin clicks 'Approve' in the UI.
+- The web client sends an API request to the ProductService to update the brand's status to 'Approved'.
+- The ProductService changes the brand's status in the database.
+- The ProductService publishes a 'CriticalActionOccurred' event (for auditing as in SEQ-CF-001).
+
+## 1.11 Triggers
+
+- A new brand registration request is submitted.
+
+## 1.12 Outcomes
+
+- The brand's status is changed to 'Approved'.
+- The brand is now visible to consumers during product registration.
+- The applicant is notified of the approval.
+- An audit log of the approval action is created.
+
+## 1.13 Business Rules
+
+- Approval requires verification of business registration and contact details.
+- Rejection of a request requires a reason to be provided.
+- New Brand registrations must be reviewed by a Super Admin within 3 business days (SLA).
+
+## 1.14 Error Scenarios
+
+- Super Admin accidentally rejects instead of approving.
+- The API call to update the status fails.
+- The audit event fails to publish.
+
+## 1.15 Integration Points
+
+- Azure Service Bus (for audit event)
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-BP-002
+
+## 2.2 Name
+
+Super Admin Onboarding and Approval of a New Brand
+
+## 2.3 Description
+
+Provides a detailed technical sequence for the business process of a Super Admin reviewing and approving a new brand registration request. The sequence covers the user interaction, API calls, state changes, and the asynchronous auditing of the approval action, ensuring a secure and verifiable onboarding workflow.
+
+## 2.4 Participants
+
+### 2.4.1 Client
+
+#### 2.4.1.1 Repository Id
+
+web-client-012
+
+#### 2.4.1.2 Display Name
+
+Admin Web Client
+
+#### 2.4.1.3 Type
+
+🔹 Client
+
+#### 2.4.1.4 Technology
+
+React 18, TypeScript
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #4CAF50 |
+| Stereotype | SuperAdmin UI |
+
+### 2.4.2.0 Gateway
+
+#### 2.4.2.1 Repository Id
+
+api-gateway-001
+
+#### 2.4.2.2 Display Name
+
+API Gateway
+
+#### 2.4.2.3 Type
+
+🔹 Gateway
+
+#### 2.4.2.4 Technology
+
+YARP on .NET 8
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | rectangle |
+| Color | #2196F3 |
+| Stereotype | Gateway |
+
+### 2.4.3.0 Service
+
+#### 2.4.3.1 Repository Id
+
+product-service-003
+
+#### 2.4.3.2 Display Name
+
+Product Service
+
+#### 2.4.3.3 Type
+
+🔹 Service
+
+#### 2.4.3.4 Technology
+
+.NET 8, ASP.NET Core 8
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | rectangle |
+| Color | #FFC107 |
+| Stereotype | Microservice |
+
+### 2.4.4.0 Messaging
+
+#### 2.4.4.1 Repository Id
+
+messaging-infra-015
+
+#### 2.4.4.2 Display Name
+
+Messaging Infrastructure
+
+#### 2.4.4.3 Type
+
+🔹 Messaging
+
+#### 2.4.4.4 Technology
+
+Azure Service Bus
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #9C27B0 |
+| Stereotype | Topic/Queue |
+
+### 2.4.5.0 Service
+
+#### 2.4.5.1 Repository Id
+
+audit-service-011
+
+#### 2.4.5.2 Display Name
+
+Audit Service
+
+#### 2.4.5.3 Type
+
+🔹 Service
+
+#### 2.4.5.4 Technology
+
+.NET 8 Worker Service
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | rectangle |
+| Color | #607D8B |
+| Stereotype | Microservice |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Request
+
+#### 2.5.1.1 Source Id
+
+web-client-012
+
+#### 2.5.1.2 Target Id
+
+api-gateway-001
+
+#### 2.5.1.3 Message
+
+1. GET /api/v1/brands?status=pending
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Request
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+2. Returns 200 OK with a list of Brand DTOs
+
+#### 2.5.1.8 Has Return
+
+✅ Yes
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS/REST |
+| Method | GET |
+| Parameters | Query parameter `status` set to 'pending'. |
+| Authentication | Requires valid JWT Bearer token with 'SuperAdmin' ... |
+| Error Handling | Returns 401 Unauthorized if token is missing/inval... |
+| Performance | P95 latency must be < 250ms. |
+
+#### 2.5.1.11 Nested Interactions
+
+- {'sourceId': 'api-gateway-001', 'targetId': 'product-service-003', 'message': '1a. Forwards GET /api/brands?status=pending', 'sequenceNumber': 1.1, 'type': 'Request', 'isSynchronous': True, 'returnMessage': '1b. Returns list of Brand entities', 'hasReturn': True, 'isActivation': True, 'technicalDetails': {'protocol': 'HTTP/REST', 'method': 'GET', 'parameters': 'Internal API call.', 'authentication': 'Internal service trust (e.g., via mTLS or network policies).', 'errorHandling': 'Propagates HTTP status codes upstream.', 'performance': "Database query for brands with status='pending' must be indexed for performance."}}
+
+### 2.5.2.0 Request
+
+#### 2.5.2.1 Source Id
+
+web-client-012
+
+#### 2.5.2.2 Target Id
+
+api-gateway-001
+
+#### 2.5.2.3 Message
+
+3. PATCH /api/v1/brands/{brandId}/approve
+
+#### 2.5.2.4 Sequence Number
+
+2
+
+#### 2.5.2.5 Type
+
+🔹 Request
+
+#### 2.5.2.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7 Return Message
+
+6. Returns 200 OK with updated Brand DTO
+
+#### 2.5.2.8 Has Return
+
+✅ Yes
+
+#### 2.5.2.9 Is Activation
+
+✅ Yes
+
+#### 2.5.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS/REST |
+| Method | PATCH |
+| Parameters | Path parameter `brandId`. No request body required... |
+| Authentication | Requires valid JWT Bearer token with 'SuperAdmin' ... |
+| Error Handling | Returns 401/403. Returns 404 Not Found if brandId ... |
+| Performance | P95 latency must be < 250ms. |
+
+### 2.5.3.0 Request
+
+#### 2.5.3.1 Source Id
+
+api-gateway-001
+
+#### 2.5.3.2 Target Id
+
+product-service-003
+
+#### 2.5.3.3 Message
+
+4. Forwards PATCH /api/brands/{brandId}/approve
+
+#### 2.5.3.4 Sequence Number
+
+3
+
+#### 2.5.3.5 Type
+
+🔹 Request
+
+#### 2.5.3.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7 Return Message
+
+5. Returns 200 OK with updated Brand DTO
+
+#### 2.5.3.8 Has Return
+
+✅ Yes
+
+#### 2.5.3.9 Is Activation
+
+✅ Yes
+
+#### 2.5.3.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTP/REST |
+| Method | PATCH |
+| Parameters | Internal API call. |
+| Authentication | Validates claims from propagated JWT or uses inter... |
+| Error Handling | Handles business logic validation: returns 404 if ... |
+| Performance | The operation must be atomic and transactional. |
+
+### 2.5.4.0 EventPublication
+
+#### 2.5.4.1 Source Id
+
+product-service-003
+
+#### 2.5.4.2 Target Id
+
+messaging-infra-015
+
+#### 2.5.4.3 Message
+
+4a. Publish 'CriticalActionOccurred' Event
+
+#### 2.5.4.4 Sequence Number
+
+4
+
+#### 2.5.4.5 Type
+
+🔹 EventPublication
+
+#### 2.5.4.6 Is Synchronous
+
+❌ No
+
+#### 2.5.4.7 Return Message
+
+
+
+#### 2.5.4.8 Has Return
+
+❌ No
+
+#### 2.5.4.9 Is Activation
+
+✅ Yes
+
+#### 2.5.4.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | AMQP |
+| Method | PUBLISH to 'system-events-topic' |
+| Parameters | Event payload: { eventId, timestamp, correlationId... |
+| Authentication | SAS token or Managed Identity. |
+| Error Handling | Must implement a retry mechanism (e.g., Polly with... |
+| Performance | Publishing should occur after the database transac... |
+
+### 2.5.5.0 EventConsumption
+
+#### 2.5.5.1 Source Id
+
+messaging-infra-015
+
+#### 2.5.5.2 Target Id
+
+audit-service-011
+
+#### 2.5.5.3 Message
+
+7. Delivers 'CriticalActionOccurred' Event
+
+#### 2.5.5.4 Sequence Number
+
+5
+
+#### 2.5.5.5 Type
+
+🔹 EventConsumption
+
+#### 2.5.5.6 Is Synchronous
+
+❌ No
+
+#### 2.5.5.7 Return Message
+
+
+
+#### 2.5.5.8 Has Return
+
+❌ No
+
+#### 2.5.5.9 Is Activation
+
+✅ Yes
+
+#### 2.5.5.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | AMQP |
+| Method | CONSUME from 'auditing-subscription' |
+| Parameters | Event payload as described in step 4a. |
+| Authentication | SAS token or Managed Identity. |
+| Error Handling | The consumer must be idempotent to handle potentia... |
+| Performance | Asynchronous processing; does not impact the user-... |
+
+### 2.5.6.0 InternalProcessing
+
+#### 2.5.6.1 Source Id
+
+audit-service-011
+
+#### 2.5.6.2 Target Id
+
+audit-service-011
+
+#### 2.5.6.3 Message
+
+8. Persists Audit Log
+
+#### 2.5.6.4 Sequence Number
+
+6
+
+#### 2.5.6.5 Type
+
+🔹 InternalProcessing
+
+#### 2.5.6.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7 Return Message
+
+
+
+#### 2.5.6.8 Has Return
+
+❌ No
+
+#### 2.5.6.9 Is Activation
+
+❌ No
+
+#### 2.5.6.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Database Connection (Npgsql) |
+| Method | INSERT INTO AuditLogs |
+| Parameters | Transforms the event payload into a structured aud... |
+| Authentication | Database connection string from Azure Key Vault. |
+| Error Handling | Handles transient database exceptions with retries... |
+| Performance | N/A |
+
+## 2.6.0.0 Notes
+
+### 2.6.1.0 Content
+
+#### 2.6.1.1 Content
+
+The Super Admin's approval action (steps 3-6) must be atomic. The status change in the ProductService's database is committed first.
+
+#### 2.6.1.2 Position
+
+Top
+
+#### 2.6.1.3 Participant Id
+
+*Not specified*
+
+#### 2.6.1.4 Sequence Number
+
+3
+
+### 2.6.2.0 Content
+
+#### 2.6.2.1 Content
+
+The audit process (steps 4a-8) is deliberately asynchronous to decouple it from the primary business transaction and avoid impacting the API response time. This ensures high availability of the core approval feature even if the audit system is slow or temporarily unavailable.
+
+#### 2.6.2.2 Position
+
+Bottom
+
+#### 2.6.2.3 Participant Id
+
+*Not specified*
+
+#### 2.6.2.4 Sequence Number
+
+4
+
+## 2.7.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | Role-Based Access Control (RBAC) must be strictly ... |
+| Performance Targets | The synchronous API endpoint (`/approve`) must adh... |
+| Error Handling Strategy | If the 'CriticalActionOccurred' event fails to pub... |
+| Testing Considerations | Integration tests should cover the entire flow: AP... |
+| Monitoring Requirements | Monitor the `/approve` API endpoint for latency an... |
+| Deployment Considerations | Changes to the ProductService logic for approval a... |
+
