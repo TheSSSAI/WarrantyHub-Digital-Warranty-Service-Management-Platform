@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Technician - Assigned Jobs</title>
+  <style>
+    /* 
+     * DESIGN SYSTEM TOKENS & RESET 
+     */
+    :root {
+      /* Color Palette */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      
+      --color-secondary-900: #0f172a;
+      
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-600: #4b5563;
+      --color-gray-700: #374151;
+      --color-gray-800: #1f2937;
+      --color-gray-900: #111827;
+      --color-white: #ffffff;
+
+      /* Semantic Colors */
+      --color-success-bg: #d1e7dd;
+      --color-success-text: #0f5132;
+      --color-warning-bg: #fff3cd;
+      --color-warning-text: #664d03;
+      --color-error-bg: #f8d7da;
+      --color-error-text: #842029;
+      --color-info-bg: #cff4fc;
+      --color-info-text: #055160;
+
+      /* Typography */
+      --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-size-h1: clamp(1.5rem, 4vw, 2rem); /* 24px - 32px */
+      --font-size-h2: clamp(1.25rem, 3vw, 1.5rem); /* 20px - 24px */
+      --font-size-body: 1rem; /* 16px */
+      --font-size-sm: 0.875rem; /* 14px */
+      --font-size-xs: 0.75rem; /* 12px */
+
+      /* Spacing */
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+
+      /* UI Elements */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      
+      /* Layout */
+      --max-width-container: 720px;
+      --header-height: 64px;
+    }
+
+    /* Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family-base);
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-900);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 80px; /* Space for bottom feedback/nav */
+    }
+
+    button {
+      font-family: inherit;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    /* 
+     * LAYOUT & STRUCTURE
+     */
+    .screen-container {
+      max-width: var(--max-width-container);
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 
+     * HEADER COMPONENT 
+     */
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background-color: var(--color-white);
+      border-bottom: 1px solid var(--color-gray-200);
+      padding: var(--spacing-md);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .header-title {
+      font-size: var(--font-size-h2);
+      font-weight: 700;
+      color: var(--color-gray-900);
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: var(--color-primary-100);
+      color: var(--color-primary-700);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: var(--font-size-sm);
+    }
+
+    /* Date Navigation */
+    .date-navigator {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: var(--color-gray-50);
+      padding: var(--spacing-sm);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-gray-200);
+    }
+
+    .date-nav-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      color: var(--color-gray-600);
+      transition: background-color 0.2s;
+    }
+
+    .date-nav-btn:hover {
+      background-color: var(--color-gray-200);
+      color: var(--color-primary-600);
+    }
+
+    .current-date {
+      font-weight: 600;
+      font-size: var(--font-size-body);
+      color: var(--color-gray-800);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+    }
+
+    .current-date svg {
+      width: 16px;
+      height: 16px;
+      color: var(--color-gray-500);
+    }
+
+    /* 
+     * OFFLINE INDICATOR
+     */
+    .offline-banner {
+      background-color: var(--color-gray-800);
+      color: var(--color-white);
+      padding: var(--spacing-sm) var(--spacing-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-sm);
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+      /* Positioned relative to content flow, but sticky in a real app context usually */
+      position: sticky;
+      top: 115px; /* header height estimate */
+      z-index: 90;
+    }
+    
+    .offline-banner[hidden] {
+      display: none;
+    }
+
+    /* 
+     * JOB LIST 
+     */
+    .job-list {
+      padding: var(--spacing-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    .list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .job-count {
+      font-size: var(--font-size-sm);
+      color: var(--color-gray-500);
+      font-weight: 500;
+    }
+
+    /* 
+     * JOB CARD COMPONENT 
+     */
+    .job-card {
+      background-color: var(--color-white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-gray-200);
+      padding: var(--spacing-md);
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+    }
+
+    .job-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--color-primary-200);
+    }
+
+    .job-card:focus-visible {
+      outline: 2px solid var(--color-primary-600);
+      outline-offset: 2px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .time-slot {
+      font-size: var(--font-size-sm);
+      font-weight: 700;
+      color: var(--color-gray-900);
+      background-color: var(--color-gray-100);
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+    }
+
+    .status-badge {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 4px 8px;
+      border-radius: 9999px;
+    }
+
+    /* Status Variants */
+    .status-new { background-color: var(--color-info-bg); color: var(--color-info-text); }
+    .status-progress { background-color: var(--color-warning-bg); color: var(--color-warning-text); }
+    .status-completed { background-color: var(--color-success-bg); color: var(--color-success-text); }
+    .status-assigned { background-color: var(--color-primary-50); color: var(--color-primary-700); }
+
+    .card-body {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .customer-name {
+      font-size: var(--font-size-body);
+      font-weight: 600;
+      color: var(--color-gray-900);
+    }
+
+    .service-address {
+      font-size: var(--font-size-sm);
+      color: var(--color-gray-600);
+      display: flex;
+      align-items: start;
+      gap: 6px;
+    }
+    
+    .service-address svg {
+      width: 16px; 
+      height: 16px;
+      flex-shrink: 0;
+      margin-top: 3px;
+    }
+
+    .card-footer {
+      margin-top: var(--spacing-xs);
+      padding-top: var(--spacing-sm);
+      border-top: 1px solid var(--color-gray-100);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .issue-type {
+      font-size: var(--font-size-xs);
+      color: var(--color-gray-500);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .action-chevron {
+      color: var(--color-gray-400);
+    }
+
+    /* 
+     * STATES: LOADING, EMPTY, ERROR 
+     */
+    
+    /* Skeleton Loader */
+    .skeleton {
+      background: linear-gradient(90deg, var(--color-gray-100) 25%, var(--color-gray-200) 50%, var(--color-gray-100) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: var(--radius-sm);
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .job-card-skeleton {
+      height: 140px;
+    }
+
+    /* Empty State */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-xl) var(--spacing-md);
+      text-align: center;
+      color: var(--color-gray-500);
+    }
+
+    .empty-icon {
+      width: 64px;
+      height: 64px;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-gray-300);
+    }
+
+    .empty-title {
+      font-size: var(--font-size-h4);
+      font-weight: 600;
+      color: var(--color-gray-900);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    /* Error State */
+    .error-container {
+      background-color: var(--color-white);
+      border: 1px solid var(--color-error-bg);
+      border-left: 4px solid var(--color-error-text);
+      padding: var(--spacing-md);
+      border-radius: var(--radius-md);
+      margin: var(--spacing-md);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: var(--spacing-sm);
+    }
+
+    .retry-btn {
+      background-color: var(--color-white);
+      border: 1px solid var(--color-gray-300);
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+      color: var(--color-gray-700);
+      transition: all 0.2s;
+    }
+
+    .retry-btn:hover {
+      background-color: var(--color-gray-50);
+      border-color: var(--color-gray-400);
+    }
+
+    /* 
+     * UTILITIES 
+     */
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Simulation Controls (For Demo Purposes) */
+    .demo-controls {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--color-gray-900);
+      padding: 10px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .demo-btn {
+      color: white;
+      font-size: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="screen-container">
+    <!-- Header with Date Navigation -->
+    <header class="app-header">
+      <div class="header-content">
+        <h1 class="header-title">My Jobs</h1>
+        <div class="user-avatar" role="img" aria-label="Technician Profile">JD</div>
+      </div>
+      
+      <nav class="date-navigator" aria-label="Date navigation">
+        <button class="date-nav-btn" aria-label="Previous day">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <div class="current-date">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span id="dateDisplay">Today, Oct 24</span>
+        </div>
+        <button class="date-nav-btn" aria-label="Next day">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </nav>
+    </header>
+
+    <!-- Offline Indicator -->
+    <div id="offlineBanner" class="offline-banner" role="alert" hidden>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+      <span>Offline Mode • Showing cached data</span>
+    </div>
+
+    <!-- Error State Container (Hidden by default) -->
+    <div id="errorContainer" class="error-container" hidden>
+      <div style="font-weight: 600; color: var(--color-error-text);">Failed to load jobs</div>
+      <p style="font-size: var(--font-size-sm); color: var(--color-gray-600);">Please check your connection and try again.</p>
+      <button class="retry-btn" onclick="retryLoad()">Retry</button>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="job-list" id="mainContent" role="list">
+      
+      <!-- List Header -->
+      <div class="list-header">
+        <span class="job-count" id="jobCount">3 jobs assigned</span>
+      </div>
+
+      <!-- Job Card 1 (On The Way) -->
+      <article class="job-card" role="listitem" tabindex="0">
+        <div class="card-header">
+          <span class="time-slot">09:00 AM</span>
+          <span class="status-badge status-progress">On The Way</span>
+        </div>
+        <div class="card-body">
+          <h3 class="customer-name">Sarah Jenkins</h3>
+          <div class="service-address">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>4528 Maple Ave, Springfield, IL 62704</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span class="issue-type">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            Refrigerator - Cooling Issue
+          </span>
+          <svg class="action-chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </div>
+      </article>
+
+      <!-- Job Card 2 (Assigned) -->
+      <article class="job-card" role="listitem" tabindex="0">
+        <div class="card-header">
+          <span class="time-slot">11:30 AM</span>
+          <span class="status-badge status-assigned">Assigned</span>
+        </div>
+        <div class="card-body">
+          <h3 class="customer-name">Robert Chen</h3>
+          <div class="service-address">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>892 Oak St, Apt 4B, Springfield, IL 62703</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span class="issue-type">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            Washing Machine - Not Draining
+          </span>
+          <svg class="action-chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </div>
+      </article>
+
+      <!-- Job Card 3 (Completed) -->
+      <article class="job-card" role="listitem" tabindex="0" style="opacity: 0.8;">
+        <div class="card-header">
+          <span class="time-slot">02:00 PM</span>
+          <span class="status-badge status-completed">Completed</span>
+        </div>
+        <div class="card-body">
+          <h3 class="customer-name">Elaine Benes</h3>
+          <div class="service-address">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>12 West 81st St, New York, NY 10024</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span class="issue-type">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            Microwave - Display Broken
+          </span>
+          <svg class="action-chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </div>
+      </article>
+
+    </main>
+    
+    <!-- Empty State (Hidden by default) -->
+    <div id="emptyState" class="empty-state" hidden>
+      <svg class="empty-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      <h3 class="empty-title">No jobs assigned</h3>
+      <p>You have no service requests scheduled for this date.</p>
+    </div>
+
+    <!-- Loading State (Hidden by default) -->
+    <div id="loadingState" class="job-list" hidden>
+       <div class="skeleton job-card-skeleton"></div>
+       <div class="skeleton job-card-skeleton"></div>
+       <div class="skeleton job-card-skeleton"></div>
+    </div>
+
+  </div>
+
+  <!-- Demo Controls (Not part of UI, for showcase only) -->
+  <div class="demo-controls">
+    <button class="demo-btn" onclick="toggleState('default')">Default</button>
+    <button class="demo-btn" onclick="toggleState('offline')">Offline</button>
+    <button class="demo-btn" onclick="toggleState('loading')">Loading</button>
+    <button class="demo-btn" onclick="toggleState('empty')">Empty</button>
+    <button class="demo-btn" onclick="toggleState('error')">Error</button>
+  </div>
+
+  <script>
+    // Simple state toggle logic for demonstration
+    function toggleState(state) {
+      const content = document.getElementById('mainContent');
+      const empty = document.getElementById('emptyState');
+      const loading = document.getElementById('loadingState');
+      const error = document.getElementById('errorContainer');
+      const offlineBanner = document.getElementById('offlineBanner');
+
+      // Reset
+      content.hidden = true;
+      empty.hidden = true;
+      loading.hidden = true;
+      error.hidden = true;
+      offlineBanner.hidden = true;
+
+      switch(state) {
+        case 'default':
+          content.hidden = false;
+          break;
+        case 'offline':
+          content.hidden = false;
+          offlineBanner.hidden = false;
+          break;
+        case 'loading':
+          loading.hidden = false;
+          break;
+        case 'empty':
+          empty.hidden = false;
+          break;
+        case 'error':
+          error.hidden = false;
+          break;
+      }
+    }
+  </script>
+</body>
+</html>

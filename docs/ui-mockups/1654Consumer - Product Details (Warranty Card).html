@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details - Warranty Card</title>
+  <style>
+    /* 
+     * DESIGN SYSTEM TOKENS & RESET 
+     */
+    :root {
+      /* Colors - Primary */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-500: #6366f1;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      --color-primary-800: #3730a3;
+
+      /* Colors - Neutrals */
+      --color-white: #ffffff;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-600: #4b5563;
+      --color-gray-700: #374151;
+      --color-gray-800: #1f2937;
+      --color-gray-900: #111827;
+
+      /* Colors - Semantic */
+      --color-success-bg: #d1e7dd;
+      --color-success-text: #0f5132;
+      --color-success-main: #28a745;
+      --color-warning-bg: #fff3cd;
+      --color-warning-text: #664d03;
+      --color-warning-main: #ffc107;
+      --color-error-bg: #f8d7da;
+      --color-error-text: #842029;
+      --color-error-main: #dc3545;
+
+      /* Typography */
+      --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-size-h2: clamp(1.25rem, 2vw, 1.5rem);
+      --font-size-h3: clamp(1.125rem, 1.5vw, 1.25rem);
+      --font-size-body: 1rem;
+      --font-size-sm: 0.875rem;
+      --font-size-xs: 0.75rem;
+
+      /* Spacing */
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+      --space-2xl: 48px;
+
+      /* UI Elements */
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-full: 9999px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+      /* Transitions */
+      --transition-base: all 0.2s ease-in-out;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family-primary);
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-900);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 80px; /* Space for fixed mobile CTA */
+    }
+
+    /* 
+     * LAYOUT STRUCTURE 
+     */
+    .screen-container {
+      max-width: 1140px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-content {
+      padding: var(--space-md);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-lg);
+    }
+
+    @media (min-width: 1024px) {
+      .main-content {
+        grid-template-columns: 1fr 1fr; /* Two columns on desktop */
+        padding: var(--space-xl);
+        gap: var(--space-2xl);
+        align-items: start;
+      }
+      
+      body {
+        padding-bottom: 0; /* Remove padding on desktop */
+      }
+    }
+
+    /* 
+     * COMPONENT: HEADER 
+     */
+    .app-header {
+      background: var(--color-white);
+      height: 64px;
+      display: flex;
+      align-items: center;
+      padding: 0 var(--space-md);
+      border-bottom: 1px solid var(--color-gray-200);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .back-button {
+      background: none;
+      border: none;
+      padding: var(--space-sm);
+      margin-right: var(--space-sm);
+      cursor: pointer;
+      color: var(--color-gray-600);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+    }
+
+    .back-button:hover {
+      background-color: var(--color-gray-100);
+      color: var(--color-primary-600);
+    }
+
+    .header-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--color-gray-900);
+    }
+
+    /* 
+     * COMPONENT: WARRANTY TABS 
+     */
+    .warranty-tabs {
+      display: flex;
+      gap: var(--space-md);
+      margin-bottom: var(--space-md);
+      border-bottom: 1px solid var(--color-gray-200);
+      overflow-x: auto;
+      scrollbar-width: none; /* Hide scrollbar */
+    }
+
+    .tab-button {
+      background: none;
+      border: none;
+      padding: var(--space-sm) var(--space-xs);
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+      color: var(--color-gray-500);
+      cursor: pointer;
+      position: relative;
+      white-space: nowrap;
+      transition: var(--transition-base);
+    }
+
+    .tab-button[aria-selected="true"] {
+      color: var(--color-primary-600);
+      font-weight: 600;
+    }
+
+    .tab-button[aria-selected="true"]::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: var(--color-primary-600);
+      border-radius: 2px 2px 0 0;
+    }
+
+    .tab-button:hover:not([aria-selected="true"]) {
+      color: var(--color-gray-700);
+    }
+
+    /* 
+     * COMPONENT: DIGITAL WARRANTY CARD 
+     */
+    .card-container {
+      perspective: 1000px;
+      margin-bottom: var(--space-lg);
+    }
+
+    .warranty-card {
+      background: linear-gradient(135deg, var(--color-gray-900), var(--color-gray-800));
+      border-radius: var(--radius-md);
+      padding: var(--space-lg);
+      color: var(--color-white);
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 220px;
+      /* Aspect ratio preservation */
+      aspect-ratio: 1.586/1; 
+      transition: transform 0.3s ease;
+    }
+
+    /* Decorative element */
+    .warranty-card::before {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 150px;
+      height: 150px;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+      border-radius: 50%;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--space-md);
+    }
+
+    .brand-logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .status-badge {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-active {
+      background-color: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(52, 211, 153, 0.4);
+    }
+
+    .status-expiring {
+      background-color: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, 0.4);
+    }
+
+    .status-expired {
+      background-color: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border: 1px solid rgba(248, 113, 113, 0.4);
+    }
+
+    .product-info {
+      margin-top: auto;
+    }
+
+    .product-name {
+      font-size: var(--font-size-h3);
+      font-weight: 600;
+      margin-bottom: var(--space-xs);
+    }
+
+    .product-meta {
+      font-size: var(--font-size-sm);
+      opacity: 0.8;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-sm);
+      margin-top: var(--space-md);
+    }
+
+    .meta-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      opacity: 0.7;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .meta-value {
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: -0.02em;
+    }
+
+    /* 
+     * COMPONENT: QUICK ACTIONS 
+     */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-md);
+      margin-bottom: var(--space-xl);
+    }
+
+    .action-card {
+      background: var(--color-white);
+      padding: var(--space-md);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-gray-200);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: var(--space-sm);
+      cursor: pointer;
+      transition: var(--transition-base);
+      color: var(--color-gray-700);
+      text-decoration: none;
+    }
+
+    .action-card:hover {
+      border-color: var(--color-primary-300);
+      background-color: var(--color-primary-50);
+      color: var(--color-primary-700);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .action-icon {
+      width: 24px;
+      height: 24px;
+      stroke-width: 2;
+    }
+
+    .action-label {
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+    }
+
+    /* 
+     * COMPONENT: SERVICE HISTORY 
+     */
+    .history-section {
+      background: var(--color-white);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-gray-200);
+      overflow: hidden;
+    }
+
+    .section-header {
+      padding: var(--space-md) var(--space-lg);
+      border-bottom: 1px solid var(--color-gray-200);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .section-title {
+      font-size: var(--font-size-h4);
+      color: var(--color-gray-900);
+    }
+
+    .history-list {
+      list-style: none;
+    }
+
+    .history-item {
+      padding: var(--space-md) var(--space-lg);
+      border-bottom: 1px solid var(--color-gray-100);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--space-sm);
+      align-items: center;
+      transition: background-color 0.2s;
+    }
+
+    .history-item:last-child {
+      border-bottom: none;
+    }
+
+    .history-item:hover {
+      background-color: var(--color-gray-50);
+    }
+
+    .history-main {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .history-title {
+      font-weight: 500;
+      color: var(--color-gray-900);
+    }
+
+    .history-meta {
+      font-size: var(--font-size-xs);
+      color: var(--color-gray-500);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .service-status {
+      font-size: var(--font-size-xs);
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      font-weight: 500;
+    }
+
+    .status-resolved {
+      background-color: var(--color-gray-100);
+      color: var(--color-gray-700);
+    }
+
+    .status-progress {
+      background-color: var(--color-primary-50);
+      color: var(--color-primary-700);
+    }
+
+    /* 
+     * COMPONENT: FIXED CTA (Mobile) / INLINE CTA (Desktop) 
+     */
+    .cta-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: var(--space-md);
+      background: var(--color-white);
+      border-top: 1px solid var(--color-gray-200);
+      box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
+      z-index: 40;
+    }
+
+    @media (min-width: 1024px) {
+      .cta-container {
+        position: static;
+        border: none;
+        box-shadow: none;
+        background: transparent;
+        padding: 0;
+        margin-top: var(--space-lg);
+      }
+    }
+
+    .btn-primary {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      background-color: var(--color-primary-600);
+      color: var(--color-white);
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: var(--radius-sm);
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: var(--transition-base);
+      gap: var(--space-sm);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--color-primary-700);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:focus-visible {
+      outline: 2px solid var(--color-primary-600);
+      outline-offset: 2px;
+    }
+    
+    .btn-icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* 
+     * UTILITIES & ACCESSIBILITY 
+     */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Skeleton Loading State */
+    .skeleton {
+      background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+      color: transparent !important;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Toast Notification */
+    .toast-container {
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 100;
+        pointer-events: none;
+        width: 90%;
+        max-width: 400px;
+    }
+
+    .toast {
+        background: var(--color-gray-800);
+        color: white;
+        padding: 12px 16px;
+        border-radius: var(--radius-sm);
+        margin-top: 8px;
+        box-shadow: var(--shadow-lg);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+    }
+    
+    .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Header -->
+  <header class="app-header">
+    <button class="back-button" aria-label="Go back to My Products">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+    </button>
+    <h1 class="header-title">Product Details</h1>
+  </header>
+
+  <div class="screen-container">
+    <main class="main-content">
+      
+      <!-- Left Column (Desktop) / Top Section (Mobile) -->
+      <section class="primary-details">
+        
+        <!-- Warranty Tabs -->
+        <div class="warranty-tabs" role="tablist" aria-label="Warranty Plans">
+          <button class="tab-button" role="tab" aria-selected="true" aria-controls="panel-standard" id="tab-standard" onclick="switchTab('standard')">
+            Manufacturer Warranty
+          </button>
+          <button class="tab-button" role="tab" aria-selected="false" aria-controls="panel-extended" id="tab-extended" onclick="switchTab('extended')">
+            Extended Protection
+          </button>
+        </div>
+
+        <!-- Warranty Card Component -->
+        <article class="card-container" id="panel-standard" role="tabpanel" aria-labelledby="tab-standard">
+          <div class="warranty-card">
+            <div class="card-header">
+              <div class="brand-logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="opacity: 0.9;">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"/>
+                </svg>
+                <span>SAMSUNG</span>
+              </div>
+              <!-- Status Badge: Dynamically rendered based on state -->
+              <div class="status-badge status-active" id="status-badge">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                ACTIVE
+              </div>
+            </div>
+
+            <div class="product-info">
+              <h2 class="product-name">QLED 4K Smart TV Q80B</h2>
+              <div class="product-meta">
+                <div>
+                  <span class="meta-label">Serial Number</span>
+                  <span class="meta-value">SN-884930221-X</span>
+                </div>
+                <div style="text-align: right;">
+                  <span class="meta-label">Expires On</span>
+                  <span class="meta-value" id="expiry-date">Oct 12, 2025</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Quick Actions Grid -->
+        <nav class="quick-actions" aria-label="Quick Actions">
+          <a href="#" class="action-card" onclick="showToast('Downloading Invoice...')">
+            <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <span class="action-label">View Invoice</span>
+          </a>
+          
+          <a href="#" class="action-card" onclick="showToast('Opening Terms & Conditions...')">
+            <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            <span class="action-label">Terms &amp; Conditions</span>
+          </a>
+
+          <a href="#" class="action-card" onclick="showToast('Transfer initiated...')">
+            <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+            <span class="action-label">Transfer Ownership</span>
+          </a>
+
+          <a href="#" class="action-card" onclick="showToast('Opening Support...')">
+            <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <span class="action-label">Get Help</span>
+          </a>
+        </nav>
+
+        <!-- Desktop CTA Location -->
+        <div class="desktop-only-cta" style="display: none;">
+             <!-- Will be moved here via CSS on desktop -->
+        </div>
+
+      </section>
+
+      <!-- Right Column (Desktop) / Bottom Section (Mobile) -->
+      <section class="secondary-details">
+        <div class="history-section">
+          <header class="section-header">
+            <h3 class="section-title">Service History</h3>
+            <span style="font-size: 0.875rem; color: var(--color-primary-600); cursor: pointer;">View All</span>
+          </header>
+          <ul class="history-list" id="history-list">
+            
+            <li class="history-item" tabindex="0">
+              <div class="history-main">
+                <span class="history-title">Screen flickering issue</span>
+                <div class="history-meta">
+                  <span>Oct 24, 2024</span>
+                  <span>•</span>
+                  <span>ID: #SR-99281</span>
+                </div>
+              </div>
+              <div class="history-status">
+                <span class="service-status status-progress">In Progress</span>
+              </div>
+            </li>
+
+            <li class="history-item" tabindex="0">
+              <div class="history-main">
+                <span class="history-title">Audio sync problem</span>
+                <div class="history-meta">
+                  <span>Aug 12, 2023</span>
+                  <span>•</span>
+                  <span>ID: #SR-88123</span>
+                </div>
+              </div>
+              <div class="history-status">
+                <span class="service-status status-resolved">Resolved</span>
+              </div>
+            </li>
+
+          </ul>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Floating/Fixed CTA -->
+    <div class="cta-container">
+      <button class="btn-primary" onclick="requestService()">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+        </svg>
+        Raise Service Request
+      </button>
+    </div>
+    
+    <div class="toast-container" id="toast-container">
+        <!-- Toasts will be injected here -->
+    </div>
+
+  </div>
+
+  <script>
+    // Data for simulation
+    const warrantyData = {
+      standard: {
+        expiry: "Oct 12, 2025",
+        status: "active",
+        statusText: "Active",
+        bg: "linear-gradient(135deg, var(--color-gray-900), var(--color-gray-800))"
+      },
+      extended: {
+        expiry: "Oct 12, 2028",
+        status: "active",
+        statusText: "Active",
+        bg: "linear-gradient(135deg, var(--color-primary-800), var(--color-primary-600))"
+      }
+    };
+
+    // Tab Switching Logic
+    function switchTab(tabName) {
+      const standardTab = document.getElementById('tab-standard');
+      const extendedTab = document.getElementById('tab-extended');
+      const expiryEl = document.getElementById('expiry-date');
+      const badgeEl = document.getElementById('status-badge');
+      const cardEl = document.querySelector('.warranty-card');
+
+      if (tabName === 'standard') {
+        standardTab.setAttribute('aria-selected', 'true');
+        extendedTab.setAttribute('aria-selected', 'false');
+        
+        // Update Card Content with animation
+        cardEl.style.opacity = '0.8';
+        setTimeout(() => {
+          expiryEl.textContent = warrantyData.standard.expiry;
+          cardEl.style.background = warrantyData.standard.bg;
+          cardEl.style.opacity = '1';
+        }, 150);
+
+      } else {
+        standardTab.setAttribute('aria-selected', 'false');
+        extendedTab.setAttribute('aria-selected', 'true');
+        
+        cardEl.style.opacity = '0.8';
+        setTimeout(() => {
+          expiryEl.textContent = warrantyData.extended.expiry;
+          cardEl.style.background = warrantyData.extended.bg;
+          cardEl.style.opacity = '1';
+        }, 150);
+      }
+    }
+
+    // Mock Service Request Action
+    function requestService() {
+      const btn = document.querySelector('.btn-primary');
+      const originalText = btn.innerHTML;
+      
+      // Loading State
+      btn.innerHTML = `
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite">
+          <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path>
+        </svg>
+        Processing...
+      `;
+      btn.style.opacity = '0.8';
+      
+      // Simulate API call
+      setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.style.opacity = '1';
+        showToast("Redirecting to Service Request Form...");
+      }, 800);
+    }
+    
+    // Toast Notification Logic
+    function showToast(message) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = message;
+        
+        container.appendChild(toast);
+        
+        // Trigger reflow
+        void toast.offsetWidth;
+        
+        toast.classList.add('show');
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                container.removeChild(toast);
+            }, 300);
+        }, 3000);
+    }
+
+    // Add CSS keyframes for spinner dynamically
+    const styleSheet = document.createElement("style");
+    styleSheet.innerText = `
+      @keyframes spin {
+        100% { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(styleSheet);
+  </script>
+</body>
+</html>
