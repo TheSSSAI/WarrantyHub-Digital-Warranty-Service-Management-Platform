@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Super Admin - Brand Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+  <style>
+    /* 
+     * DESIGN SYSTEM TOKENS & RESET 
+     */
+    :root {
+      /* Color Palette - Primary */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-500: #6366f1;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      --color-primary-800: #3730a3;
+
+      /* Color Palette - Neutrals */
+      --color-white: #ffffff;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-600: #4b5563;
+      --color-gray-700: #374151;
+      --color-gray-800: #1f2937;
+      --color-gray-900: #111827;
+
+      /* Color Palette - Semantic */
+      --color-success-bg: #d1e7dd;
+      --color-success-text: #0f5132;
+      --color-warning-bg: #fff3cd;
+      --color-warning-text: #664d03;
+      --color-error-bg: #f8d7da;
+      --color-error-text: #842029;
+      --color-info-bg: #cff4fc;
+      --color-info-text: #055160;
+
+      /* Typography */
+      --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      /* Spacing */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-6: 24px;
+      --space-8: 32px;
+      
+      /* Radius */
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+      --radius-full: 9999px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+      /* Layout */
+      --header-height: 64px;
+      --sidebar-width: 240px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-900);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* 
+     * LAYOUT STRUCTURE 
+     */
+    .app-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-width);
+      background-color: var(--color-gray-900);
+      color: var(--color-white);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      height: 100vh;
+      left: 0;
+      top: 0;
+      z-index: 20;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar-brand {
+      height: var(--header-height);
+      display: flex;
+      align-items: center;
+      padding: 0 var(--space-6);
+      font-weight: 700;
+      font-size: 1.25rem;
+      border-bottom: 1px solid var(--color-gray-800);
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: var(--space-4) 0;
+    }
+
+    .nav-item a {
+      display: flex;
+      align-items: center;
+      padding: var(--space-3) var(--space-6);
+      color: var(--color-gray-400);
+      text-decoration: none;
+      transition: all 0.2s;
+      gap: var(--space-3);
+    }
+
+    .nav-item a:hover, .nav-item a.active {
+      color: var(--color-white);
+      background-color: var(--color-gray-800);
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      margin-left: var(--sidebar-width);
+      min-width: 0; /* Prevents flex items from overflowing */
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .top-bar {
+      height: var(--header-height);
+      background: var(--color-white);
+      border-bottom: 1px solid var(--color-gray-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--space-6);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .breadcrumb {
+      color: var(--color-gray-500);
+      font-size: 0.875rem;
+    }
+    
+    .breadcrumb span {
+      color: var(--color-gray-900);
+      font-weight: 500;
+    }
+
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      background: var(--color-primary-100);
+      color: var(--color-primary-700);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+
+    /* Page Content */
+    .page-container {
+      padding: var(--space-8);
+      max-width: 1440px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-6);
+    }
+
+    .page-title h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--color-gray-900);
+    }
+
+    .page-title p {
+      color: var(--color-gray-500);
+      margin-top: var(--space-1);
+    }
+
+    /* 
+     * COMPONENTS
+     */
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-md);
+      font-weight: 500;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+      gap: var(--space-2);
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background-color: var(--color-primary-600);
+      color: var(--color-white);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--color-primary-700);
+    }
+
+    .btn-secondary {
+      background-color: var(--color-white);
+      border-color: var(--color-gray-300);
+      color: var(--color-gray-700);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--color-gray-50);
+      border-color: var(--color-gray-400);
+    }
+
+    .btn-icon {
+      padding: var(--space-2);
+      color: var(--color-gray-500);
+      background: transparent;
+      border: none;
+    }
+
+    .btn-icon:hover {
+      color: var(--color-gray-700);
+      background-color: var(--color-gray-100);
+    }
+
+    /* Filters Section */
+    .filter-bar {
+      background: var(--color-white);
+      padding: var(--space-4);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-gray-200);
+      margin-bottom: var(--space-6);
+      display: flex;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+      align-items: center;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      flex: 1;
+      min-width: 240px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--color-gray-400);
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      padding: 9px 12px 9px 36px;
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      color: var(--color-gray-900);
+    }
+    
+    .form-select {
+      padding-left: 12px;
+      background-color: var(--color-white);
+    }
+
+    /* Data Table */
+    .table-container {
+      background: var(--color-white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-gray-200);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      white-space: nowrap;
+    }
+
+    thead {
+      background-color: var(--color-gray-50);
+      border-bottom: 1px solid var(--color-gray-200);
+    }
+
+    th {
+      text-align: left;
+      padding: var(--space-3) var(--space-6);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-gray-500);
+    }
+
+    td {
+      padding: var(--space-4) var(--space-6);
+      font-size: 0.875rem;
+      color: var(--color-gray-900);
+      border-bottom: 1px solid var(--color-gray-100);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover {
+      background-color: var(--color-gray-50);
+    }
+
+    /* Status Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .badge-warning {
+      background-color: var(--color-warning-bg);
+      color: var(--color-warning-text);
+    }
+
+    .badge-success {
+      background-color: var(--color-success-bg);
+      color: var(--color-success-text);
+    }
+
+    .badge-error {
+      background-color: var(--color-error-bg);
+      color: var(--color-error-text);
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-3) var(--space-6);
+      border-top: 1px solid var(--color-gray-200);
+    }
+
+    .pagination-info {
+      font-size: 0.875rem;
+      color: var(--color-gray-500);
+    }
+
+    .pagination-controls {
+      display: flex;
+      gap: var(--space-2);
+    }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 50;
+      opacity: 0;
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    .modal-overlay:target {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal {
+      background: var(--color-white);
+      width: 100%;
+      max-width: 500px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      transform: scale(0.95);
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .modal-overlay:target .modal {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      padding: var(--space-4) var(--space-6);
+      border-bottom: 1px solid var(--color-gray-200);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--color-gray-900);
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--color-gray-400);
+      cursor: pointer;
+      font-size: 1.25rem;
+    }
+
+    .modal-body {
+      padding: var(--space-6);
+    }
+
+    .modal-footer {
+      padding: var(--space-4) var(--space-6);
+      background: var(--color-gray-50);
+      border-top: 1px solid var(--color-gray-200);
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-3);
+      border-bottom-left-radius: var(--radius-lg);
+      border-bottom-right-radius: var(--radius-lg);
+    }
+
+    .text-area {
+      width: 100%;
+      padding: var(--space-3);
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--radius-md);
+      min-height: 100px;
+      margin-top: var(--space-2);
+      font-family: var(--font-primary);
+    }
+
+    .info-text {
+      color: var(--color-gray-500);
+      font-size: 0.875rem;
+      margin-bottom: var(--space-4);
+    }
+
+    /* 
+     * RESPONSIVE ADJUSTMENTS 
+     */
+    @media (max-width: 1024px) {
+      .sidebar {
+        width: 64px;
+      }
+      
+      .sidebar span {
+        display: none;
+      }
+      
+      .main-content {
+        margin-left: 64px;
+      }
+      
+      .sidebar-brand {
+        justify-content: center;
+        padding: 0;
+      }
+      
+      .nav-item a {
+        justify-content: center;
+        padding: var(--space-4) var(--space-2);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      
+      .main-content {
+        margin-left: 0;
+      }
+
+      .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .search-input-wrapper {
+        min-width: 100%;
+      }
+
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-4);
+      }
+
+      .pagination {
+        flex-direction: column;
+        gap: var(--space-3);
+      }
+    }
+
+    /* Utilities */
+    .flex-center { display: flex; align-items: center; }
+    .gap-2 { gap: var(--space-2); }
+    .hidden { display: none; }
+    .text-sm { font-size: 0.875rem; }
+    .font-medium { font-weight: 500; }
+  </style>
+</head>
+<body>
+
+  <div class="app-layout">
+    <!-- Navigation Sidebar -->
+    <nav class="sidebar">
+      <div class="sidebar-brand">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+          <line x1="8" y1="21" x2="16" y2="21"></line>
+          <line x1="12" y1="17" x2="12" y2="21"></line>
+        </svg>
+        <span>Admin Panel</span>
+      </div>
+      <ul class="nav-list">
+        <li class="nav-item"><a href="#">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          <span>Dashboard</span>
+        </a></li>
+        <li class="nav-item"><a href="#" class="active">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+          <span>Brands</span>
+        </a></li>
+        <li class="nav-item"><a href="#">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <span>Users</span>
+        </a></li>
+        <li class="nav-item"><a href="#">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          <span>Settings</span>
+        </a></li>
+      </ul>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Header -->
+      <header class="top-bar">
+        <div class="breadcrumb">
+          Admin / <span>Brand Management</span>
+        </div>
+        <div class="user-menu">
+          <button class="btn btn-icon" aria-label="Notifications">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          </button>
+          <div class="avatar" aria-label="User Profile">SA</div>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <div class="page-container">
+        
+        <!-- Page Header -->
+        <div class="page-header">
+          <div class="page-title">
+            <h1>Brand Requests</h1>
+            <p>Review and manage incoming brand registration requests.</p>
+          </div>
+          <button class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Add Brand
+          </button>
+        </div>
+
+        <!-- Filters -->
+        <section class="filter-bar" aria-label="Data Filters">
+          <div class="search-input-wrapper">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" class="form-input" placeholder="Search brands, emails..." aria-label="Search">
+          </div>
+          
+          <div style="flex: 0 1 200px;">
+            <select class="form-select" aria-label="Filter by Status">
+              <option value="all">All Statuses</option>
+              <option value="pending" selected>Pending Review</option>
+              <option value="active">Active</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+
+          <div style="flex: 0 1 200px;">
+            <select class="form-select" aria-label="Filter by Date">
+              <option value="all">All Time</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+            </select>
+          </div>
+        </section>
+
+        <!-- Data Table -->
+        <section class="table-container">
+          <div class="table-wrapper">
+            <table aria-label="Brand Registration Requests">
+              <thead>
+                <tr>
+                  <th scope="col">Brand Name</th>
+                  <th scope="col">Contact Person</th>
+                  <th scope="col">Email</th>
+                  <th scope="col">Submission Date</th>
+                  <th scope="col">Status</th>
+                  <th scope="col" style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Row 1: Pending -->
+                <tr>
+                  <td>
+                    <div class="flex-center gap-2">
+                      <div class="avatar" style="background:#e0e7ff; color:#4338ca; width:28px; height:28px; font-size:12px;">S</div>
+                      <span class="font-medium">Sony Electronics</span>
+                    </div>
+                  </td>
+                  <td>John Smith</td>
+                  <td>john.smith@sony.com</td>
+                  <td>Oct 24, 2023</td>
+                  <td><span class="badge badge-warning">Pending</span></td>
+                  <td style="text-align: right;">
+                    <a href="#modal-approve" class="btn btn-icon" aria-label="Approve" title="Approve">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </a>
+                    <a href="#modal-reject" class="btn btn-icon" aria-label="Reject" title="Reject">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </a>
+                  </td>
+                </tr>
+
+                <!-- Row 2: Pending -->
+                <tr>
+                  <td>
+                    <div class="flex-center gap-2">
+                      <div class="avatar" style="background:#fce7f3; color:#be185d; width:28px; height:28px; font-size:12px;">L</div>
+                      <span class="font-medium">LG Corp</span>
+                    </div>
+                  </td>
+                  <td>Sarah Connor</td>
+                  <td>s.connor@lg.com</td>
+                  <td>Oct 23, 2023</td>
+                  <td><span class="badge badge-warning">Pending</span></td>
+                  <td style="text-align: right;">
+                    <a href="#modal-approve" class="btn btn-icon" aria-label="Approve" title="Approve">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </a>
+                    <a href="#modal-reject" class="btn btn-icon" aria-label="Reject" title="Reject">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </a>
+                  </td>
+                </tr>
+
+                <!-- Row 3: Active (for context) -->
+                <tr style="opacity: 0.7;">
+                  <td>
+                    <div class="flex-center gap-2">
+                      <div class="avatar" style="background:#d1fae5; color:#065f46; width:28px; height:28px; font-size:12px;">P</div>
+                      <span class="font-medium">Panasonic</span>
+                    </div>
+                  </td>
+                  <td>Mike Ross</td>
+                  <td>m.ross@panasonic.jp</td>
+                  <td>Oct 20, 2023</td>
+                  <td><span class="badge badge-success">Active</span></td>
+                  <td style="text-align: right;">
+                    <button class="btn btn-icon" aria-label="View Details">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                    </button>
+                  </td>
+                </tr>
+                 <!-- Row 4: Rejected (for context) -->
+                 <tr style="opacity: 0.7;">
+                  <td>
+                    <div class="flex-center gap-2">
+                      <div class="avatar" style="background:#f3f4f6; color:#374151; width:28px; height:28px; font-size:12px;">F</div>
+                      <span class="font-medium">Fake Brand Ltd</span>
+                    </div>
+                  </td>
+                  <td>John Doe</td>
+                  <td>admin@fake.com</td>
+                  <td>Oct 19, 2023</td>
+                  <td><span class="badge badge-error">Rejected</span></td>
+                  <td style="text-align: right;">
+                    <button class="btn btn-icon" aria-label="View Details">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Pagination -->
+          <div class="pagination">
+            <span class="pagination-info">Showing <strong>1-4</strong> of <strong>24</strong> requests</span>
+            <div class="pagination-controls">
+              <button class="btn btn-secondary" disabled>Previous</button>
+              <button class="btn btn-secondary">Next</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- Modal: Approve (triggered by CSS :target) -->
+    <div id="modal-approve" class="modal-overlay" aria-hidden="false">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-approve-title">
+        <div class="modal-header">
+          <h3 id="modal-approve-title" class="modal-title">Approve Brand Registration</h3>
+          <a href="#" class="modal-close" aria-label="Close modal">&times;</a>
+        </div>
+        <div class="modal-body">
+          <p class="info-text">Are you sure you want to approve <strong>Sony Electronics</strong>? This will grant them access to the Brand Portal and allow product registrations.</p>
+          <div style="background-color: var(--color-info-bg); padding: 12px; border-radius: 6px; display: flex; gap: 12px; font-size: 0.875rem; color: var(--color-info-text);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <span>An email notification will be sent to the brand administrator upon confirmation.</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <a href="#" class="btn btn-secondary">Cancel</a>
+          <a href="#" class="btn btn-primary">Confirm Approval</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Reject (triggered by CSS :target) -->
+    <div id="modal-reject" class="modal-overlay" aria-hidden="false">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-reject-title">
+        <div class="modal-header">
+          <h3 id="modal-reject-title" class="modal-title">Reject Brand Registration</h3>
+          <a href="#" class="modal-close" aria-label="Close modal">&times;</a>
+        </div>
+        <div class="modal-body">
+          <p class="info-text">Please provide a reason for rejecting <strong>Sony Electronics</strong>. This will be shared with the applicant.</p>
+          <label for="reject-reason" style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 4px;">Rejection Reason <span style="color:red">*</span></label>
+          <select class="form-select" id="reject-reason-select" style="margin-bottom: 8px;">
+            <option>Incomplete documentation</option>
+            <option>Invalid business license</option>
+            <option>Duplicate registration</option>
+            <option>Other</option>
+          </select>
+          <textarea id="reject-reason" class="text-area" placeholder="Enter detailed reason for rejection..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <a href="#" class="btn btn-secondary">Cancel</a>
+          <a href="#" class="btn" style="background-color: var(--color-error-main); color: white;">Reject Application</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="padding: 24px; max-width: 1440px; margin: 0 auto;">
+    <h3 style="margin-bottom: 16px; border-bottom: 1px solid #ccc; padding-bottom: 8px;">Screen Variants Documentation</h3>
+    
+    <h4 style="margin-top: 24px;">1. Loading State</h4>
+    <p style="color: var(--color-gray-600); font-size: 14px; margin-bottom: 12px;">Used while fetching data from the API. Uses skeleton loaders to prevent layout shift.</p>
+    <!-- Visual representation of loading state via code block for demo purposes in this single file context -->
+    <div style="border: 1px solid var(--color-gray-200); padding: 16px; border-radius: 8px; background: white;">
+       <div style="height: 40px; background: var(--color-gray-100); border-radius: 4px; margin-bottom: 16px; width: 100%;"></div>
+       <div style="height: 60px; background: var(--color-gray-50); border-radius: 4px; margin-bottom: 8px; width: 100%;"></div>
+       <div style="height: 60px; background: var(--color-gray-50); border-radius: 4px; margin-bottom: 8px; width: 100%;"></div>
+    </div>
+
+    <h4 style="margin-top: 24px;">2. Empty State</h4>
+    <p style="color: var(--color-gray-600); font-size: 14px; margin-bottom: 12px;">Displayed when filters return no results or the pending queue is empty.</p>
+    <div style="border: 1px solid var(--color-gray-200); padding: 48px; border-radius: 8px; background: white; text-align: center;">
+       <div style="width: 48px; height: 48px; background: var(--color-gray-100); border-radius: 50%; margin: 0 auto 16px; display:flex; align-items:center; justify-content:center; color: var(--color-gray-400);">
+         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+       </div>
+       <h4 style="margin-bottom: 4px;">No pending requests found</h4>
+       <p style="color: var(--color-gray-500); font-size: 14px;">Great job! You've processed all incoming brand registrations.</p>
+       <button class="btn btn-secondary" style="margin-top: 16px;">Clear Filters</button>
+    </div>
+  </div>
+
+</body>
+</html>

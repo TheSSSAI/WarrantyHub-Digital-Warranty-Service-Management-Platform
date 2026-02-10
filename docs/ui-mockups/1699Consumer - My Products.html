@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Products | Consumer Portal</title>
+  <style>
+    /* 
+     * DESIGN SYSTEM TOKENS 
+     * Derived from Design System.md
+     */
+    :root {
+      /* Colors - Primary */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-400: #818cf8;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      --color-primary-800: #3730a3;
+
+      /* Colors - Secondary & Neutrals */
+      --color-secondary-900: #0f172a;
+      --color-white: #ffffff;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-600: #4b5563;
+      --color-gray-700: #374151;
+      --color-gray-800: #1f2937;
+      --color-gray-900: #111827;
+
+      /* Colors - Semantic */
+      --color-success-bg: #d1e7dd;
+      --color-success-text: #0f5132;
+      --color-warning-bg: #fff3cd;
+      --color-warning-text: #664d03;
+      --color-error-bg: #f8d7da;
+      --color-error-text: #842029;
+
+      /* Typography */
+      --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-size-h1: 28px;
+      --font-size-h2: 22px;
+      --font-size-body: 14px;
+      --font-size-caption: 12px;
+
+      /* Spacing */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-6: 24px;
+      --space-8: 32px;
+
+      /* Layout */
+      --header-height-mobile: 60px;
+      --bottom-nav-height: 64px;
+      --container-padding: 16px;
+      --radius-md: 12px;
+      --radius-sm: 6px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Desktop Overrides */
+    @media (min-width: 1024px) {
+      :root {
+        --font-size-h1: 32px;
+        --font-size-h2: 24px;
+        --font-size-body: 16px;
+        --container-padding: 32px;
+      }
+    }
+
+    /* CSS Reset & Base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family-base);
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-900);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: var(--bottom-nav-height); /* Space for bottom nav on mobile */
+    }
+
+    /* 
+     * COMPONENT STYLES 
+     */
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: var(--font-size-body);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      gap: var(--space-2);
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid var(--color-primary-600);
+      outline-offset: 2px;
+    }
+
+    .btn-primary {
+      background-color: var(--color-primary-600);
+      color: var(--color-white);
+    }
+    .btn-primary:hover { background-color: var(--color-primary-700); }
+    .btn-primary:active { background-color: var(--color-primary-800); transform: scale(0.98); }
+
+    .btn-secondary {
+      background-color: transparent;
+      color: var(--color-gray-700);
+      border: 1px solid var(--color-gray-300);
+    }
+    .btn-secondary:hover { background-color: var(--color-gray-50); color: var(--color-gray-900); }
+
+    .btn-icon {
+      padding: 8px;
+      color: var(--color-gray-600);
+      background: transparent;
+      border-radius: 50%;
+    }
+    .btn-icon:hover { background-color: var(--color-gray-100); }
+    .btn-icon.active { color: var(--color-primary-600); background-color: var(--color-primary-50); }
+
+    /* Inputs */
+    .input-group {
+      position: relative;
+      flex: 1;
+    }
+    
+    .input-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--color-gray-400);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 12px 10px 40px; /* Space for icon */
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--radius-sm);
+      font-size: var(--font-size-body);
+      background-color: var(--color-white);
+      color: var(--color-gray-900);
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--color-primary-600);
+      box-shadow: 0 0 0 3px var(--color-primary-100);
+    }
+
+    /* Status Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: var(--font-size-caption);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    .badge-success { background: var(--color-success-bg); color: var(--color-success-text); border: 1px solid rgba(15, 81, 50, 0.1); }
+    .badge-warning { background: var(--color-warning-bg); color: var(--color-warning-text); border: 1px solid rgba(102, 77, 3, 0.1); }
+    .badge-error { background: var(--color-error-bg); color: var(--color-error-text); border: 1px solid rgba(132, 32, 41, 0.1); }
+
+    /* Cards */
+    .card {
+      background: var(--color-white);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-gray-200);
+      padding: var(--space-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      position: relative;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--color-gray-300);
+    }
+
+    .card:active {
+      transform: scale(0.995);
+    }
+
+    /* Floating Action Button (FAB) */
+    .fab {
+      position: fixed;
+      bottom: calc(var(--bottom-nav-height) + 16px);
+      right: 16px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background-color: var(--color-primary-600);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-lg);
+      border: none;
+      cursor: pointer;
+      z-index: 100;
+      transition: transform 0.2s;
+    }
+    .fab:hover { background-color: var(--color-primary-700); transform: scale(1.05); }
+    .fab:active { transform: scale(0.95); }
+
+    /* 
+     * LAYOUT & STRUCTURE 
+     */
+    
+    .screen-container {
+      max-width: 1440px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app-header {
+      height: var(--header-height-mobile);
+      background: var(--color-white);
+      border-bottom: 1px solid var(--color-gray-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--container-padding);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .main-content {
+      padding: var(--container-padding);
+      flex: 1;
+    }
+
+    .controls-bar {
+      display: flex;
+      gap: var(--space-3);
+      margin-bottom: var(--space-6);
+      align-items: center;
+    }
+
+    .view-toggles {
+      display: flex;
+      background: var(--color-gray-100);
+      padding: 2px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--color-gray-200);
+    }
+    
+    .view-toggles button {
+      border: none;
+      background: transparent;
+      padding: 6px;
+      border-radius: 4px;
+      color: var(--color-gray-500);
+      cursor: pointer;
+    }
+    
+    .view-toggles button.active {
+      background: var(--color-white);
+      color: var(--color-primary-600);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Product Grid/List Styles */
+    .product-grid {
+      display: grid;
+      gap: var(--space-4);
+    }
+
+    /* List View (Mobile Default) */
+    .product-grid.view-list {
+      grid-template-columns: 1fr;
+    }
+    
+    .product-grid.view-list .card {
+      flex-direction: row;
+      align-items: center;
+      padding: var(--space-3);
+    }
+    
+    .product-grid.view-list .card-image {
+      width: 64px;
+      height: 64px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      background-color: var(--color-gray-100);
+    }
+
+    .product-grid.view-list .card-content {
+      flex: 1;
+      padding-left: var(--space-3);
+    }
+
+    /* Grid View */
+    .product-grid.view-grid {
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+
+    .product-grid.view-grid .card-image {
+      width: 100%;
+      height: 160px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      background-color: var(--color-gray-100);
+      margin-bottom: var(--space-2);
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-gray-900);
+      margin-bottom: 2px;
+    }
+
+    .card-subtitle {
+      font-size: 14px;
+      color: var(--color-gray-500);
+      margin-bottom: var(--space-2);
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+    }
+
+    /* Skeleton Loading */
+    .skeleton {
+      background: linear-gradient(90deg, var(--color-gray-100) 25%, var(--color-gray-200) 50%, var(--color-gray-100) 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+      border-radius: 4px;
+    }
+    .skeleton-text { height: 16px; margin-bottom: 8px; width: 60%; }
+    .skeleton-title { height: 20px; width: 80%; margin-bottom: 8px; }
+    .skeleton-img { width: 100%; height: 160px; border-radius: var(--radius-sm); margin-bottom: 12px; }
+
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Empty State */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-8) var(--space-4);
+      text-align: center;
+      color: var(--color-gray-500);
+      min-height: 400px;
+    }
+    
+    .empty-icon {
+      width: 64px;
+      height: 64px;
+      margin-bottom: var(--space-4);
+      color: var(--color-gray-300);
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: var(--bottom-nav-height);
+      background: var(--color-white);
+      border-top: 1px solid var(--color-gray-200);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 50;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+      color: var(--color-gray-400);
+      font-size: 10px;
+      font-weight: 500;
+      padding: 8px;
+    }
+
+    .nav-item.active { color: var(--color-primary-600); }
+    .nav-item svg { width: 24px; height: 24px; }
+
+    /* Desktop Breakpoint */
+    @media (min-width: 1024px) {
+      body { padding-bottom: 0; }
+      .bottom-nav { display: none; }
+      .fab { display: none; } /* Use header button on desktop */
+      
+      .desktop-nav {
+        display: flex;
+        gap: var(--space-6);
+      }
+      
+      .desktop-nav a {
+        text-decoration: none;
+        color: var(--color-gray-600);
+        font-weight: 500;
+        padding: 8px 0;
+      }
+      
+      .desktop-nav a.active {
+        color: var(--color-primary-600);
+        border-bottom: 2px solid var(--color-primary-600);
+      }
+
+      .desktop-add-btn {
+        display: inline-flex;
+      }
+    }
+
+    /* Demo Controls (For simulation only - not part of UI) */
+    .demo-controls {
+      position: fixed;
+      top: 80px;
+      right: 16px;
+      background: rgba(0,0,0,0.8);
+      padding: 10px;
+      border-radius: 8px;
+      color: white;
+      font-size: 12px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .demo-controls button {
+      background: #333;
+      border: 1px solid #555;
+      color: white;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+    .demo-controls button:hover { background: #555; }
+
+    /* Utilities */
+    .hidden { display: none !important; }
+    .desktop-add-btn { display: none; }
+
+  </style>
+</head>
+<body>
+
+  <div class="screen-container">
+    <!-- App Header -->
+    <header class="app-header">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-primary-600);">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+        <h1 style="font-size: 20px; font-weight: 700;">Consumer Portal</h1>
+      </div>
+      
+      <!-- Desktop Navigation -->
+      <nav class="desktop-nav" style="display: none;">
+        <a href="#">Dashboard</a>
+        <a href="#" class="active">My Products</a>
+        <a href="#">Service Requests</a>
+        <a href="#">Support</a>
+      </nav>
+
+      <div style="display: flex; gap: 16px; align-items: center;">
+        <button class="btn btn-primary desktop-add-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Add Product
+        </button>
+        <div style="width: 32px; height: 32px; background: var(--color-primary-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--color-primary-700); font-weight: 600;">JD</div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      
+      <div style="margin-bottom: 24px;">
+        <h2 style="font-size: 24px; font-weight: 700; color: var(--color-gray-900);">My Products</h2>
+        <p style="color: var(--color-gray-500); margin-top: 4px;">Manage your registered devices and warranties.</p>
+      </div>
+
+      <!-- Controls: Search, Filter, Toggle -->
+      <section class="controls-bar">
+        <div class="input-group">
+          <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" class="form-input" placeholder="Search by name, serial number, or brand..." aria-label="Search products">
+        </div>
+        
+        <button class="btn btn-secondary" aria-label="Filter products">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+          <span style="display: none; @media(min-width: 768px){ display: inline; }">Filter</span>
+        </button>
+
+        <div class="view-toggles" role="group" aria-label="View mode">
+          <button class="active" id="view-list-btn" aria-label="List view" aria-pressed="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+          </button>
+          <button id="view-grid-btn" aria-label="Grid view" aria-pressed="false">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- CONTENT STATES -->
+      
+      <!-- STATE 1: LOADING (Hidden by default) -->
+      <div id="state-loading" class="product-grid view-list hidden">
+        <!-- Skeleton Items -->
+        <div class="card">
+          <div class="skeleton skeleton-img" style="width: 64px; height: 64px;"></div>
+          <div style="flex: 1; padding-left: 12px;">
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton skeleton-text"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="skeleton skeleton-img" style="width: 64px; height: 64px;"></div>
+          <div style="flex: 1; padding-left: 12px;">
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton skeleton-text"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="skeleton skeleton-img" style="width: 64px; height: 64px;"></div>
+          <div style="flex: 1; padding-left: 12px;">
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton skeleton-text"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATE 2: LOADED (Active by default) -->
+      <div id="state-loaded" class="product-grid view-list">
+        
+        <!-- Product Card 1 -->
+        <article class="card">
+          <img src="https://placehold.co/400x300/e0e7ff/4f46e5?text=MacBook" alt="MacBook Pro" class="card-image">
+          <div class="card-content">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <h3 class="card-title">MacBook Pro 14"</h3>
+                <p class="card-subtitle">Apple • SN: C02G123456</p>
+              </div>
+              <span class="badge badge-success">Active</span>
+            </div>
+            <div class="card-footer">
+              <span class="card-subtitle" style="margin-bottom: 0;">Expires: Oct 2026</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--color-gray-400);"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </div>
+          </div>
+        </article>
+
+        <!-- Product Card 2 -->
+        <article class="card">
+          <img src="https://placehold.co/400x300/fef3c7/d97706?text=Galaxy" alt="Samsung Galaxy S22" class="card-image">
+          <div class="card-content">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <h3 class="card-title">Galaxy S22 Ultra</h3>
+                <p class="card-subtitle">Samsung • SN: R5CT12345</p>
+              </div>
+              <span class="badge badge-warning">Expires Soon</span>
+            </div>
+            <div class="card-footer">
+              <span class="card-subtitle" style="margin-bottom: 0;">Expires: Next Week</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--color-gray-400);"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </div>
+          </div>
+        </article>
+
+        <!-- Product Card 3 -->
+        <article class="card">
+          <img src="https://placehold.co/400x300/fee2e2/dc2626?text=Dyson" alt="Dyson V11 Vacuum" class="card-image">
+          <div class="card-content">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <h3 class="card-title">Dyson V11 Absolute</h3>
+                <p class="card-subtitle">Dyson • SN: A12-UK-1234</p>
+              </div>
+              <span class="badge badge-error">Expired</span>
+            </div>
+            <div class="card-footer">
+              <span class="card-subtitle" style="margin-bottom: 0;">Expired: Jan 2024</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--color-gray-400);"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- STATE 3: EMPTY (Hidden by default) -->
+      <div id="state-empty" class="empty-state hidden">
+        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+          <line x1="12" y1="22.08" x2="12" y2="12"></line>
+        </svg>
+        <h3 style="font-size: 18px; font-weight: 600; color: var(--color-gray-900); margin-bottom: 8px;">No products yet</h3>
+        <p style="margin-bottom: 24px;">Add your first product to start tracking warranties and services.</p>
+        <button class="btn btn-primary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Add Product
+        </button>
+      </div>
+
+    </main>
+
+    <!-- Floating Action Button (Mobile) -->
+    <button class="fab" aria-label="Add new product">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    </button>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav">
+      <a href="#" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        <span>Home</span>
+      </a>
+      <a href="#" class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+        <span>Products</span>
+      </a>
+      <a href="#" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+        <span>Service</span>
+      </a>
+      <a href="#" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        <span>Profile</span>
+      </a>
+    </nav>
+  </div>
+
+  <!-- Demo Controls for Visualization -->
+  <div class="demo-controls">
+    <strong>View Mode</strong>
+    <button onclick="setView('list')">List View</button>
+    <button onclick="setView('grid')">Grid View</button>
+    <strong>States</strong>
+    <button onclick="setState('loaded')">Loaded</button>
+    <button onclick="setState('loading')">Loading</button>
+    <button onclick="setState('empty')">Empty</button>
+  </div>
+
+  <script>
+    // Simple state management for the mockup
+    const listViewBtn = document.getElementById('view-list-btn');
+    const gridViewBtn = document.getElementById('view-grid-btn');
+    const productContainer = document.getElementById('state-loaded');
+    const loadingContainer = document.getElementById('state-loading');
+    
+    function setView(view) {
+      if (view === 'grid') {
+        productContainer.classList.remove('view-list');
+        productContainer.classList.add('view-grid');
+        listViewBtn.classList.remove('active');
+        gridViewBtn.classList.add('active');
+        listViewBtn.setAttribute('aria-pressed', 'false');
+        gridViewBtn.setAttribute('aria-pressed', 'true');
+        
+        // Update loading skeleton to grid
+        loadingContainer.classList.remove('view-list');
+        loadingContainer.classList.add('view-grid');
+      } else {
+        productContainer.classList.remove('view-grid');
+        productContainer.classList.add('view-list');
+        gridViewBtn.classList.remove('active');
+        listViewBtn.classList.add('active');
+        gridViewBtn.setAttribute('aria-pressed', 'false');
+        listViewBtn.setAttribute('aria-pressed', 'true');
+
+        // Update loading skeleton to list
+        loadingContainer.classList.remove('view-grid');
+        loadingContainer.classList.add('view-list');
+      }
+    }
+
+    function setState(state) {
+      document.getElementById('state-loaded').classList.add('hidden');
+      document.getElementById('state-loading').classList.add('hidden');
+      document.getElementById('state-empty').classList.add('hidden');
+
+      if (state === 'loaded') {
+        document.getElementById('state-loaded').classList.remove('hidden');
+      } else if (state === 'loading') {
+        document.getElementById('state-loading').classList.remove('hidden');
+      } else if (state === 'empty') {
+        document.getElementById('state-empty').classList.remove('hidden');
+      }
+    }
+
+    // Attach listeners for interactive demo
+    listViewBtn.addEventListener('click', () => setView('list'));
+    gridViewBtn.addEventListener('click', () => setView('grid'));
+
+    // Responsive behavior simulation for desktop
+    function handleResize() {
+      if (window.innerWidth >= 1024) {
+        document.querySelector('.desktop-nav').style.display = 'flex';
+      } else {
+        document.querySelector('.desktop-nav').style.display = 'none';
+      }
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Init
+  </script>
+</body>
+</html>

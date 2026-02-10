@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Create Account - Register</title>
+  <style>
+    /* 
+      DESIGN SYSTEM FOUNDATION & CSS RESET 
+    */
+    :root {
+      /* Color Palette - Primary */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-200: #c7d2fe;
+      --color-primary-300: #a5b4fc;
+      --color-primary-400: #818cf8;
+      --color-primary-500: #6366f1;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      --color-primary-800: #3730a3;
+      
+      /* Color Palette - Neutrals */
+      --color-white: #ffffff;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-600: #4b5563;
+      --color-gray-700: #374151;
+      --color-gray-800: #1f2937;
+      --color-gray-900: #111827;
+
+      /* Semantic Colors */
+      --color-error: #dc3545;
+      --color-success: #28a745;
+
+      /* Typography */
+      --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      
+      /* Spacing */
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      
+      /* UI Tokens */
+      --radius-md: 8px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --transition-base: 0.2s ease-in-out;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family-primary);
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-900);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 
+      LAYOUT & CONTAINER 
+    */
+    .auth-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-md);
+      width: 100%;
+    }
+
+    .auth-card {
+      background: var(--color-white);
+      width: 100%;
+      max-width: 480px;
+      border-radius: 12px;
+      box-shadow: var(--shadow-md);
+      padding: 32px 24px; /* Default desktop padding */
+      position: relative;
+      overflow: hidden;
+    }
+
+    @media (max-width: 480px) {
+      .auth-container {
+        padding: 0;
+        justify-content: flex-start;
+      }
+      .auth-card {
+        box-shadow: none;
+        border-radius: 0;
+        min-height: 100vh;
+        padding: 24px 20px;
+      }
+    }
+
+    /* 
+      TYPOGRAPHY 
+    */
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--color-gray-900);
+      margin-bottom: var(--spacing-sm);
+      text-align: center;
+    }
+    
+    .subtitle {
+      font-size: 14px;
+      color: var(--color-gray-500);
+      text-align: center;
+      margin-bottom: var(--spacing-xl);
+    }
+
+    /* 
+      STEPPER COMPONENT 
+    */
+    .stepper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 32px;
+      position: relative;
+    }
+
+    .step-indicator {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 2;
+      width: 80px;
+    }
+
+    .step-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--color-gray-100);
+      color: var(--color-gray-500);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+      border: 2px solid var(--color-gray-200);
+      transition: all var(--transition-base);
+    }
+
+    .step-label {
+      font-size: 12px;
+      margin-top: 6px;
+      color: var(--color-gray-500);
+      font-weight: 500;
+    }
+
+    .step-indicator.active .step-circle {
+      border-color: var(--color-primary-600);
+      color: var(--color-primary-600);
+      background-color: var(--color-primary-50);
+    }
+    .step-indicator.active .step-label {
+      color: var(--color-primary-600);
+    }
+
+    .step-indicator.completed .step-circle {
+      background-color: var(--color-primary-600);
+      border-color: var(--color-primary-600);
+      color: var(--color-white);
+    }
+
+    .stepper-line {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 140px; /* distance between 1 and 3 */
+      height: 2px;
+      background-color: var(--color-gray-200);
+      z-index: 1;
+    }
+
+    .stepper-progress {
+      position: absolute;
+      top: 16px;
+      left: calc(50% - 70px); /* Align with start of line */
+      height: 2px;
+      background-color: var(--color-primary-600);
+      z-index: 1;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* 
+      FORM ELEMENTS 
+    */
+    .form-group {
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-gray-700);
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 14px;
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--radius-md);
+      color: var(--color-gray-900);
+      transition: var(--transition-base);
+      background-color: var(--color-white);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--color-primary-600);
+      box-shadow: 0 0 0 3px var(--color-primary-100);
+    }
+
+    .form-input.error {
+      border-color: var(--color-error);
+    }
+
+    .error-msg {
+      font-size: 12px;
+      color: var(--color-error);
+      margin-top: 4px;
+      display: none;
+    }
+    .form-input.error + .error-msg {
+      display: block;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .checkbox-input {
+      width: 18px;
+      height: 18px;
+      margin-top: 3px;
+      accent-color: var(--color-primary-600);
+      cursor: pointer;
+    }
+
+    .checkbox-label {
+      font-size: 14px;
+      color: var(--color-gray-600);
+      line-height: 1.5;
+    }
+
+    .link {
+      color: var(--color-primary-600);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .link:hover {
+      text-decoration: underline;
+    }
+
+    /* 
+      OTP INPUT 
+    */
+    .otp-group {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin: 24px 0;
+    }
+    
+    .otp-digit {
+      width: 44px;
+      height: 56px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 600;
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--radius-md);
+      background-color: var(--color-white);
+    }
+    
+    .otp-digit:focus {
+      outline: none;
+      border-color: var(--color-primary-600);
+      box-shadow: 0 0 0 3px var(--color-primary-100);
+    }
+
+    /* 
+      BUTTONS 
+    */
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      border: none;
+      cursor: pointer;
+      transition: var(--transition-base);
+      width: 100%;
+      height: 48px; /* Touch target size */
+    }
+
+    .btn-primary {
+      background-color: var(--color-primary-600);
+      color: var(--color-white);
+    }
+    .btn-primary:hover {
+      background-color: var(--color-primary-700);
+    }
+    .btn-primary:active {
+      background-color: var(--color-primary-800);
+    }
+    .btn-primary:disabled {
+      background-color: var(--color-gray-200);
+      color: var(--color-gray-400);
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background-color: transparent;
+      color: var(--color-gray-700);
+      border: 1px solid var(--color-gray-300);
+    }
+    .btn-secondary:hover {
+      background-color: var(--color-gray-50);
+    }
+
+    /* 
+      SCREEN STATES (WIZARD STEPS) 
+    */
+    .wizard-step {
+      display: none;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    .wizard-step.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 
+      SUCCESS STATE 
+    */
+    .success-icon {
+      width: 64px;
+      height: 64px;
+      background-color: var(--color-success);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px auto;
+      font-size: 32px;
+    }
+
+    .footer-text {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 14px;
+      color: var(--color-gray-600);
+    }
+
+    /* Accessibility Focus Ring */
+    :focus-visible {
+      outline: 2px solid var(--color-primary-600);
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="auth-container">
+    <div class="auth-card">
+      
+      <!-- HEADER -->
+      <header role="banner">
+        <h1>Create Account</h1>
+        <p class="subtitle" id="form-subtitle">Let's get started with your warranty journey.</p>
+      </header>
+
+      <!-- STEPPER -->
+      <div class="stepper" aria-hidden="true">
+        <div class="stepper-line"></div>
+        <div class="stepper-progress" id="stepperProgress"></div>
+        
+        <div class="step-indicator active" id="indicator1">
+          <div class="step-circle">1</div>
+          <span class="step-label">Details</span>
+        </div>
+        <div class="step-indicator" id="indicator2">
+          <div class="step-circle">2</div>
+          <span class="step-label">Security</span>
+        </div>
+        <div class="step-indicator" id="indicator3">
+          <div class="step-circle">3</div>
+          <span class="step-label">Verify</span>
+        </div>
+      </div>
+
+      <!-- FORM CONTENT -->
+      <form id="registrationForm" novalidate>
+        
+        <!-- STEP 1: PERSONAL DETAILS -->
+        <fieldset class="wizard-step active" id="step1" aria-labelledby="step1-title">
+          <legend class="sr-only" id="step1-title">Personal Details</legend>
+          
+          <div class="form-group">
+            <label for="fullName" class="form-label">Full Name</label>
+            <input type="text" id="fullName" name="fullName" class="form-input" placeholder="e.g. John Doe" required autocomplete="name">
+            <span class="error-msg">Please enter your full name.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="form-label">Email Address</label>
+            <input type="email" id="email" name="email" class="form-input" placeholder="john@example.com" required autocomplete="email">
+            <span class="error-msg">Please enter a valid email address.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="phone" class="form-label">Phone Number</label>
+            <input type="tel" id="phone" name="phone" class="form-input" placeholder="+1 (555) 000-0000" required autocomplete="tel">
+            <span class="error-msg">Please enter a valid phone number.</span>
+          </div>
+
+          <div class="btn-group">
+            <button type="button" class="btn btn-primary" onclick="nextStep(2)">Continue</button>
+          </div>
+        </fieldset>
+
+        <!-- STEP 2: SECURITY & TERMS -->
+        <fieldset class="wizard-step" id="step2" aria-labelledby="step2-title">
+          <legend class="sr-only" id="step2-title">Security and Terms</legend>
+
+          <div class="form-group">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" id="password" name="password" class="form-input" placeholder="At least 8 characters" required autocomplete="new-password">
+            <span class="error-msg">Password must be at least 8 characters.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword" class="form-label">Confirm Password</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" placeholder="Re-enter password" required autocomplete="new-password">
+            <span class="error-msg">Passwords do not match.</span>
+          </div>
+
+          <div class="checkbox-group">
+            <input type="checkbox" id="terms" name="terms" class="checkbox-input" required>
+            <label for="terms" class="checkbox-label">
+              I agree to the <a href="#" class="link">Terms of Service</a> and <a href="#" class="link">Privacy Policy</a>.
+            </label>
+          </div>
+
+          <div class="btn-group">
+            <button type="button" class="btn btn-primary" onclick="nextStep(3)">Create Account</button>
+            <button type="button" class="btn btn-secondary" onclick="prevStep(1)">Back</button>
+          </div>
+        </fieldset>
+
+        <!-- STEP 3: OTP VERIFICATION -->
+        <fieldset class="wizard-step" id="step3" aria-labelledby="step3-title">
+          <legend class="sr-only" id="step3-title">Verification</legend>
+          <div style="text-align: center; margin-bottom: 24px;">
+            <h3 style="font-size: 18px; margin-bottom: 8px;">Enter Verification Code</h3>
+            <p style="font-size: 14px; color: var(--color-gray-600);">We sent a 4-digit code to your phone number.</p>
+          </div>
+
+          <div class="otp-group">
+            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric" aria-label="Digit 1">
+            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric" aria-label="Digit 2">
+            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric" aria-label="Digit 3">
+            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric" aria-label="Digit 4">
+          </div>
+          
+          <div style="text-align: center; margin-bottom: 24px;">
+            <a href="#" class="link" style="font-size: 14px;">Resend Code</a>
+          </div>
+
+          <div class="btn-group">
+            <button type="button" class="btn btn-primary" onclick="nextStep(4)">Verify & Finish</button>
+            <button type="button" class="btn btn-secondary" onclick="prevStep(2)">Back</button>
+          </div>
+        </fieldset>
+
+        <!-- SUCCESS STATE -->
+        <div class="wizard-step" id="stepSuccess" aria-live="polite">
+          <div class="success-icon">✓</div>
+          <h2 style="text-align: center; margin-bottom: 16px;">Account Created!</h2>
+          <p style="text-align: center; color: var(--color-gray-600); margin-bottom: 32px;">
+            Your account has been successfully created and verified. You can now start registering your products.
+          </p>
+          <div class="btn-group">
+            <button type="button" class="btn btn-primary">Go to Dashboard</button>
+          </div>
+        </div>
+
+      </form>
+
+      <div class="footer-text">
+        Already have an account? <a href="#" class="link">Log in</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Simple state management for the wizard
+    let currentStep = 1;
+
+    function updateStepper(step) {
+      const progress = document.getElementById('stepperProgress');
+      const indicators = document.querySelectorAll('.step-indicator');
+      
+      // Update indicators
+      indicators.forEach((el, index) => {
+        if (index + 1 < step) {
+          el.classList.add('completed');
+          el.classList.remove('active');
+        } else if (index + 1 === step) {
+          el.classList.add('active');
+          el.classList.remove('completed');
+        } else {
+          el.classList.remove('active', 'completed');
+        }
+      });
+
+      // Update progress bar width
+      if (step === 1) progress.style.width = '0%';
+      if (step === 2) progress.style.width = '50%';
+      if (step === 3) progress.style.width = '100%';
+    }
+
+    function nextStep(targetStep) {
+      // Basic validation simulation
+      if (targetStep === 2) {
+        const name = document.getElementById('fullName').value;
+        const email = document.getElementById('email').value;
+        if (!name || !email) {
+          // Simple shake or visual cue could go here
+          // For mockup purposes, we proceed
+        }
+      }
+
+      // Hide current step
+      document.querySelector('.wizard-step.active').classList.remove('active');
+      
+      // Show next step
+      if (targetStep === 4) {
+        document.getElementById('stepSuccess').classList.add('active');
+        document.querySelector('.stepper').style.display = 'none'; // Hide stepper on success
+        document.querySelector('.footer-text').style.display = 'none';
+        document.querySelector('header').style.display = 'none';
+      } else {
+        document.getElementById(`step${targetStep}`).classList.add('active');
+        updateStepper(targetStep);
+      }
+      
+      currentStep = targetStep;
+      
+      // Focus management for accessibility
+      if(targetStep <= 3) {
+         const firstInput = document.getElementById(`step${targetStep}`).querySelector('input');
+         if(firstInput) firstInput.focus();
+      }
+    }
+
+    function prevStep(targetStep) {
+      document.querySelector('.wizard-step.active').classList.remove('active');
+      document.getElementById(`step${targetStep}`).classList.add('active');
+      updateStepper(targetStep);
+      currentStep = targetStep;
+    }
+
+    // OTP Auto-focus logic
+    const otpInputs = document.querySelectorAll('.otp-digit');
+    otpInputs.forEach((input, index) => {
+      input.addEventListener('keyup', (e) => {
+        if (e.key >= 0 && e.key <= 9) {
+          if (index < otpInputs.length - 1) {
+            otpInputs[index + 1].focus();
+          }
+        } else if (e.key === 'Backspace') {
+          if (index > 0) {
+            otpInputs[index - 1].focus();
+          }
+        }
+      });
+    });
+  </script>
+
+  <!-- Sr-only class for accessibility -->
+  <style>
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+  </style>
+
+  <!-- 
+    VARIANTS DOCUMENTATION 
+    Below this line is documentation for the different variants this screen supports.
+  -->
+  <div style="display:none">
+    <h3>Variant: Default (Wizard)</h3>
+    <p>The standard multi-step registration flow designed for mobile optimization. Breaks complex data entry into digestible chunks.</p>
+    
+    <h3>Variant: Single Page (Desktop Alternative)</h3>
+    <p>On larger viewports (>1024px), steps 1 and 2 could be merged into a single form for faster completion if vertical space allows.</p>
+  </div>
+</body>
+</html>
