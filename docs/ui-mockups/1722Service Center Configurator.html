@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service Center Configurator - Super Admin</title>
+  <style>
+    /* 
+      DESIGN SYSTEM TOKENS 
+      Based on provided Design System.md
+    */
+    :root {
+      /* Color Palette - Primary */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-200: #c7d2fe;
+      --color-primary-500: #6366f1;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      --color-primary-900: #312e81;
+
+      /* Color Palette - Secondary/Slate */
+      --color-secondary-50: #f8fafc;
+      --color-secondary-100: #f1f5f9;
+      --color-secondary-200: #e2e8f0;
+      --color-secondary-300: #cbd5e1;
+      --color-secondary-500: #64748b;
+      --color-secondary-700: #334155;
+      --color-secondary-900: #0f172a;
+
+      /* Color Palette - Semantic */
+      --color-success-bg: #ecfdf5;
+      --color-success-text: #065f46;
+      --color-warning-bg: #fffbeb;
+      --color-warning-text: #92400e;
+      --color-error-bg: #fef2f2;
+      --color-error-text: #b91c1c;
+
+      /* Neutrals */
+      --color-white: #ffffff;
+      --color-gray-50: #f9fafb;
+      --color-gray-200: #e5e7eb;
+      --color-gray-900: #111827;
+
+      /* Spacing */
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --spacing-xxl: 48px;
+
+      /* Typography */
+      --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-family-mono: 'JetBrains Mono', monospace;
+
+      /* UI Elements */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+      /* Layout */
+      --header-height: 64px;
+      --sidebar-width: 260px;
+    }
+
+    /* RESET */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family-base);
+      background-color: var(--color-gray-50);
+      color: var(--color-secondary-900);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* LAYOUT STRUCTURE */
+    .app-layout {
+      display: grid;
+      grid-template-columns: var(--sidebar-width) 1fr;
+      grid-template-rows: var(--header-height) 1fr;
+      min-height: 100vh;
+      grid-template-areas: 
+        "sidebar header"
+        "sidebar content";
+    }
+
+    /* HEADER */
+    .header {
+      grid-area: header;
+      background: var(--color-white);
+      border-bottom: 1px solid var(--color-secondary-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--spacing-lg);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      font-size: 14px;
+      color: var(--color-secondary-500);
+    }
+
+    .breadcrumb-item.active {
+      color: var(--color-secondary-900);
+      font-weight: 500;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--color-primary-100);
+      color: var(--color-primary-700);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      grid-area: sidebar;
+      background: var(--color-secondary-900);
+      color: var(--color-secondary-300);
+      padding: var(--spacing-lg);
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .sidebar-logo {
+      color: var(--color-white);
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: var(--spacing-xl);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .nav-item {
+      padding: var(--spacing-sm) var(--spacing-md);
+      margin-bottom: var(--spacing-xs);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      transition: all 0.2s;
+    }
+
+    .nav-item:hover {
+      background: var(--color-secondary-800);
+      color: var(--color-white);
+    }
+
+    .nav-item.active {
+      background: var(--color-primary-600);
+      color: var(--color-white);
+    }
+
+    /* MAIN CONTENT */
+    .content {
+      grid-area: content;
+      padding: var(--spacing-xl);
+      max-width: 1600px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .page-title h1 {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--color-gray-900);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .page-subtitle {
+      color: var(--color-secondary-500);
+      font-size: 14px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .status-badge.pending {
+      background-color: var(--color-warning-bg);
+      color: var(--color-warning-text);
+    }
+
+    /* GRID LAYOUT */
+    .config-grid {
+      display: grid;
+      grid-template-columns: 1fr 2fr; /* Left: 1/3, Right: 2/3 */
+      gap: var(--spacing-lg);
+      align-items: start;
+    }
+
+    /* CARDS */
+    .card {
+      background: var(--color-white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--color-secondary-200);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: var(--spacing-lg);
+      border-bottom: 1px solid var(--color-secondary-100);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-gray-900);
+    }
+
+    .card-body {
+      padding: var(--spacing-lg);
+    }
+
+    /* FORM ELEMENTS */
+    .form-group {
+      margin-bottom: var(--spacing-md);
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-secondary-700);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--color-secondary-300);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      color: var(--color-gray-900);
+      background: var(--color-white);
+      transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--color-primary-500);
+      box-shadow: 0 0 0 3px var(--color-primary-100);
+    }
+
+    .form-control[disabled] {
+      background-color: var(--color-secondary-50);
+      color: var(--color-secondary-500);
+      cursor: not-allowed;
+    }
+
+    /* BRAND MULTI-SELECT */
+    .brand-select-container {
+      border: 1px solid var(--color-secondary-300);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-xs);
+    }
+
+    .selected-brands {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--spacing-xs);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .brand-chip {
+      background: var(--color-primary-50);
+      color: var(--color-primary-700);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid var(--color-primary-200);
+    }
+
+    .brand-chip button {
+      background: none;
+      border: none;
+      color: var(--color-primary-700);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .brand-search-input {
+      border: none;
+      width: 100%;
+      padding: var(--spacing-xs);
+      font-size: 14px;
+    }
+    .brand-search-input:focus {
+      outline: none;
+    }
+
+    /* TABS */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--color-secondary-200);
+      background: var(--color-gray-50);
+    }
+
+    .tab {
+      padding: var(--spacing-md) var(--spacing-lg);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-secondary-500);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .tab:hover {
+      color: var(--color-secondary-700);
+      background: var(--color-secondary-100);
+    }
+
+    .tab.active {
+      color: var(--color-primary-600);
+      border-bottom-color: var(--color-primary-600);
+      background: var(--color-white);
+    }
+
+    /* MAP WIDGET CONTAINER */
+    .map-container {
+      height: 500px;
+      width: 100%;
+      position: relative;
+      background-color: #e5e7eb; /* Fallback for map loading */
+      background-image: 
+        linear-gradient(#d1d5db 1px, transparent 1px),
+        linear-gradient(90deg, #d1d5db 1px, transparent 1px);
+      background-size: 40px 40px;
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+      overflow: hidden;
+    }
+    
+    /* Simulating Map UI */
+    .map-overlay-controls {
+      position: absolute;
+      top: var(--spacing-md);
+      left: var(--spacing-md);
+      background: var(--color-white);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      padding: var(--spacing-xs);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
+      z-index: 2;
+    }
+
+    .map-tool-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--color-white);
+      border: 1px solid var(--color-secondary-200);
+      border-radius: var(--radius-sm);
+      color: var(--color-secondary-600);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .map-tool-btn:hover {
+      background: var(--color-secondary-50);
+      color: var(--color-primary-600);
+    }
+
+    .map-tool-btn.active {
+      background: var(--color-primary-50);
+      color: var(--color-primary-600);
+      border-color: var(--color-primary-200);
+    }
+
+    .map-info-panel {
+      position: absolute;
+      bottom: var(--spacing-md);
+      left: var(--spacing-md);
+      right: var(--spacing-md);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(4px);
+      padding: var(--spacing-md);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 2;
+    }
+
+    /* POSTAL CODE EDITOR (Alternative Tab) */
+    .postal-editor {
+      padding: var(--spacing-lg);
+      min-height: 400px;
+    }
+
+    .postal-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--spacing-sm);
+      margin-top: var(--spacing-md);
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .postal-tag {
+      background: var(--color-secondary-100);
+      border: 1px solid var(--color-secondary-200);
+      padding: 4px 10px;
+      border-radius: 16px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .postal-tag button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--color-secondary-500);
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+    }
+
+    .postal-tag button:hover {
+      color: var(--color-error-text);
+    }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 20px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      gap: var(--spacing-sm);
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--color-primary-600);
+      color: var(--color-white);
+      border: 1px solid transparent;
+    }
+    .btn-primary:hover {
+      background: var(--color-primary-700);
+    }
+
+    .btn-secondary {
+      background: var(--color-white);
+      color: var(--color-secondary-700);
+      border: 1px solid var(--color-secondary-300);
+    }
+    .btn-secondary:hover {
+      background: var(--color-secondary-50);
+      border-color: var(--color-secondary-400);
+    }
+    
+    .btn-danger-text {
+        background: transparent;
+        color: var(--color-error-text);
+        border: none;
+        padding: 8px;
+    }
+    .btn-danger-text:hover {
+        background: var(--color-error-bg);
+    }
+
+    /* Simulating a Polygon on Map */
+    .simulated-polygon {
+      position: absolute;
+      top: 20%;
+      left: 30%;
+      width: 40%;
+      height: 50%;
+      border: 2px solid var(--color-primary-500);
+      background-color: rgba(99, 102, 241, 0.15);
+      clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+      pointer-events: none; /* Just visual */
+    }
+
+    .polygon-vertex {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: var(--color-white);
+      border: 2px solid var(--color-primary-600);
+      border-radius: 50%;
+      cursor: grab;
+      z-index: 3;
+      pointer-events: auto;
+    }
+    
+    /* Vertices positions based on clip-path roughly */
+    .v1 { top: 20%; left: 38%; transform: translate(-50%, -50%); } 
+    .v2 { top: 20%; left: 62%; transform: translate(-50%, -50%); }
+    .v3 { top: 70%; left: 70%; transform: translate(-50%, -50%); }
+    .v4 { top: 70%; left: 30%; transform: translate(-50%, -50%); }
+
+    /* RESPONSIVE BREAKPOINTS */
+    @media (max-width: 1024px) {
+      .config-grid {
+        grid-template-columns: 1fr;
+      }
+      .app-layout {
+        grid-template-columns: 1fr;
+        grid-template-areas: "header" "content";
+      }
+      .sidebar {
+        display: none; /* Hidden on tablet/mobile for this mockup */
+      }
+      .header {
+        padding: 0 var(--spacing-md);
+      }
+    }
+
+    /* UTILITY */
+    .text-sm { font-size: 14px; }
+    .text-secondary { color: var(--color-secondary-500); }
+    .mt-4 { margin-top: var(--spacing-lg); }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .hidden { display: none; }
+
+  </style>
+</head>
+<body>
+
+  <div class="app-layout">
+    
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+        Admin Portal
+      </div>
+      <nav>
+        <div class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          Dashboard
+        </div>
+        <div class="nav-item active">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l8-4 8 4v14M8 21v-4h8v4"></path></svg>
+          Service Centers
+        </div>
+        <div class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+          Brands
+        </div>
+        <div class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          Users
+        </div>
+      </nav>
+    </aside>
+
+    <!-- HEADER -->
+    <header class="header">
+      <div class="breadcrumb">
+        <span>Service Centers</span>
+        <span>/</span>
+        <span class="active">Configuration: Downtown Hub</span>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        </button>
+        <div class="user-profile">
+          <div class="avatar">SA</div>
+          <span class="text-sm font-medium">Super Admin</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="content">
+      
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="page-title">
+          <h1>Downtown Repair Hub</h1>
+          <div class="page-subtitle">ID: SC-8992-XJ • Last updated: 2 hours ago</div>
+        </div>
+        <div class="header-buttons">
+            <span class="status-badge pending">Configuration Pending</span>
+            <button class="btn btn-secondary" style="margin-left: 12px;">Cancel</button>
+            <button class="btn btn-primary" style="margin-left: 8px;">Save Configuration</button>
+        </div>
+      </div>
+
+      <!-- Config Grid -->
+      <div class="config-grid">
+        
+        <!-- Left Column: Details & Brands -->
+        <div style="display: flex; flex-direction: column; gap: var(--spacing-lg);">
+          
+          <!-- Basic Info Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Center Details</h3>
+              <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px;">Edit Info</button>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Address</label>
+                <div class="text-sm text-secondary">123 Industrial Ave, Suite 400<br>Metropolis, NY 10012</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Primary Contact</label>
+                <div class="text-sm text-secondary">John Smith<br>john@downtownhub.com<br>+1 (555) 019-2834</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Brand Associations Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Authorized Brands</h3>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Select Brands</label>
+                <div class="brand-select-container">
+                  <div class="selected-brands">
+                    <span class="brand-chip">Samsung <button aria-label="Remove Samsung">×</button></span>
+                    <span class="brand-chip">LG Electronics <button aria-label="Remove LG">×</button></span>
+                    <span class="brand-chip">Whirlpool <button aria-label="Remove Whirlpool">×</button></span>
+                  </div>
+                  <input type="text" class="brand-search-input" placeholder="Search brands to add..." aria-label="Search brands">
+                </div>
+                <div class="text-sm text-secondary mt-4" style="margin-top: 8px; font-size: 12px;">
+                  Only approved brands are available for selection.
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Service Area Config -->
+        <div class="card" style="height: 100%; display: flex; flex-direction: column;">
+          <div class="card-header" style="padding: 0; border-bottom: none; display: block;">
+            <div style="padding: var(--spacing-lg); border-bottom: 1px solid var(--color-secondary-200); display: flex; justify-content: space-between; align-items: center;">
+               <h3 class="card-title">Service Area Definition</h3>
+               <div class="text-sm text-secondary">Define where this center operates</div>
+            </div>
+            
+            <!-- Tabs -->
+            <div class="tabs" role="tablist">
+              <div class="tab active" role="tab" aria-selected="true" tabindex="0" onclick="switchTab('map')">Map View (Geofence)</div>
+              <div class="tab" role="tab" aria-selected="false" tabindex="0" onclick="switchTab('postal')">Postal Codes</div>
+            </div>
+          </div>
+
+          <!-- TAB CONTENT: MAP -->
+          <div id="map-view" style="flex: 1; display: flex; flex-direction: column;">
+            <div class="map-container" aria-label="Interactive map for service area">
+              
+              <!-- Map Tools Overlay -->
+              <div class="map-overlay-controls">
+                <button class="map-tool-btn" aria-label="Hand tool (Pan)">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"></path><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a.9.9 0 0 1 0-1.27l1.32-1.3a.5.5 0 0 1 .71 0l2.56 2.56"></path></svg>
+                </button>
+                <button class="map-tool-btn active" aria-label="Draw Polygon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
+                </button>
+                <button class="map-tool-btn" aria-label="Edit Vertices">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </button>
+                <div style="height: 1px; background: var(--color-secondary-200); margin: 4px 0;"></div>
+                <button class="map-tool-btn" aria-label="Delete Area" style="color: var(--color-error-text);">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+              </div>
+
+              <!-- Map Elements (Simulated) -->
+              <div class="simulated-polygon"></div>
+              <div class="polygon-vertex v1" tabindex="0" role="button" aria-label="Map vertex 1"></div>
+              <div class="polygon-vertex v2" tabindex="0" role="button" aria-label="Map vertex 2"></div>
+              <div class="polygon-vertex v3" tabindex="0" role="button" aria-label="Map vertex 3"></div>
+              <div class="polygon-vertex v4" tabindex="0" role="button" aria-label="Map vertex 4"></div>
+
+              <!-- Info Panel -->
+              <div class="map-info-panel">
+                <div class="text-sm">
+                  <strong>Area:</strong> ~45 sq km<br>
+                  <span class="text-secondary">Click map to add points. Double click to finish.</span>
+                </div>
+                <button class="btn btn-primary btn-sm" style="padding: 8px 12px; font-size: 13px;">Save Area</button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- TAB CONTENT: POSTAL CODES (Hidden by default) -->
+          <div id="postal-view" class="postal-editor hidden">
+             <div class="form-group">
+               <label class="form-label">Add Postal Codes</label>
+               <div style="display: flex; gap: var(--spacing-sm);">
+                 <input type="text" class="form-control" placeholder="Enter postal code (e.g. 10012) or paste list..." style="flex: 1;">
+                 <button class="btn btn-secondary">Add</button>
+               </div>
+               <div class="text-sm text-secondary" style="margin-top: 4px;">Separate multiple codes with commas or spaces.</div>
+             </div>
+
+             <div class="postal-tags">
+               <div class="postal-tag">10012 <button aria-label="Remove 10012">×</button></div>
+               <div class="postal-tag">10013 <button aria-label="Remove 10013">×</button></div>
+               <div class="postal-tag">10014 <button aria-label="Remove 10014">×</button></div>
+               <div class="postal-tag">10003 <button aria-label="Remove 10003">×</button></div>
+               <div class="postal-tag">10009 <button aria-label="Remove 10009">×</button></div>
+               <div class="postal-tag">11201 <button aria-label="Remove 11201">×</button></div>
+               <div class="postal-tag">11211 <button aria-label="Remove 11211">×</button></div>
+               <!-- More tags simulated -->
+             </div>
+
+             <div style="margin-top: auto; padding-top: var(--spacing-lg); display: flex; justify-content: flex-end; gap: var(--spacing-sm);">
+                <button class="btn btn-danger-text">Clear All</button>
+                <button class="btn btn-primary">Save List</button>
+             </div>
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Simple script to handle tab switching mock
+    function switchTab(tabName) {
+      const tabs = document.querySelectorAll('.tab');
+      const views = {
+        'map': document.getElementById('map-view'),
+        'postal': document.getElementById('postal-view')
+      };
+
+      // Reset tabs
+      tabs.forEach(t => t.classList.remove('active'));
+      tabs.forEach(t => t.setAttribute('aria-selected', 'false'));
+      
+      // Reset views
+      Object.values(views).forEach(v => v.classList.add('hidden'));
+
+      // Activate selected
+      if (tabName === 'map') {
+        tabs[0].classList.add('active');
+        tabs[0].setAttribute('aria-selected', 'true');
+        views['map'].classList.remove('hidden');
+      } else {
+        tabs[1].classList.add('active');
+        tabs[1].setAttribute('aria-selected', 'true');
+        views['postal'].classList.remove('hidden');
+      }
+    }
+  </script>
+</body>
+</html>

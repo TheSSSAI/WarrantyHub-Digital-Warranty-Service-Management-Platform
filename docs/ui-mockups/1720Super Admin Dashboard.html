@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Super Admin Dashboard | Warranty Platform</title>
+  <style>
+    /* 
+     * DESIGN SYSTEM TOKENS & RESET 
+     */
+    :root {
+      /* Colors - Primary */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-500: #6366f1;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      --color-primary-900: #312e81;
+
+      /* Colors - Neutrals */
+      --color-white: #ffffff;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-600: #4b5563;
+      --color-gray-700: #374151;
+      --color-gray-800: #1f2937;
+      --color-gray-900: #111827;
+
+      /* Colors - Semantic */
+      --color-success-bg: #ecfdf5;
+      --color-success-text: #065f46;
+      --color-warning-bg: #fffbeb;
+      --color-warning-text: #92400e;
+      --color-error-bg: #fef2f2;
+      --color-error-text: #b91c1c;
+
+      /* Typography */
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-size-h1: clamp(28px, 2.5vw, 32px);
+      --font-size-h2: clamp(22px, 2vw, 24px);
+      --font-size-h3: 18px;
+      --font-size-body: 16px;
+      --font-size-sm: 14px;
+      --font-size-xs: 12px;
+
+      /* Spacing */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --space-12: 48px;
+
+      /* Layout */
+      --sidebar-width: 280px;
+      --sidebar-width-collapsed: 72px;
+      --header-height: 64px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      font-size: var(--font-size-body);
+      color: var(--color-gray-900);
+      background-color: var(--color-gray-50);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { text-decoration: none; color: inherit; }
+    ul { list-style: none; }
+    button { cursor: pointer; border: none; background: none; font-family: inherit; }
+
+    /* Icons */
+    .icon {
+      width: 20px;
+      height: 20px;
+      display: inline-block;
+      vertical-align: middle;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* 
+     * LAYOUT STRUCTURE 
+     */
+    .app-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-width);
+      background-color: var(--color-white);
+      border-right: 1px solid var(--color-gray-200);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 50;
+      transition: width 0.3s ease;
+    }
+
+    .sidebar-header {
+      height: var(--header-height);
+      display: flex;
+      align-items: center;
+      padding: 0 var(--space-6);
+      border-bottom: 1px solid var(--color-gray-100);
+    }
+
+    .logo {
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--color-primary-600);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: var(--space-4) var(--space-3);
+      overflow-y: auto;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      margin-bottom: var(--space-1);
+      border-radius: var(--radius-md);
+      color: var(--color-gray-600);
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .nav-item:hover {
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-900);
+    }
+
+    .nav-item.active {
+      background-color: var(--color-primary-50);
+      color: var(--color-primary-700);
+    }
+
+    .sidebar-footer {
+      padding: var(--space-4);
+      border-top: 1px solid var(--color-gray-200);
+    }
+
+    .user-profile-mini {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: var(--color-primary-100);
+      color: var(--color-primary-700);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    /* Main Content */
+    .main-wrapper {
+      flex: 1;
+      margin-left: var(--sidebar-width);
+      display: flex;
+      flex-direction: column;
+      transition: margin-left 0.3s ease;
+      width: calc(100% - var(--sidebar-width));
+    }
+
+    /* Top Navigation Bar */
+    .top-bar {
+      height: var(--header-height);
+      background-color: var(--color-white);
+      border-bottom: 1px solid var(--color-gray-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--space-8);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .top-bar-left {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .menu-toggle {
+      padding: var(--space-2);
+      border-radius: var(--radius-md);
+      color: var(--color-gray-500);
+    }
+    
+    .menu-toggle:hover {
+      background-color: var(--color-gray-100);
+    }
+
+    .search-bar {
+      position: relative;
+      width: 320px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 16px 10px 40px;
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-md);
+      background-color: var(--color-gray-50);
+      font-size: var(--font-size-sm);
+      transition: all 0.2s;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--color-primary-500);
+      background-color: var(--color-white);
+      box-shadow: 0 0 0 3px var(--color-primary-50);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--color-gray-400);
+      width: 16px;
+      height: 16px;
+    }
+
+    .top-bar-right {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .icon-btn {
+      position: relative;
+      padding: var(--space-2);
+      border-radius: 50%;
+      color: var(--color-gray-500);
+      transition: color 0.2s;
+    }
+
+    .icon-btn:hover {
+      color: var(--color-gray-900);
+      background-color: var(--color-gray-100);
+    }
+
+    .badge-dot {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 8px;
+      height: 8px;
+      background-color: var(--color-error-text);
+      border-radius: 50%;
+      border: 2px solid var(--color-white);
+    }
+
+    /* Content Area */
+    .content-area {
+      padding: var(--space-8);
+      max-width: 1600px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-8);
+    }
+
+    .page-title h1 {
+      font-size: var(--font-size-h1);
+      color: var(--color-gray-900);
+    }
+
+    .page-subtitle {
+      color: var(--color-gray-500);
+      margin-top: var(--space-1);
+    }
+
+    .date-filter {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      background: var(--color-white);
+      border: 1px solid var(--color-gray-200);
+      padding: 8px 16px;
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+      color: var(--color-gray-700);
+      cursor: pointer;
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-6);
+      margin-bottom: var(--space-8);
+    }
+
+    .kpi-card {
+      background: var(--color-white);
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .kpi-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--space-4);
+    }
+
+    .kpi-label {
+      color: var(--color-gray-500);
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+    }
+
+    .kpi-icon {
+      padding: 8px;
+      border-radius: 8px;
+      background-color: var(--color-primary-50);
+      color: var(--color-primary-600);
+    }
+
+    .kpi-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--color-gray-900);
+      line-height: 1;
+      margin-bottom: var(--space-2);
+    }
+
+    .kpi-trend {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: var(--font-size-xs);
+      font-weight: 500;
+    }
+
+    .trend-up { color: var(--color-success-text); }
+    .trend-down { color: var(--color-error-text); }
+
+    /* Charts Section */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-6);
+      margin-bottom: var(--space-8);
+    }
+
+    .chart-card {
+      background: var(--color-white);
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-6);
+    }
+
+    .chart-title {
+      font-size: var(--font-size-h3);
+      font-weight: 600;
+      color: var(--color-gray-900);
+    }
+
+    .chart-placeholder {
+      width: 100%;
+      height: 300px;
+      background-color: var(--color-gray-50);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* CSS Bar Chart Simulation */
+    .css-chart {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
+      width: 100%;
+      height: 100%;
+      padding: 20px;
+    }
+
+    .css-bar {
+      width: 8%;
+      background-color: var(--color-primary-500);
+      border-radius: 4px 4px 0 0;
+      opacity: 0.8;
+      transition: height 0.5s ease;
+      position: relative;
+    }
+    
+    .css-bar:hover {
+      opacity: 1;
+      background-color: var(--color-primary-600);
+    }
+
+    .css-bar::after {
+      content: attr(data-value);
+      position: absolute;
+      top: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: var(--color-gray-600);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .css-bar:hover::after {
+      opacity: 1;
+    }
+
+    /* Activity Table */
+    .activity-section {
+      background: var(--color-white);
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .activity-header {
+      padding: var(--space-6);
+      border-bottom: 1px solid var(--color-gray-200);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      padding: var(--space-4) var(--space-6);
+      background-color: var(--color-gray-50);
+      font-size: var(--font-size-xs);
+      font-weight: 500;
+      text-transform: uppercase;
+      color: var(--color-gray-500);
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--color-gray-200);
+    }
+
+    td {
+      padding: var(--space-4) var(--space-6);
+      border-bottom: 1px solid var(--color-gray-100);
+      color: var(--color-gray-700);
+      font-size: var(--font-size-sm);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background-color: var(--color-gray-50);
+    }
+
+    .user-cell {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .user-cell img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .user-name {
+      color: var(--color-gray-900);
+      font-weight: 500;
+    }
+
+    .user-email {
+      color: var(--color-gray-500);
+      font-size: 12px;
+    }
+
+    /* Status Badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-success {
+      background-color: var(--color-success-bg);
+      color: var(--color-success-text);
+    }
+
+    .status-warning {
+      background-color: var(--color-warning-bg);
+      color: var(--color-warning-text);
+    }
+
+    .status-error {
+      background-color: var(--color-error-bg);
+      color: var(--color-error-text);
+    }
+
+    .action-btn {
+      color: var(--color-primary-600);
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .action-btn:hover {
+      text-decoration: underline;
+    }
+
+    /* Skeleton Loading State */
+    .skeleton {
+      background: linear-gradient(90deg, var(--color-gray-100) 25%, var(--color-gray-200) 50%, var(--color-gray-100) 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+      border-radius: 4px;
+    }
+
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .loading .kpi-value, 
+    .loading .kpi-label,
+    .loading .chart-placeholder,
+    .loading td span {
+      color: transparent;
+      background: linear-gradient(90deg, var(--color-gray-100) 25%, var(--color-gray-200) 50%, var(--color-gray-100) 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    /* 
+     * RESPONSIVE BREAKPOINTS 
+     */
+    
+    /* Tablet Adaptation */
+    @media (max-width: 1024px) {
+      .sidebar {
+        width: var(--sidebar-width-collapsed);
+      }
+      
+      .sidebar-footer .user-name, 
+      .sidebar-footer .user-email,
+      .logo-text,
+      .nav-text {
+        display: none;
+      }
+      
+      .sidebar-header {
+        justify-content: center;
+        padding: 0;
+      }
+      
+      .nav-item {
+        justify-content: center;
+        padding: var(--space-3) 0;
+      }
+
+      .main-wrapper {
+        margin-left: var(--sidebar-width-collapsed);
+        width: calc(100% - var(--sidebar-width-collapsed));
+      }
+
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Mobile Adaptation */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        width: var(--sidebar-width);
+      }
+      
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .main-wrapper {
+        margin-left: 0;
+        width: 100%;
+      }
+
+      .top-bar {
+        padding: 0 var(--space-4);
+      }
+
+      .search-bar {
+        display: none; /* Hide search on mobile for cleaner header */
+      }
+
+      .content-area {
+        padding: var(--space-4);
+      }
+
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-4);
+      }
+
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .table-container {
+        overflow-x: scroll;
+      }
+      
+      .logo-text, .nav-text {
+        display: inline;
+      }
+      
+      .nav-item {
+        justify-content: flex-start;
+        padding: var(--space-3);
+      }
+    }
+  </style>
+</head>
+<body class="loading-state">
+  <div class="app-layout">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main Navigation">
+      <div class="sidebar-header">
+        <a href="#" class="logo">
+          <svg class="icon" viewBox="0 0 24 24" style="width: 28px; height: 28px; fill: var(--color-primary-600); stroke: none;">
+            <path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"/>
+          </svg>
+          <span class="logo-text">WarrantyOS</span>
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        <ul>
+          <li>
+            <a href="#" class="nav-item active" aria-current="page">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+              <span class="nav-text">Dashboard</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-item">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <span class="nav-text">Brand Management</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-item">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 3h18v18H3zM3 9h18M9 21V9"></path>
+              </svg>
+              <span class="nav-text">Service Centers</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-item">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+              </svg>
+              <span class="nav-text">Products</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-item">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+              <span class="nav-text">Settings</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-mini">
+          <div class="avatar" role="img" aria-label="Admin Avatar">AD</div>
+          <div class="user-info">
+            <span class="user-name">Admin User</span>
+            <span class="user-email">super@warrantyos.com</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper">
+      
+      <!-- Top Navigation Bar -->
+      <header class="top-bar">
+        <div class="top-bar-left">
+          <button class="menu-toggle" id="menuToggle" aria-label="Toggle Navigation">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <div class="search-bar">
+            <input type="text" class="search-input" placeholder="Search brands, users, or tickets..." aria-label="Global Search">
+            <svg class="icon search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </div>
+        </div>
+
+        <div class="top-bar-right">
+          <button class="icon-btn" aria-label="Notifications">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span class="badge-dot"></span>
+          </button>
+          <button class="icon-btn" aria-label="Help">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Dashboard Content -->
+      <main class="content-area">
+        
+        <!-- Page Header -->
+        <section class="page-header">
+          <div class="page-title">
+            <h1>Platform Overview</h1>
+            <p class="page-subtitle">Welcome back, here's what's happening today.</p>
+          </div>
+          <div class="actions">
+            <button class="date-filter" aria-label="Filter by Date">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <span>Last 30 Days</span>
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; margin-left: 8px;">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          </div>
+        </section>
+
+        <!-- KPI Widgets -->
+        <section class="kpi-grid">
+          <!-- Total Users -->
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Total Users</span>
+              <div class="kpi-icon">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                </svg>
+              </div>
+            </div>
+            <div class="kpi-value">24,592</div>
+            <div class="kpi-trend trend-up">
+              <svg class="icon" style="width: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                <polyline points="17 6 23 6 23 12"></polyline>
+              </svg>
+              <span>+12.5% from last month</span>
+            </div>
+          </div>
+
+          <!-- Active Brands -->
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Active Brands</span>
+              <div class="kpi-icon">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                  <polyline points="2 17 12 22 22 17"></polyline>
+                  <polyline points="2 12 12 17 22 12"></polyline>
+                </svg>
+              </div>
+            </div>
+            <div class="kpi-value">128</div>
+            <div class="kpi-trend trend-up">
+              <svg class="icon" style="width: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                <polyline points="17 6 23 6 23 12"></polyline>
+              </svg>
+              <span>+4 new this week</span>
+            </div>
+          </div>
+
+          <!-- Pending Requests -->
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Pending Requests</span>
+              <div class="kpi-icon" style="color: var(--color-warning-text); background-color: var(--color-warning-bg);">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+              </div>
+            </div>
+            <div class="kpi-value">14</div>
+            <div class="kpi-trend">
+              <span style="color: var(--color-gray-500);">Requires review</span>
+            </div>
+          </div>
+
+          <!-- Total Revenue (Placeholder metric) -->
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">System Health</span>
+              <div class="kpi-icon" style="color: var(--color-success-text); background-color: var(--color-success-bg);">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="kpi-value">99.9%</div>
+            <div class="kpi-trend trend-up">
+              <span>All systems operational</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="charts-grid">
+          <!-- Registration Trend -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">Registration Trends</h3>
+              <button class="icon-btn" aria-label="Chart Options">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="1"></circle>
+                  <circle cx="19" cy="12" r="1"></circle>
+                  <circle cx="5" cy="12" r="1"></circle>
+                </svg>
+              </button>
+            </div>
+            <div class="chart-placeholder">
+              <div class="css-chart">
+                <!-- Simulated Bars -->
+                <div class="css-bar" style="height: 40%;" data-value="40"></div>
+                <div class="css-bar" style="height: 70%;" data-value="70"></div>
+                <div class="css-bar" style="height: 55%;" data-value="55"></div>
+                <div class="css-bar" style="height: 85%;" data-value="85"></div>
+                <div class="css-bar" style="height: 60%;" data-value="60"></div>
+                <div class="css-bar" style="height: 90%;" data-value="90"></div>
+                <div class="css-bar" style="height: 75%;" data-value="75"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Service Request Volume -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">Service Requests by Status</h3>
+              <button class="icon-btn" aria-label="Chart Options">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="1"></circle>
+                  <circle cx="19" cy="12" r="1"></circle>
+                  <circle cx="5" cy="12" r="1"></circle>
+                </svg>
+              </button>
+            </div>
+            <div class="chart-placeholder">
+              <!-- Simple CSS representation of status distribution -->
+              <div style="width: 200px; height: 200px; border-radius: 50%; background: conic-gradient(
+                var(--color-success-main) 0% 60%, 
+                var(--color-warning-main) 60% 85%, 
+                var(--color-error-main) 85% 100%
+              );"></div>
+              <div style="position: absolute; display: flex; flex-direction: column; gap: 8px; right: 40px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="width: 12px; height: 12px; background: var(--color-success-main); border-radius: 2px;"></span>
+                  <span style="font-size: 14px;">Resolved (60%)</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="width: 12px; height: 12px; background: var(--color-warning-main); border-radius: 2px;"></span>
+                  <span style="font-size: 14px;">In Progress (25%)</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="width: 12px; height: 12px; background: var(--color-error-main); border-radius: 2px;"></span>
+                  <span style="font-size: 14px;">Pending (15%)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Recent Activity Table -->
+        <section class="activity-section">
+          <div class="activity-header">
+            <h3 class="chart-title">Recent Activity</h3>
+            <button class="icon-btn" aria-label="Filter List">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+              </svg>
+            </button>
+          </div>
+          <div class="table-container">
+            <table class="data-table" role="grid">
+              <thead>
+                <tr role="row">
+                  <th scope="col">Entity</th>
+                  <th scope="col">Action</th>
+                  <th scope="col">Date</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr role="row">
+                  <td>
+                    <div class="user-cell">
+                      <div class="avatar" style="background: #e0f2fe; color: #0284c7;">A</div>
+                      <div class="user-info">
+                        <span class="user-name">Apex Electronics</span>
+                        <span class="user-email">Brand Registration</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>New Registration</td>
+                  <td>Oct 24, 2023</td>
+                  <td><span class="status-badge status-warning">Pending</span></td>
+                  <td><button class="action-btn">Review</button></td>
+                </tr>
+                <tr role="row">
+                  <td>
+                    <div class="user-cell">
+                      <div class="avatar" style="background: #fce7f3; color: #db2777;">S</div>
+                      <div class="user-info">
+                        <span class="user-name">Sarah Jenkins</span>
+                        <span class="user-email">User Sign-up</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Account Verified</td>
+                  <td>Oct 24, 2023</td>
+                  <td><span class="status-badge status-success">Active</span></td>
+                  <td><button class="action-btn">View</button></td>
+                </tr>
+                <tr role="row">
+                  <td>
+                    <div class="user-cell">
+                      <div class="avatar" style="background: #dcfce7; color: #16a34a;">T</div>
+                      <div class="user-info">
+                        <span class="user-name">TechFix Center</span>
+                        <span class="user-email">Service Center</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Profile Update</td>
+                  <td>Oct 23, 2023</td>
+                  <td><span class="status-badge status-success">Approved</span></td>
+                  <td><button class="action-btn">View</button></td>
+                </tr>
+                <tr role="row">
+                  <td>
+                    <div class="user-cell">
+                      <div class="avatar" style="background: #fee2e2; color: #dc2626;">B</div>
+                      <div class="user-info">
+                        <span class="user-name">Beta Products</span>
+                        <span class="user-email">Product Launch</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>New Product Added</td>
+                  <td>Oct 23, 2023</td>
+                  <td><span class="status-badge status-error">Review</span></td>
+                  <td><button class="action-btn">Review</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // Simple script to handle loading state simulation and mobile menu toggle
+    document.addEventListener('DOMContentLoaded', () => {
+      // Mobile menu toggle
+      const menuToggle = document.getElementById('menuToggle');
+      const sidebar = document.getElementById('sidebar');
+      
+      menuToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+      });
+
+      // Simulate data loading
+      setTimeout(() => {
+        document.body.classList.remove('loading-state');
+      }, 1500); // Remove skeleton state after 1.5s
+    });
+  </script>
+</body>
+</html>

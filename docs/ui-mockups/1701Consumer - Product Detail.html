@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Consumer - Product Detail</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+  <style>
+    /* -----------------------------------------------------------------------------
+     * DESIGN SYSTEM TOKENS & RESET
+     * ----------------------------------------------------------------------------- */
+    :root {
+      /* Color Palette - Primary */
+      --color-primary-50: #eef2ff;
+      --color-primary-100: #e0e7ff;
+      --color-primary-200: #c7d2fe;
+      --color-primary-500: #6366f1;
+      --color-primary-600: #4f46e5;
+      --color-primary-700: #4338ca;
+      --color-primary-800: #3730a3;
+
+      /* Color Palette - Neutrals */
+      --color-white: #ffffff;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-300: #d1d5db;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-600: #4b5563;
+      --color-gray-700: #374151;
+      --color-gray-800: #1f2937;
+      --color-gray-900: #111827;
+
+      /* Color Palette - Semantic */
+      --color-success-bg: #d1e7dd;
+      --color-success-text: #0f5132;
+      --color-success-main: #28a745;
+      --color-warning-bg: #fff3cd;
+      --color-warning-text: #664d03;
+      --color-error-bg: #f8d7da;
+      --color-error-text: #842029;
+
+      /* Spacing */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --space-12: 48px;
+
+      /* Typography */
+      --font-family-primary: 'Inter', sans-serif;
+      --font-family-mono: 'JetBrains Mono', monospace;
+
+      /* Shadows & Radius */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-full: 9999px;
+
+      /* Layout */
+      --header-height: 60px;
+      --bottom-bar-height: 80px;
+      --container-width: 720px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: var(--font-family-primary);
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-900);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: var(--bottom-bar-height); /* Space for sticky CTA */
+    }
+
+    /* -----------------------------------------------------------------------------
+     * LAYOUT & UTILITIES
+     * ----------------------------------------------------------------------------- */
+    .app-container {
+      max-width: var(--container-width);
+      margin: 0 auto;
+      background-color: var(--color-gray-50);
+      min-height: 100vh;
+      position: relative;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* -----------------------------------------------------------------------------
+     * COMPONENTS
+     * ----------------------------------------------------------------------------- */
+    
+    /* Navigation Header */
+    .screen-header {
+      height: var(--header-height);
+      background-color: var(--color-white);
+      border-bottom: 1px solid var(--color-gray-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--space-4);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-action {
+      background: none;
+      border: none;
+      color: var(--color-gray-600);
+      padding: var(--space-2);
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+    }
+    .header-action:hover {
+      background-color: var(--color-gray-100);
+    }
+    
+    .screen-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--color-gray-900);
+    }
+
+    /* Tabs */
+    .warranty-tabs {
+      display: flex;
+      padding: var(--space-4) var(--space-4) 0;
+      gap: var(--space-2);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .warranty-tabs::-webkit-scrollbar { display: none; }
+
+    .tab-button {
+      background: transparent;
+      border: none;
+      padding: var(--space-2) var(--space-4);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-gray-500);
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+
+    .tab-button.is-active {
+      background-color: var(--color-primary-100);
+      color: var(--color-primary-700);
+      font-weight: 600;
+    }
+
+    /* Digital Warranty Card */
+    .card-container {
+      padding: var(--space-4);
+      perspective: 1000px;
+    }
+
+    .warranty-card {
+      background: linear-gradient(135deg, var(--color-gray-900), var(--color-gray-800));
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      color: var(--color-white);
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.3s ease;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--space-4);
+    }
+
+    .brand-logo {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .status-badge {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      border-radius: var(--radius-full);
+      letter-spacing: 0.05em;
+    }
+
+    .status-badge.active {
+      background-color: var(--color-success-bg);
+      color: var(--color-success-text);
+    }
+    .status-badge.expiring {
+      background-color: var(--color-warning-bg);
+      color: var(--color-warning-text);
+    }
+    .status-badge.expired {
+      background-color: var(--color-error-bg);
+      color: var(--color-error-text);
+    }
+
+    .product-info h2 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: var(--space-1);
+    }
+    
+    .product-info p {
+      color: var(--color-gray-400);
+      font-size: 14px;
+    }
+
+    .card-footer {
+      margin-top: var(--space-6);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .card-meta-group label {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-gray-400);
+      margin-bottom: 2px;
+    }
+
+    .card-meta-group span {
+      font-family: var(--font-family-mono);
+      font-size: 14px;
+    }
+
+    .expiry-date {
+      text-align: right;
+    }
+
+    .expiry-date .date {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--color-white);
+    }
+
+    /* Actions Grid */
+    .actions-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-3);
+      padding: 0 var(--space-4);
+      margin-bottom: var(--space-6);
+    }
+
+    .action-card {
+      background-color: var(--color-white);
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      text-decoration: none;
+      color: var(--color-gray-700);
+      transition: background 0.2s;
+    }
+
+    .action-card:hover {
+      background-color: var(--color-gray-50);
+      border-color: var(--color-gray-300);
+    }
+
+    .action-card svg {
+      width: 24px;
+      height: 24px;
+      color: var(--color-primary-600);
+    }
+
+    .action-card span {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    /* Document Links List */
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-gray-900);
+      padding: 0 var(--space-4);
+      margin-bottom: var(--space-3);
+    }
+
+    .document-list {
+      background-color: var(--color-white);
+      border-top: 1px solid var(--color-gray-200);
+      border-bottom: 1px solid var(--color-gray-200);
+      margin-bottom: var(--space-6);
+    }
+
+    .document-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-4);
+      border-bottom: 1px solid var(--color-gray-100);
+      text-decoration: none;
+      color: var(--color-gray-900);
+    }
+    .document-item:last-child {
+      border-bottom: none;
+    }
+
+    .doc-icon-wrapper {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .doc-info h4 {
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .doc-info p {
+      font-size: 12px;
+      color: var(--color-gray-500);
+    }
+
+    /* Service History */
+    .history-list {
+      padding: 0 var(--space-4);
+      margin-bottom: var(--space-8);
+    }
+
+    .history-item {
+      display: flex;
+      gap: var(--space-4);
+      padding-bottom: var(--space-6);
+      position: relative;
+    }
+
+    .history-item:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 14px; /* Align with icon center */
+      top: 32px;
+      bottom: 0;
+      width: 2px;
+      background-color: var(--color-gray-200);
+    }
+
+    .history-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: var(--color-primary-50);
+      color: var(--color-primary-600);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border: 2px solid var(--color-white);
+      box-shadow: 0 0 0 2px var(--color-gray-100);
+    }
+
+    .history-content {
+      background-color: var(--color-white);
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-md);
+      padding: var(--space-3);
+      width: 100%;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: var(--space-1);
+    }
+
+    .history-date {
+      font-size: 12px;
+      color: var(--color-gray-500);
+    }
+
+    .history-status {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+      background-color: var(--color-gray-100);
+      color: var(--color-gray-700);
+    }
+    .history-status.resolved {
+      background-color: var(--color-success-bg);
+      color: var(--color-success-text);
+    }
+
+    /* Sticky Footer CTA */
+    .sticky-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: var(--color-white);
+      border-top: 1px solid var(--color-gray-200);
+      padding: var(--space-4);
+      display: flex;
+      justify-content: center;
+      box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
+      z-index: 100;
+    }
+    
+    .sticky-footer-inner {
+      width: 100%;
+      max-width: var(--container-width);
+      padding: 0 var(--space-4);
+    }
+
+    .btn-primary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      width: 100%;
+      background-color: var(--color-primary-600);
+      color: var(--color-white);
+      border: none;
+      padding: 14px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover {
+      background-color: var(--color-primary-700);
+    }
+    .btn-primary:disabled {
+      background-color: var(--color-gray-300);
+      cursor: not-allowed;
+    }
+
+    /* Loading Skeleton */
+    .skeleton {
+      background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+      border-radius: var(--radius-sm);
+    }
+    
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* State: Loading */
+    .loading-view .warranty-card {
+      background: var(--color-gray-100);
+      box-shadow: none;
+    }
+    .loading-view .skeleton-text {
+      height: 20px;
+      width: 60%;
+      margin-bottom: 10px;
+    }
+
+    /* Responsive Adjustments */
+    @media (min-width: 768px) {
+      .actions-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      .card-container {
+        padding: var(--space-6);
+      }
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="screen-header">
+      <button class="header-action" aria-label="Go back">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <h1 class="screen-title">Product Details</h1>
+      <button class="header-action" aria-label="More options">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+      </button>
+    </header>
+
+    <main id="main-content">
+      
+      <!-- Warranty Tabs -->
+      <nav class="warranty-tabs" role="tablist" aria-label="Warranty Selection">
+        <button class="tab-button is-active" role="tab" aria-selected="true" aria-controls="warranty-panel-1" id="tab-1">Manufacturer</button>
+        <button class="tab-button" role="tab" aria-selected="false" aria-controls="warranty-panel-1" id="tab-2">Extended (+2 Yrs)</button>
+      </nav>
+
+      <!-- Digital Warranty Card -->
+      <section id="warranty-panel-1" class="card-container" role="tabpanel" aria-labelledby="tab-1">
+        <div class="warranty-card">
+          <div class="card-header">
+            <div class="brand-logo">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="color: white;"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"/></svg>
+              <span>Sony</span>
+            </div>
+            <span class="status-badge active">Active</span>
+          </div>
+          
+          <div class="product-info">
+            <h2>Bravia XR A80L</h2>
+            <p>OLED 4K HDR Smart TV</p>
+          </div>
+
+          <div class="card-footer">
+            <div class="card-meta-group">
+              <label>Serial Number</label>
+              <span>SN-84930211-X</span>
+            </div>
+            <div class="expiry-date">
+              <label>Expires On</label>
+              <div class="date">Oct 24, 2025</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Actions Grid -->
+      <section class="actions-grid" aria-label="Product Actions">
+        <button class="action-card" onclick="alert('Navigating to Edit Product')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <span>Edit Details</span>
+        </button>
+        <button class="action-card" onclick="alert('Navigating to Transfer Ownership')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          <span>Transfer</span>
+        </button>
+        <button class="action-card" onclick="alert('Navigating to Add Warranty')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          <span>Add Warranty</span>
+        </button>
+        <button class="action-card" onclick="alert('Navigating to Support')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span>Get Help</span>
+        </button>
+      </section>
+
+      <!-- Documents List -->
+      <h3 class="section-title">Documents</h3>
+      <section class="document-list">
+        <a href="#" class="document-item">
+          <div class="doc-icon-wrapper">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary-600)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <div class="doc-info">
+              <h4>Purchase Invoice</h4>
+              <p>Uploaded Oct 25, 2023</p>
+            </div>
+          </div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-gray-400)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+        <a href="#" class="document-item">
+          <div class="doc-icon-wrapper">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary-600)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            <div class="doc-info">
+              <h4>Terms & Conditions</h4>
+              <p>Standard Manufacturer Warranty</p>
+            </div>
+          </div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-gray-400)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      </section>
+
+      <!-- Service History -->
+      <h3 class="section-title">Service History</h3>
+      <section class="history-list">
+        <!-- Item 1 -->
+        <div class="history-item">
+          <div class="history-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          </div>
+          <div class="history-content">
+            <div class="history-header">
+              <span class="history-id">#REQ-8392</span>
+              <span class="history-status resolved">Resolved</span>
+            </div>
+            <h4>Screen Flickering Issue</h4>
+            <div class="history-date">Jan 10, 2024</div>
+          </div>
+        </div>
+        
+        <!-- Item 2 -->
+        <div class="history-item">
+          <div class="history-icon" style="background-color: var(--color-gray-100); color: var(--color-gray-500);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          </div>
+          <div class="history-content">
+            <div class="history-header">
+              <span class="history-id">#REQ-1029</span>
+              <span class="history-status">Inquiry</span>
+            </div>
+            <h4>Software Update Question</h4>
+            <div class="history-date">Nov 15, 2023</div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Sticky Footer CTA -->
+    <footer class="sticky-footer">
+      <div class="sticky-footer-inner">
+        <button class="btn-primary" onclick="alert('Starting Service Request Flow')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          Request Service
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Tab Switching Logic for Demo Purposes
+    const tabs = document.querySelectorAll('.tab-button');
+    const badge = document.querySelector('.status-badge');
+    const expiryDate = document.querySelector('.expiry-date .date');
+    const docTitle = document.querySelector('.document-item:last-child .doc-info p');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        // Reset active state
+        tabs.forEach(t => {
+          t.classList.remove('is-active');
+          t.setAttribute('aria-selected', 'false');
+        });
+        
+        // Set new active state
+        e.target.classList.add('is-active');
+        e.target.setAttribute('aria-selected', 'true');
+
+        // Simulate Content Change based on Tab
+        if(e.target.id === 'tab-2') {
+          badge.textContent = 'Active';
+          badge.className = 'status-badge active';
+          expiryDate.textContent = 'Oct 24, 2027';
+          docTitle.textContent = 'Extended Warranty Plan +2';
+        } else {
+          badge.textContent = 'Active';
+          badge.className = 'status-badge active';
+          expiryDate.textContent = 'Oct 24, 2025';
+          docTitle.textContent = 'Standard Manufacturer Warranty';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
